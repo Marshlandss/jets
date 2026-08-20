@@ -1,2 +1,0 @@
-from jets.function import transform_spherical_to_cartesian
-
