@@ -1,0 +1,36 @@
+[build-system]
+requires      = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name            = "jets"
+version         = "0.1.0"
+description     = "Measure black hole jet and Cosmic Web filament orientations, and gauge their alignment."
+readme          = "README.md"
+authors         = [{name = "Ruby Yao", email = "ryao@caltech.edu"}, {name = "Martijn S.S.L. Oei", email = "oei@caltech.edu"}]
+requires-python = ">=3.11"
+license         = "MIT"
+license-files   = ["LICENSE"]
+dependencies    = [
+    "astropy",
+    "matplotlib",
+    "numpy",
+    "openpyxl",
+    "pandas",
+    "scipy",
+]
+classifiers     = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+keywords        = ["astronomy", "radio", "LOFAR", "large-scale structure", "BORG"]
+
+[project.urls]
+Homepage   = "https://github.com/Marshlandss/jets"
+Repository = "https://github.com/Marshlandss/jets"
+
+[tool.setuptools.packages.find]
+where = ["src"]
