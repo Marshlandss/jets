@@ -18,6 +18,7 @@ dependencies    = [
     "openpyxl",
     "pandas",
     "scipy",
+    "xlsxwriter",
 ]
 classifiers     = [
     "Development Status :: 3 - Alpha",
