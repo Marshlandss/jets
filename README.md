@@ -20,4 +20,26 @@ pip install -e .
 The package is now installed in editable mode: a `git pull` updates your installation immediately.
 (Re-run `pip install -e .` if dependencies change.)
 
+# Configuration
+Before running any code, set two environment variables:
+- `JETS_DIR_LOAD`: the directory containing the input catalogue, BORG SDSS cubes, and a subdirectory `fits/` with the radio cutouts;
+- `JETS_DIR_SAVE`: the directory to which output (tables and plots) is written; the code creates any subdirectories it needs.
+
+Choose either of these options:
+
+```bash
+# Option 1: Store the variables in the conda environment (recommended; works on macOS, Linux, and Windows).
+conda activate jets
+conda env config vars set JETS_DIR_LOAD="/path/to/load" JETS_DIR_SAVE="/path/to/save"
+conda deactivate
+conda activate jets            # Re-activate so that the variables take effect.
+conda env config vars list     # Check.
+
+# Option 2: Add these lines to your shell profile (e.g. ~/.zshrc on macOS), then open a new terminal.
+export JETS_DIR_LOAD="/path/to/load"
+export JETS_DIR_SAVE="/path/to/save"
+```
+Surround paths that contain spaces with quotes: e.g. `"G:/My Drive/..."`.
+If you run code from an IDE, check that its run configuration sees these variables.
+
 # Usage

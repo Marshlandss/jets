@@ -1,26 +1,25 @@
 # === Imports ===
-
 import numpy
 import os
 import pandas as pd
 from astropy.io import fits
 from pathlib import Path
 
-from src.jets.jet_system import JetSystem
-from src.jets.jet_plotter import JetPlotter
-from src.jets.manual_adjustments import M_LIST, SA_LIST
-from src.jets.config import (
+from jets.jet_system import JetSystem
+from jets.jet_plotter import JetPlotter
+from jets.manual_adjustments import M_LIST, SA_LIST
+from jets.config import (
     ANGLES,
     BEST_ANGLE_THRESHOLD,
     NAN_PERCENTAGE_CUTOFF,
     PIXEL_SHIFT,
-    SAVE_DIR,
     SAVING_PLOTS,
     SAVE_FORMAT, 
     OVERWRITE_FILES
 )
-from src.jets.jet_utils import format_sheet, check_if_file_exists_in_correct_location, check_adjustment_status
-from src.jets.plot_styles import set_plot_styles
+from jets.paths import DIR_LOAD, DIR_SAVE
+from jets.jet_utils import format_sheet, check_if_file_exists_in_correct_location, check_adjustment_status
+from jets.plot_styles import set_plot_styles
 
 # === Plot Formatting ===
 axis_font_size = set_plot_styles()
