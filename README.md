@@ -28,14 +28,15 @@ Before running any code, set two environment variables:
 Choose either of these options:
 
 ```bash
-# Option 1: Store the variables in the conda environment (recommended; works on macOS, Linux, and Windows).
+# Option 1 (all OSs): Store the variables in the conda environment.
 conda activate jets
 conda env config vars set JETS_DIR_LOAD="/path/to/load" JETS_DIR_SAVE="/path/to/save"
 conda deactivate
 conda activate jets            # Re-activate so that the variables take effect.
 conda env config vars list     # Check.
 
-# Option 2: Add these lines to your shell profile (e.g. ~/.zshrc on macOS), then open a new terminal.
+# Option 2 (macOS and Linux): Add these lines to your shell profile (e.g. ~/.zshrc on macOS).
+# Then open a new terminal.
 export JETS_DIR_LOAD="/path/to/load"
 export JETS_DIR_SAVE="/path/to/save"
 ```
