@@ -15,10 +15,10 @@ cd jets
 conda env create -f environment.yaml
 conda activate jets
 # Option 2: Install dependencies with pip.
-pip install -e .
+python -m pip install -e .
 ```
 The package is now installed in editable mode: a `git pull` updates your installation immediately.
-(Re-run `pip install -e .` if dependencies change.)
+(Re-run `python -m pip install -e .` if dependencies change.)
 
 # Configuration
 Before running any code, set two environment variables:
@@ -44,6 +44,8 @@ Surround paths that contain spaces with quotes: e.g. `"G:/My Drive/..."`.
 If you run code from an IDE, check that its run configuration sees these variables.
 
 # Usage
+Run `python scripts/get_jet_orientations.py`.
+You might obtain plots like these:
 <div align="center">
   <img src="figures/158.51625_18.680278_notsub.png" alt="A Mpc-scale jet system: radio view, optical host galaxy view, and jet and filament orientation in 2D" width="80%">
 </div>
