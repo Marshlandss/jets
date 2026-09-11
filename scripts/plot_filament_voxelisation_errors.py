@@ -41,7 +41,7 @@ colour                 = "mediumseagreen"
 # Initialise random number generator and voxelisation-induced error data.
 rng                  = np.random.default_rng(SEED)
 errorsAngularDegrees = np.load(DIR_LOAD / "filament_voxelisation_errors_10000.npy") # in deg
-errorsAngularRadians = np.radians(errorsAngularDegrees)                                    # in rad
+errorsAngularRadians = np.radians(errorsAngularDegrees)                             # in rad
 
 
 # Bootstrap the voxelisation errors; every additional systematic is assumed to be an independent draw from the same distribution.

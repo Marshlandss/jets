@@ -25,7 +25,6 @@ def make_beta_cylinder_density_cube(
     radius_mpc = 1.2,     # in Mpc
     beta       = 2.0,     # in 1
     rho0       = 1.6e-23, # in g/m^3; central density
-
 ):
     """
     Generate a fine-grained mass density cube containing a single straight filament with a beta-profile cross section,
