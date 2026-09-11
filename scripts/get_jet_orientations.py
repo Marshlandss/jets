@@ -1,9 +1,9 @@
-# === Imports ===
-import numpy
+# Imports: Python
 import os
-import pandas as pd
+# Imports: third-party
 from astropy.io import fits
-
+import pandas as pd
+# Imports: first-party
 from jets.config import ANGLES, BEST_ANGLE_THRESHOLD, NAN_PERCENTAGE_CUTOFF, PIXEL_SHIFT, SAVING_PLOTS, SAVE_FORMAT, OVERWRITE_FILES
 from jets.paths import DIR_LOAD, DIR_SAVE
 from jets.jet_system import JetSystem
@@ -36,6 +36,7 @@ go_redshift_stdev       = hdu_list[1].data["host_redshift_SD_(1)"]
 areSpectroscopic        = (go_redshift_stdev < 0.001)
 
 # --- For Martin's catalogue ---
+#import numpy
 #go_right_ascensions     = hdu_list[1].data["optRA"]     # in deg
 #go_declinations         = hdu_list[1].data["optDec"]    # in deg
 #go_length_angular_means = hdu_list[1].data['LAS'] / 60  # in arcmin

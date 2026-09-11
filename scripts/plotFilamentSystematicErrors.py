@@ -13,9 +13,10 @@ angle at P1 between arcs P1-T and P1-P2 is phi, so
 Assuming the direction of the second error is isotropic, phi ~ Uniform(0, 2 pi).
 """
 # Imports: third-party
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 # Imports: first-party
+from jets.config import SEED
 from jets.paths import DIR_LOAD, DIR_SAVE
 
 def composeAngularErrors(alpha, beta, rng):
@@ -36,10 +37,9 @@ errorAngularDegreesMin = 0  # in deg
 errorAngularDegreesMax = 60 # in deg
 numberOfBins           = 30
 colour                 = "mediumseagreen"
-seed                   = 0
 
 # Initialise random number generator and voxelisation-induced error data.
-rng                  = np.random.default_rng(seed)
+rng                  = np.random.default_rng(SEED)
 errorsAngularDegrees = np.load(DIR_LOAD / "comparisonFilamentResolution_errors_10000.npy") # in deg
 errorsAngularRadians = np.radians(errorsAngularDegrees)                                    # in rad
 
