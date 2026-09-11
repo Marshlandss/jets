@@ -13,6 +13,7 @@ license         = "MIT"
 license-files   = ["LICENSE"]
 dependencies    = [
     "astropy",
+    "cmcrameri",
     "matplotlib",
     "numpy",
     "openpyxl",
