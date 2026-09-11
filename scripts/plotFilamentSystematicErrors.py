@@ -38,14 +38,14 @@ numberOfBins           = 30
 colour                 = "mediumseagreen"
 seed                   = 0
 
-# Initialise random number generator and data.
+# Initialise random number generator and voxelisation-induced error data.
 rng                  = np.random.default_rng(seed)
 errorsAngularDegrees = np.load(DIR_LOAD / "comparisonFilamentResolution_errors_10000.npy") # in deg
 errorsAngularRadians = np.radians(errorsAngularDegrees)                                    # in rad
 
 
-# Bootstrap the voxelisation errors; every additional systematic is assumed to
-# be an independent draw from the same distribution.
+# Bootstrap the voxelisation errors; every additional systematic is assumed to be an independent draw from the same distribution.
+# For 'numberOfSystematics = 2', non-voxelisation systematics are assumed comparable to voxelisation systematics.
 gamma                   = rng.choice(errorsAngularRadians, size = numberOfSamples, replace = True)
 for _ in range(numberOfSystematics - 1):
     beta  = rng.choice(errorsAngularRadians, size = numberOfSamples, replace = True)
@@ -86,36 +86,3 @@ axBottom.set_xlabel(r"filament orientation error $\angle(\hat{f}, \hat{f}_\mathr
 pathFigure = DIR_SAVE / "systematicErrorsCombined.pdf"
 fig.savefig(pathFigure)
 print(f"Saved figure to '{pathFigure}'.")
-
-
-'''
-import numpy as np
-from matplotlib import pyplot as plt
-
-pathErrorsAngular = "/Users/martijnoei/Library/CloudStorage/Dropbox-Personal/Caltech/Caltech Connection/comparisonFilamentResolution/comparisonFilamentResolution_errors_10000.npy"
-numberOfSamples   = int(1e6)
-errorAngularMin   = 0  # in deg
-errorAngularMax   = 60 # in deg
-
-# Load voxelisation-induced systematic errors.
-errorsAngular     = np.load(pathErrorsAngular)
-
-# Generate all systematic errors by assuming that non-voxelisation systematics are comparable to voxelisation systematics.
-alpha             = np.random.choice(np.radians(errorsAngular), size = numberOfSamples, replace = True)
-beta              = np.random.choice(np.radians(errorsAngular), size = numberOfSamples, replace = True)
-phi               = np.random.uniform(0, 2 * np.pi, numberOfSamples)
-cos_gamma         = (np.cos(alpha)*np.cos(beta) + np.sin(alpha)*np.sin(beta)*np.cos(phi))
-errorsAngularAll  = np.degrees(np.arccos(np.clip(cos_gamma, -1, 1)))
-
-print(np.median(errorsAngular),    np.mean(errorsAngular),    len(errorsAngular))
-print(np.median(errorsAngularAll), np.mean(errorsAngularAll), len(errorsAngularAll))
-
-
-plt.hist(errorsAngular, bins = np.linspace(errorAngularMin,errorAngularMax,num=25+1))
-plt.xlabel("angular error due to voxelisation (degrees)")
-plt.show()
-
-plt.hist(errorsAngularAll, bins = np.linspace(errorAngularMin,errorAngularMax,num=50+1))
-plt.xlabel("angular error due to all systematics (degrees)")
-plt.show()
-'''
