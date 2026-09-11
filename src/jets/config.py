@@ -2,12 +2,12 @@
 import numpy as np
 
 # === Constants ===
-SEED                  = 0
 STEP_SIZE             = 1.
 NUMBER_OF_STEPS       = int(180 / STEP_SIZE)
 ANGLES                = np.linspace(0, np.pi, num = NUMBER_OF_STEPS, endpoint = False) # in radians
 
 # --- Modifiable parameters (for varying results) ---
+SEED                  = 0
 BEST_ANGLE_THRESHOLD  = .85
 NAN_PERCENTAGE_CUTOFF = 43  # in %
 PIXEL_SHIFT           = 1   # shifts plot by indicated number of pixels to the top right; Martijn: 0, Martin: 1
