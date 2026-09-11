@@ -40,7 +40,7 @@ colour                 = "mediumseagreen"
 
 # Initialise random number generator and voxelisation-induced error data.
 rng                  = np.random.default_rng(SEED)
-errorsAngularDegrees = np.load(DIR_LOAD / "comparisonFilamentResolution_errors_10000.npy") # in deg
+errorsAngularDegrees = np.load(DIR_LOAD / "filament_voxelisation_errors_10000.npy") # in deg
 errorsAngularRadians = np.radians(errorsAngularDegrees)                                    # in rad
 
 
@@ -83,6 +83,6 @@ for ax, data, label in [
 
 axBottom.set_xlabel(r"filament orientation error $\angle(\hat{f}, \hat{f}_\mathrm{m,0})$ ($^\circ$)")
 
-pathFigure = DIR_SAVE / "systematicErrorsCombined.pdf"
+pathFigure = DIR_SAVE / "filament_voxelisation_errors.pdf"
 fig.savefig(pathFigure)
 print(f"Saved figure to '{pathFigure}'.")
