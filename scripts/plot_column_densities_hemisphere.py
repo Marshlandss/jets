@@ -13,7 +13,7 @@ from jets.paths import DIR_LOAD, DIR_SAVE
 
 matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{gensymb}"
-print(matplotlib.rcParams.keys())
+
 
 def add_curved_label_chunks(
     ax,
@@ -153,6 +153,8 @@ def plot_half_mollweide_compact(
     title="Half-Mollweide",
     cmap="viridis",
     cbar_label="Value",
+    rightAscension = None,
+    declination    = None,
     central_az_deg=180,
     logscale=False,
     vmin=None,
@@ -268,7 +270,7 @@ def plot_half_mollweide_compact(
     # Latitude guide curves (altitudes)
     guide_lats = [15, 30, 45, 60, 75]
     offsetXs   = [.11, .12, .14, .17, .20]
-    lon_line = np.linspace(-np.pi, np.pi, 800)
+    lon_line   = np.linspace(-np.pi, np.pi, 800)
     for latd, offsetX in zip(guide_lats, offsetXs):
         lat_line = np.deg2rad(np.full_like(lon_line, latd))
         xg, yg = mollweide_forward(lon_line, lat_line)
@@ -276,15 +278,14 @@ def plot_half_mollweide_compact(
 
         # label near left edge
         xlab, ylab = mollweide_forward(np.array([-np.pi + 0.06]), np.array([np.deg2rad(latd)]))
-        print(xlab[0])
         ax.text(xlab[0] - offsetX, ylab[0], f"${latd}$", ha="right", va="center", fontsize=9)
 
     # Meridian guide curves
     meridians = np.arange(-150, 180, 30)
-    lat_line = np.linspace(0, np.pi / 2, 400)
+    lat_line  = np.linspace(0, np.pi / 2, 400)
     for md in meridians:
         lon_line = np.deg2rad(np.full_like(lat_line, md))
-        xg, yg = mollweide_forward(lon_line, lat_line)
+        xg, yg   = mollweide_forward(lon_line, lat_line)
         ax.plot(xg, yg, color="0.85", lw=0.6, zorder=1, alpha = .05)
 
     # Azimuth labels along equator
@@ -305,9 +306,8 @@ def plot_half_mollweide_compact(
             "altitude",
             r"$\theta\ (^\circ)$"
         ],
-        #t_values=[0.8*np.pi, 0.73*np.pi],
-        t_values=[0.75 * np.pi, 0.69 * np.pi],
-        offset=0.10,
+        t_values = [0.75 * np.pi, 0.69 * np.pi],
+        offset = 0.10,
         color="white",
         fontsize=11,
         path_effects=[pe.withStroke(linewidth=1.5, foreground=".3")],
@@ -332,14 +332,7 @@ def plot_half_mollweide_compact(
         zorder=20
     )
 
-    cbar = fig.colorbar(
-        mesh,
-        ax=ax,
-        orientation="horizontal",
-        pad=0.12,
-        fraction=0.04,
-        aspect=72,
-    )
+    cbar = fig.colorbar(mesh,ax=ax,orientation="horizontal",pad=0.12,fraction=0.04,aspect=72)
     cbar.set_label(cbar_label)
 
     ax.text(
@@ -353,20 +346,12 @@ def plot_half_mollweide_compact(
         path_effects=[pe.withStroke(linewidth=1.5, foreground=".3")]
     )
 
-    # Draw in the top-right corner of the axes
-    ax.text(
-        1.01,
-        1.02,
-        r"\textbf{host galaxy:}"+"\n" + rf"$\alpha = {rightAscension:.1f}\degree,\ \delta = {declination:.1f}\degree$",
-        transform=ax.transAxes,
-        ha="right",
-        va="top",
-        color="0.3",
-        fontsize=10,
-        zorder=30,
-    )
+    # Draw host galaxy coordinates in the top-right corner of the Axes.
+    ax.text(1.01,1.02,r"\textbf{host galaxy:}",
+    transform = ax.transAxes, ha = "right", va = "top", color = "0.3", fontsize = 10, zorder = 30)
+    ax.text(1.01,0.92,rf"$\alpha = {rightAscension:.1f}\degree,\ \delta = {declination:.1f}\degree$",
+    transform = ax.transAxes, ha = "right", va = "top", color = "0.3", fontsize = 10, zorder = 30)
 
-    #plt.tight_layout()
     return fig, ax
 
 
@@ -378,6 +363,9 @@ altitudes = np.linspace(0, 90, 91)                     # in deg
 dataGeneral        = pd.read_excel(DIR_LOAD / "Mpc_filament_pa_exact_1.xlsx") # Shape: (242, 20)
 numberOfJetSystems = dataGeneral.shape[0] # in 1
 
+directoryFigures = DIR_SAVE / "column_densities_hemisphere"
+directoryFigures.mkdir(parents = True, exist_ok = True)
+
 for method in ("d", "a"): # Loop over the 'direct' and 'adjusted' host galaxy localisation methods.
     # Load column density data.
     dataCDs = np.load(DIR_LOAD / f"Mpc_column_densities_all_{method}.npy") # Shape: (242, 91, 360)
@@ -385,15 +373,19 @@ for method in ("d", "a"): # Loop over the 'direct' and 'adjusted' host galaxy lo
     for indexJetSystem in range(numberOfJetSystems):
         rightAscension = float(dataGeneral.loc[indexJetSystem, "right_ascension (deg)"])
         declination    = float(dataGeneral.loc[indexJetSystem, "declination (deg)"])
+        pathFigure     = directoryFigures / f"column_densities_hemisphere_{indexJetSystem:03d}_{method}.pdf"
+        print(f"Saving figure to '{pathFigure}'...")
         fig, ax        = plot_half_mollweide_compact(
             azimuths,
             altitudes,
             dataCDs[indexJetSystem],
             cmap           = cm.lipari,
             cbar_label     = r"Cosmic Web column density $\sigma_\mathrm{CW}\ (\mathrm{g\ m^{-2}})$",
+            rightAscension = rightAscension,
+            declination    = declination,
             central_az_deg = 180,
-            contours       = [1.5e20, 2.0e20, 2.5e20, 3.0e20],
+            contours       = None, #(1., 2., 3., 4., 5., 6., 7., 8., 9., 10.), # in g/cm^2
             figsize        = (6, 2.5))
-        plt.subplots_adjust(left=0.015, right=0.985, top=0.99, bottom=0.2)
-        plt.savefig(DIR_SAVE / f"column_densities_hemisphere/column_densities_hemisphere_{indexJetSystem}.pdf", dpi = 1000)
+        plt.subplots_adjust(left = 0.015, right=0.985, top=0.99, bottom=0.2)
+        plt.savefig(pathFigure, dpi = 1000)
         plt.close()
