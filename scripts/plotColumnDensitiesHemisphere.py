@@ -1,14 +1,19 @@
-import numpy as np
-import matplotlib.pyplot as plt
+# Imports: third-party
+from cmcrameri import cm
+from matplotlib.colors import Normalize, LogNorm
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
-from matplotlib.colors import Normalize, LogNorm
-from cmcrameri import cm
 import matplotlib
+import matplotlib.patheffects as pe
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+# Imports: first-party
+from jets.paths import DIR_LOAD, DIR_SAVE
+
 matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{gensymb}"
 print(matplotlib.rcParams.keys())
-import matplotlib.patheffects as pe
 
 def add_curved_label_chunks(
     ax,
@@ -52,17 +57,7 @@ def add_curved_label_chunks(
         x -= offset * nx
         y -= offset * ny
 
-        txt = ax.text(
-            x, y, text,
-            color=color,
-            fontsize=fontsize,
-            ha="center",
-            va="center",
-            rotation=angle,
-            rotation_mode="anchor",
-            clip_on=False,
-            zorder=10,
-        )
+        txt = ax.text(x, y, text, color=color, fontsize=fontsize, ha="center", va="center", rotation=angle, rotation_mode="anchor", clip_on=False, zorder=10)
 
         if path_effects is not None:
             txt.set_path_effects(path_effects)
@@ -118,11 +113,11 @@ def edges_from_centers(x, periodic=False, period=None):
         edges[-1] = x[-1] + 0.5 * dx_wrap
         return edges
 
-    dx = np.diff(x)
-    edges = np.empty(len(x) + 1)
+    dx          = np.diff(x)
+    edges       = np.empty(len(x) + 1)
     edges[1:-1] = 0.5 * (x[:-1] + x[1:])
-    edges[0] = x[0] - 0.5 * dx[0]
-    edges[-1] = x[-1] + 0.5 * dx[-1]
+    edges[0]    = x[0] - 0.5 * dx[0]
+    edges[-1]   = x[-1] + 0.5 * dx[-1]
     return edges
 
 
@@ -362,7 +357,7 @@ def plot_half_mollweide_compact(
     ax.text(
         1.01,
         1.02,
-        r"\textbf{host galaxy:}"+"\n" + rf"$\alpha = {ra:.1f}\degree,\ \delta = {dec:.1f}\degree$",
+        r"\textbf{host galaxy:}"+"\n" + rf"$\alpha = {rightAscension:.1f}\degree,\ \delta = {declination:.1f}\degree$",
         transform=ax.transAxes,
         ha="right",
         va="top",
@@ -375,33 +370,30 @@ def plot_half_mollweide_compact(
     return fig, ax
 
 
-# Example grid
-azimuths  = np.linspace(0, 360, 360, endpoint = False)
-altitudes = np.linspace(0, 90, 91)
-data      = np.load("/Users/martijnoei/Library/CloudStorage/Dropbox/Martijn/Caltech/Caltech Connection/ten_excels_1.26.26_Mpc/Mpc_column_densities_all_r.npy")
+# Initialise Northern Hemisphere coordinate grids.
+azimuths  = np.linspace(0, 360, 360, endpoint = False) # in deg
+altitudes = np.linspace(0, 90, 91)                     # in deg
 
-import pandas as pd
-xlsx_path = "/Users/martijnoei/Library/CloudStorage/Dropbox/Martijn/Caltech/Caltech Connection/ten_excels_1.26.26_Mpc/Mpc_filament_pa_exact_1.xlsx"
-# Read the table
-df = pd.read_excel(xlsx_path)
-# Adjust these column names if needed
+# Load pandas DataFrame with general data.
+dataGeneral        = pd.read_excel(DIR_LOAD / "Mpc_filament_pa_exact_1.xlsx") # Shape: (242, 20)
+numberOfJetSystems = dataGeneral.shape[0] # in 1
 
+for method in ("d", "a"): # Loop over the 'direct' and 'adjusted' host galaxy localisation methods.
+    # Load column density data.
+    dataCDs = np.load(DIR_LOAD / f"Mpc_column_densities_all_{method}.npy") # Shape: (242, 91, 360)
 
-#indexJetSystem = 137
-
-for indexJetSystem in range(data.shape[0]):
-    ra  = float(df.loc[indexJetSystem, "right_ascension (deg)"])
-    dec = float(df.loc[indexJetSystem, "declination (deg)"])
-    fig, ax = plot_half_mollweide_compact(
-        azimuths,
-        altitudes,
-        data[indexJetSystem],
-        cmap=cm.lipari,
-        cbar_label=r"Cosmic Web column density $\sigma_\mathrm{CW}\ (\mathrm{g\ m^{-2}})$",
-        central_az_deg=180,
-        contours=[1.5e20, 2.0e20, 2.5e20, 3.0e20],
-        figsize=(6, 2.5),
-    )
-    plt.subplots_adjust(left=0.015, right=0.985, top=0.99, bottom=0.2)
-    plt.savefig(f"/Users/martijnoei/Library/CloudStorage/Dropbox/Martijn/Caltech/Caltech Connection/columnDensitiesHemisphere_{indexJetSystem}.pdf", dpi = 1000)
-    plt.close()
+    for indexJetSystem in range(numberOfJetSystems):
+        rightAscension = float(dataGeneral.loc[indexJetSystem, "right_ascension (deg)"])
+        declination    = float(dataGeneral.loc[indexJetSystem, "declination (deg)"])
+        fig, ax        = plot_half_mollweide_compact(
+            azimuths,
+            altitudes,
+            dataCDs[indexJetSystem],
+            cmap           = cm.lipari,
+            cbar_label     = r"Cosmic Web column density $\sigma_\mathrm{CW}\ (\mathrm{g\ m^{-2}})$",
+            central_az_deg = 180,
+            contours       = [1.5e20, 2.0e20, 2.5e20, 3.0e20],
+            figsize        = (6, 2.5))
+        plt.subplots_adjust(left=0.015, right=0.985, top=0.99, bottom=0.2)
+        plt.savefig(DIR_SAVE / f"column_densities_hemisphere/column_densities_hemisphere_{indexJetSystem}.pdf", dpi = 1000)
+        plt.close()
