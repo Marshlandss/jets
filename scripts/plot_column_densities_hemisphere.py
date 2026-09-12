@@ -150,7 +150,6 @@ def plot_half_mollweide_compact(
     alt_deg,
     values,
     *,
-    title="Half-Mollweide",
     cmap="viridis",
     cbar_label="Value",
     rightAscension = None,
@@ -178,9 +177,9 @@ def plot_half_mollweide_compact(
     contours : sequence or None
         Optional contour levels in data units.
     """
-    az_deg = np.asarray(az_deg, dtype=float)
-    alt_deg = np.asarray(alt_deg, dtype=float)
-    values = np.asarray(values, dtype=float)
+    az_deg  = np.asarray(az_deg,  dtype = float)
+    alt_deg = np.asarray(alt_deg, dtype = float)
+    values  = np.asarray(values,  dtype = float)
 
     if values.shape != (len(alt_deg), len(az_deg)):
         raise ValueError(
@@ -194,7 +193,7 @@ def plot_half_mollweide_compact(
             az_deg = az_deg[:-1]
             values = values[:, :-1]
 
-    az_edges_deg = edges_from_centers(az_deg, periodic=True, period=360.0)
+    az_edges_deg  = edges_from_centers(az_deg, periodic=True, period=360.0)
     alt_edges_deg = np.clip(edges_from_centers(alt_deg), 0.0, 90.0)
 
     # Shift azimuth so chosen center sits at x = 0
@@ -229,43 +228,20 @@ def plot_half_mollweide_compact(
         rasterized=True
     )
 
-    # Clip to upper half-Mollweide boundary
-    boundary = make_upper_half_mollweide_boundary()
-    clip_patch = PathPatch(boundary, transform=ax.transData, facecolor="none")
+    # Clip to upper half-Mollweide boundary.
+    boundary   = make_upper_half_mollweide_boundary()
+    clip_patch = PathPatch(boundary, transform = ax.transData, facecolor = "none")
     mesh.set_clip_path(clip_patch)
 
-    # Draw outline
-    outline = PathPatch(
-        boundary,
-        transform=ax.transData,
-        facecolor=cm.lipari(norm(values[0,0])),
-        edgecolor="black",
-        lw=1.1,
-        zorder=0
-    )
-    ax.add_patch(outline)
-    outline = PathPatch(
-        boundary,
-        transform=ax.transData,
-        facecolor="none",
-        edgecolor="black",
-        lw=1.1,
-        zorder=5
-    )
-    ax.add_patch(outline)
+    # Fill the ellipse behind the map, so that any sliver the quadrilaterals leave uncovered blends in.
+    ax.add_patch(PathPatch(boundary, transform = ax.transData, facecolor = mesh.cmap(mesh.norm(values[0, 0])), edgecolor = "none", zorder = 0))
+    # Draw the ellipse outline on top of the map.
+    ax.add_patch(PathPatch(boundary, transform = ax.transData, facecolor = "none", edgecolor = "black", lw = 1.1, zorder = 5))
 
-    cs = ax.contour(
-        X_c, Y_c, values,
-        levels=contours,
-        colors="white",
-        linewidths=0.8,
-    )
-
-    cs.set_clip_path(clip_patch)
-
-    # Equator line
-    x_eq = np.linspace(-2 * np.sqrt(2), 2 * np.sqrt(2), 600)
-    ax.plot(x_eq, np.zeros_like(x_eq), color="black", lw=1.0, zorder=6)
+    # Add contours.
+    if contours is not None:
+        cs = ax.contour(X_c, Y_c, values, levels = contours, colors = "white", linewidths = 0.8)
+        cs.set_clip_path(clip_patch)
 
     # Latitude guide curves (altitudes)
     guide_lats = [15, 30, 45, 60, 75]
@@ -274,7 +250,7 @@ def plot_half_mollweide_compact(
     for latd, offsetX in zip(guide_lats, offsetXs):
         lat_line = np.deg2rad(np.full_like(lon_line, latd))
         xg, yg = mollweide_forward(lon_line, lat_line)
-        ax.plot(xg, yg, color="0.75", lw=0.7, zorder=1, alpha = .05)
+        ax.plot(xg, yg, color="0.75", lw=0.7, zorder=1, alpha = .06)
 
         # label near left edge
         xlab, ylab = mollweide_forward(np.array([-np.pi + 0.06]), np.array([np.deg2rad(latd)]))
@@ -286,7 +262,7 @@ def plot_half_mollweide_compact(
     for md in meridians:
         lon_line = np.deg2rad(np.full_like(lat_line, md))
         xg, yg   = mollweide_forward(lon_line, lat_line)
-        ax.plot(xg, yg, color="0.85", lw=0.6, zorder=1, alpha = .05)
+        ax.plot(xg, yg, color="0.85", lw=0.6, zorder=1, alpha = .06)
 
     # Azimuth labels along equator
     label_meridians = np.arange(-180, 180 + 30, 30)
@@ -300,51 +276,31 @@ def plot_half_mollweide_compact(
     ax.set_ylim(-0.12, np.sqrt(2) * 1.02)
     ax.axis("off")
 
-    add_curved_label_chunks(
-        ax,
-        chunks=[
-            "altitude",
-            r"$\theta\ (^\circ)$"
-        ],
-        t_values = [0.75 * np.pi, 0.69 * np.pi],
-        offset = 0.10,
-        color="white",
-        fontsize=11,
-        path_effects=[pe.withStroke(linewidth=1.5, foreground=".3")],
-    )
+    # Draw 'altitude' and 'azimuth' labels.
+    add_curved_label_chunks(ax, chunks = ["altitude", r"$\theta\ (^\circ)$"],
+        t_values     = [0.75 * np.pi, 0.69 * np.pi],
+        offset       = 0.10,
+        color        = "white",
+        fontsize     = 10,
+        path_effects = [pe.withStroke(linewidth = 1.5, foreground = ".3")])
+    ax.text(0.5, +0.18,r"azimuth $\varphi\ (^\circ)$",
+        transform    = ax.transAxes,
+        ha           = "center",
+        va           = "top",
+        color        = "white",
+        fontsize     = 10,
+        path_effects = [pe.withStroke(linewidth = 1.5, foreground = ".3")])
 
-    imax = np.unravel_index(np.argmax(values), values.shape)
-    alt_peak = alt_deg[imax[0]]
-    az_peak = az_deg[imax[1]]
+    # Draw star where the Cosmic Web column density peaks.
+    imax     = np.unravel_index(np.argmax(values), values.shape)
+    alt_peak = alt_deg[imax[0]] # in deg
+    az_peak  = az_deg [imax[1]] # in deg
+    x_peak, y_peak = mollweide_forward(np.deg2rad(az_peak - central_az_deg), np.deg2rad(alt_peak))
+    ax.scatter(x_peak, y_peak, marker = "*", s = 50, color = "white", edgecolors = ".3", linewidths = 1., zorder = 20)
 
-    x_peak, y_peak = mollweide_forward(
-        np.deg2rad(az_peak - central_az_deg),
-        np.deg2rad(alt_peak)
-    )
-
-    ax.scatter(
-        x_peak, y_peak,
-        marker="*",
-        s=50,
-        color="cornflowerblue",
-        edgecolors=".3",
-        linewidths=1.,
-        zorder=20
-    )
-
-    cbar = fig.colorbar(mesh,ax=ax,orientation="horizontal",pad=0.12,fraction=0.04,aspect=72)
+    # Draw colour bar.
+    cbar = fig.colorbar(mesh, ax = ax, orientation = "horizontal", pad = 0.12, fraction = 0.04, aspect = 72)
     cbar.set_label(cbar_label)
-
-    ax.text(
-        0.5, +0.18,
-        r"azimuth $\varphi\ (^\circ)$",
-        transform=ax.transAxes,
-        ha="center",
-        va="top",
-        fontsize=10,
-        color="white",
-        path_effects=[pe.withStroke(linewidth=1.5, foreground=".3")]
-    )
 
     # Draw host galaxy coordinates in the top-right corner of the Axes.
     ax.text(1.01,1.02,r"\textbf{host galaxy:}",
@@ -363,13 +319,16 @@ altitudes = np.linspace(0, 90, 91)                     # in deg
 dataGeneral        = pd.read_excel(DIR_LOAD / "Mpc_filament_pa_exact_1.xlsx") # Shape: (242, 20)
 numberOfJetSystems = dataGeneral.shape[0] # in 1
 
+# Create figure directory if she doesn't exist yet.
 directoryFigures = DIR_SAVE / "column_densities_hemisphere"
 directoryFigures.mkdir(parents = True, exist_ok = True)
 
-for method in ("d", "a"): # Loop over the 'direct' and 'adjusted' host galaxy localisation methods.
+# Loop over the 'direct' and 'adjusted' host galaxy localisation methods.
+for method in ("d", "a"):
     # Load column density data.
     dataCDs = np.load(DIR_LOAD / f"Mpc_column_densities_all_{method}.npy") # Shape: (242, 91, 360)
 
+    # Loop over jet systems.
     for indexJetSystem in range(numberOfJetSystems):
         rightAscension = float(dataGeneral.loc[indexJetSystem, "right_ascension (deg)"])
         declination    = float(dataGeneral.loc[indexJetSystem, "declination (deg)"])
