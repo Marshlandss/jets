@@ -278,12 +278,12 @@ def plot_half_mollweide_compact(
 
     # Draw 'altitude' and 'azimuth' labels.
     add_curved_label_chunks(ax, chunks = ["altitude", r"$\theta\ (^\circ)$"],
-        t_values     = [0.75 * np.pi, 0.69 * np.pi],
+        t_values     = [0.75 * np.pi, 0.695 * np.pi],
         offset       = 0.10,
         color        = "white",
         fontsize     = 10,
         path_effects = [pe.withStroke(linewidth = 1.5, foreground = ".3")])
-    ax.text(0.5, +0.18,r"azimuth $\varphi\ (^\circ)$",
+    ax.text(0.5, 0.18, r"azimuth $\varphi\ (^\circ)$",
         transform    = ax.transAxes,
         ha           = "center",
         va           = "top",
@@ -313,7 +313,7 @@ def plot_half_mollweide_compact(
 
 # Initialise Northern Hemisphere coordinate grids.
 azimuths  = np.linspace(0, 360, 360, endpoint = False) # in deg
-altitudes = np.linspace(0, 90, 91)                     # in deg
+altitudes = np.linspace(0,  90,  91)                   # in deg
 
 # Load pandas DataFrame with general data.
 dataGeneral        = pd.read_excel(DIR_LOAD / "Mpc_filament_pa_exact_1.xlsx") # Shape: (242, 20)
@@ -343,8 +343,8 @@ for method in ("d", "a"):
             rightAscension = rightAscension,
             declination    = declination,
             central_az_deg = 180,
-            contours       = None, #(1., 2., 3., 4., 5., 6., 7., 8., 9., 10.), # in g/cm^2
+            contours       = None, #(1., 2., 3., 4., 5., 6., 7., 8., 9., 10.), # in g/m^2
             figsize        = (6, 2.5))
-        plt.subplots_adjust(left = 0.015, right=0.985, top=0.99, bottom=0.2)
+        plt.subplots_adjust(left = 0.015, right = 0.985, top = 0.99, bottom = 0.2)
         plt.savefig(pathFigure, dpi = 1000)
         plt.close()
