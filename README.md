@@ -45,8 +45,12 @@ Surround paths that contain spaces with quotes: e.g. `"G:/My Drive/..."`.
 If you run code from an IDE, check that its run configuration sees these variables.
 
 # Usage
-Run `python scripts/get_jet_orientations.py`.
-You might obtain plots like these:
+Run `python scripts/get_jet_orientations.py` to obtain radio–optical images with jet–filament overlays:
 <div align="center">
   <img src="figures/158.51625_18.680278_notsub.png" alt="A Mpc-scale jet system: radio view, optical host galaxy view, and jet and filament orientation in 2D" width="80%">
+</div>
+
+Run `python scripts/plot_column_densities_hemisphere.py` to visualise the galactocentric cosmic web column density as a function of line segment orientation:
+<div align="center">
+  <img src="figures/column_densities_hemisphere_083_d.png" alt="Cosmic Web column densities obtained by integrating along a line segment spanning 5 BORG SDSS voxel side lengths, and oriented along each possible direction in a hemisphere" width="80%">
 </div>
