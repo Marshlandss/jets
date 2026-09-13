@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name            = "jets"
 version         = "0.1.0"
-description     = "Measure black hole jet and cosmic web filament orientations, and gauge their alignment."
+description     = "Measure supermassive black hole jet and cosmic web filament orientations, and gauge their alignment."
 readme          = "README.md"
 authors         = [{name = "Ruby Yao", email = "ryao@caltech.edu"}, {name = "Martijn S.S.L. Oei", email = "oei@caltech.edu"}]
 requires-python = ">=3.11"
@@ -14,6 +14,7 @@ license-files   = ["LICENSE"]
 dependencies    = [
     "astropy",
     "cmcrameri",
+    "h5py",
     "matplotlib",
     "numpy",
     "openpyxl",
