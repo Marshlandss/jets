@@ -1,15 +1,11 @@
-
-# === imports ===
-
-import math
-import os
-import pandas as pd
-import numpy as np
-
+# Imports: Python
+import math, os
+# Imports: third-party
 from astropy.io import fits
 from astropy.convolution import Gaussian1DKernel, convolve
-
 from scipy.signal import find_peaks
+import pandas as pd
+import numpy as np
 
 # === JetSystem class ===
 
@@ -22,14 +18,14 @@ class JetSystem:
 
         # === Attributes ===
         # --- External ---
-        self.right_ascensions               = right_ascensions
-        self.declinations                   = declinations
-        self.length_angular_means           = length_angular_means
-        self.redshifts                      = redshifts
-        self.angles                         = angles
-        self.are_Spectroscopic_bool_list    = are_Spectroscopic_bool_list
-        self.sa_list                        = sa_list
-        self.m_list                         = m_list
+        self.right_ascensions            = right_ascensions
+        self.declinations                = declinations
+        self.length_angular_means        = length_angular_means
+        self.redshifts                   = redshifts
+        self.angles                      = angles
+        self.are_Spectroscopic_bool_list = are_Spectroscopic_bool_list
+        self.sa_list                     = sa_list
+        self.m_list                      = m_list
 
         # --- Initializing ---
         self.path                       = path
@@ -120,6 +116,7 @@ class JetSystem:
 
         return np.pi * FWHMMajor * FWHMMinor / (4 * np.log(2)) # in sq deg
 
+
     def _find_brightest(self):
         """
         Finds the angle with the brightest light value sum.
@@ -148,11 +145,10 @@ class JetSystem:
 
         self.threshold_list.append(self.max_light_sum * self.percentage)
 
+
     def _find_best_radius(self):
         """
-
         """
-
         # Distance from self.best_angle to the furthest peak above self.threshold
         self.uncertainty = self._find_uncertainty(self.threshold_list[-1])
 
@@ -169,18 +165,20 @@ class JetSystem:
         # Applies changes based on manually inputted lists
         self._make_adjustments()
 
-    def get_subtraction_used(self):
 
+    def get_subtraction_used(self):
+        """
+        """
         if self.path.endswith("_sub.fits"):
             return True
         else:
             return False
 
+
     def _record_jet_data(self, redshift, are_Spectroscopic_bool):
         """
         Records/updates an entry to the Excel sheet.
         """
-
         # Existing Dataframe
         df_existing     = pd.read_excel(self.excel_file)
 
@@ -213,18 +211,18 @@ class JetSystem:
         df_updated = pd.concat([df_existing, df_new], ignore_index=True)
         df_updated.to_excel(self.excel_file, index=False)
 
-    # --- Helper ---
 
+    # --- Helper ---
     def _find_catalogue_match_index(self, ra, dec):
         """
         """
-
         number_of_jet_systems = self.right_ascensions.shape[0]
 
         for i in range(number_of_jet_systems):
             if (float('{:.6f}'.format(self.right_ascensions[i])) == float(ra)
                     and float('{:.6f}'.format(self.declinations[i])) == float(dec)):
                 return i
+
 
     def find_peaks(self, light_values_convolved):
         """
@@ -242,7 +240,6 @@ class JetSystem:
         """
         Creates and returns a list of x values and y values for a line based on the angle given.
         """
-
         x_values = list()
         y_values = list()
 
@@ -256,12 +253,12 @@ class JetSystem:
 
         return [x_values, y_values]
 
+
     def _find_uncertainty(self, threshold):
         """
         Finds the distance from self.best_angle to the furthest peak above the threshold provided. Note: this graph's
         behavior is cyclic, where 0 degrees and 180 degrees are the same.
         """
-
         # Index of each peak
         maxima_indices      = self.find_peaks(self.light_values_convolved_2d[-1])
         # Coordinates for each peak
@@ -305,19 +302,19 @@ class JetSystem:
 
         return int(uncertainty)
 
+
     def _adjust_radius(self, radius):
         """
         Adjusts radius to the provided radius value and regenerates the brightest angle.
         """
-
         self.radius_list.append(radius)
         self._find_brightest()
+
 
     def _calculate_noise(self):
         """
         Calculates the distance from each point in self.light_values to each point in self.light_values_convolved.
         """
-
         actual_points       = np.array(self.light_values_2d[-1])
         smoothed_points     = np.array(self.light_values_convolved_2d[-1])
 
@@ -330,12 +327,11 @@ class JetSystem:
 
         return noise_percentage
 
+
     def _make_adjustments(self):
         """
         Uses self.adjustment status to determine what adjustments to make and what folder to save the files to.
         """
-
-
         if self.adjustment_status == "m":
             entry = [item for item in self.m_list if
                      (f"{self.right_ascension:.6f}_{self.declination:.6f}") in item]
@@ -364,8 +360,3 @@ class JetSystem:
             else:
                 self._adjust_radius(adjusted_radius)
             self.uncertainty    = self._find_uncertainty(self.threshold_list[-1])
-
-
-    
-
-    
