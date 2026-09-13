@@ -1,5 +1,5 @@
-# Black hole jets
-This is a Python package that enables measurements of black hole jet orientations from radio astronomical images, and cosmic web filament orientations from 3D large-scale structure maps. It also enables analyses of the relationship between these orientations. Finally, the package produces publication-ready plots.
+# Supermassive black hole jet orientations
+This is a Python package that enables measurements of supermassive black hole jet orientations from radio astronomical images, and cosmic web filament orientations from 3D large-scale structure maps. It also enables analyses of the relationship between these orientations. Finally, the package produces publication-ready plots.
 
 # Installation
 ```bash

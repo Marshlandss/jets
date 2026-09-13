@@ -44,6 +44,9 @@ def distanceOnSphere(longitudes1, latitudes1, longitudes2, latitudes2, unitsDegr
 
 
 def convertSphericalToCartesian(azimuths, altitudes):
+    """
+    Convert 'azimuths' and 'altitudes' in degrees to Cartesian unit vectors, given by 'xs', 'ys', and 'zs'.
+    """
     xs = np.cos(np.radians(altitudes)) * np.cos(np.radians(azimuths))
     ys = np.cos(np.radians(altitudes)) * np.sin(np.radians(azimuths))
     zs = np.sin(np.radians(altitudes))
@@ -51,4 +54,19 @@ def convertSphericalToCartesian(azimuths, altitudes):
 
 
 def convertCartesianToSpherical(xs, ys, zs):
-    # Waiting for input from Claudia
+    """
+    Convert Cartesian unit vectors, given by 'xs', 'ys', and 'zs', to 'azimuths' and 'altitudes' in degrees.
+    """
+    azimuths  = np.degrees(np.arctan2(ys, xs)) % 360.
+    altitudes = np.degrees(np.arcsin(zs))
+    return azimuths, altitudes
+
+
+def axialSeparation(azimuths1, altitudes1, azimuths2, altitudes2):
+    """
+    Compute angle between two axes (undirected lines), in degrees:
+    the smaller of the separations between direction 1 and direction 2, or direction 1 and direction 2's antipode.
+    """
+    distances1 = distanceOnSphere(azimuths1, altitudes1, azimuths2,         altitudes2)
+    distances2 = distanceOnSphere(azimuths1, altitudes1, azimuths2 + 180., -altitudes2)
+    return np.minimum(distances1, distances2)
