@@ -1,4 +1,5 @@
 # Imports: third-party
+from astropy import units as u
 import numpy as np
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC
@@ -6,27 +7,27 @@ from jets.config import BORG_VOXEL_SIZE_MPC
 def make_beta_cylinder_density_cube(
     N,
     rng,
-    radius_mpc = 1.2,     # in Mpc
-    beta       = 2.0,     # in 1
-    rho0       = 1.6e-23, # in g/m^3; central density
-):
+    radius_core = 1.2,     # in Mpc
+    beta        = 2.0,     # in 1
+    rho0        = 1.6e-23, # in g/m^3; central density
+    axis        = None):
     """
-    Generate a fine-grained mass density cube containing a single straight filament with a beta-profile cross section,
-    rho(d) = rho0 (1 + (d / radius_mpc)^2)^(-3 beta / 2), where d is the perpendicular distance to the filament axis.
+    Generate a fine-grained mass density cube containing a single straight filament with a beta-profile cross-section,
+    rho(d) = rho0 (1 + (d / radius_core)^2)^(-3 beta / 2), where d is the perpendicular distance to the filament axis.
 
-    The cube spans 5 BORG voxels per side (≈ 20.9 Mpc comoving) at N fine cells per side. The filament axis has a random
-    (isotropic) orientation and passes through a random point within half a BORG voxel of the cube centre, so that
-    'average_down_to_5' samples the voxelisation error at a random phase.
+    The cube spans 'numberOfVoxels' BORG voxels per side (≈ 20.9 Mpc comoving) at N fine cells per side.
+    The filament axis has a random (isotropic) orientation and passes through a random point within half a BORG voxel of the cube centre,
+    so that 'average_down' samples the voxelisation error at a random phase.
 
     Parameters
     ----------
-    N          : int; fine cells per side, must be divisible by 5
-    rng        : numpy.random.Generator
-    radius_mpc : float; core radius of the beta profile (in Mpc, comoving)
-    beta       : float; beta-profile exponent (in 1)
-    rho0       : float; central mass density (in g m^-3)
+    N           : int; fine cells per side, must be divisible by 5
+    rng         : numpy.random.Generator
+    radius_core : float; core radius of the beta profile (in Mpc, comoving)
+    beta        : float; beta-profile exponent (in 1)
+    rho0        : float; central mass density (in g m^-3)
 
-    Returns
+    Returns (indexed [ix, iy, iz])
     -------
     cube   : array of shape (N, N, N); mass density (in g m^-3)
     axis   : array of shape (3,); unit vector along the filament
@@ -38,9 +39,10 @@ def make_beta_cylinder_density_cube(
     coords        = (np.arange(N) - (N - 1) / 2) * dx_mpc
     x, y, z       = np.meshgrid(coords, coords, coords, indexing="ij")
 
-    # Random cylinder axis
-    axis  = rng.normal(size = 3)
-    axis /= np.linalg.norm(axis)
+    if axis is None:
+        # Random cylinder axis
+        axis  = rng.normal(size = 3)
+        axis /= np.linalg.norm(axis)
 
     # Offset within half a low-res voxel
     half_voxel = 0.5 * BORG_VOXEL_SIZE_MPC
@@ -53,12 +55,12 @@ def make_beta_cylinder_density_cube(
 
     # Perpendicular distance
     r_dot_a = axis[0] * xs + axis[1] * ys + axis[2] * zs
-    r2      = xs**2 + ys**2 + zs**2
+    r2      = xs ** 2 + ys ** 2 + zs ** 2
     d_perp2 = np.maximum(r2 - r_dot_a**2, 0.0)
     d_perp  = np.sqrt(d_perp2)
 
     # Beta-profile density
-    cube = rho0 * (1 + (d_perp / radius_mpc)**2)**(-1.5 * beta)
+    cube = rho0 * (1 + (d_perp / radius_core)**2)**(-1.5 * beta)
 
     return cube, axis, offset
 
@@ -76,7 +78,7 @@ def average_down(cube, numberOfVoxels):
 
 def column_density_along_axis(cube, cube_size_mpc, axis_index):
     """
-    Integrate a mass density cube (in g m^-3) along its first axis, giving the column density (in g m^-2) as a 2D map.
+    Integrate a mass density cube (in g m^-3) along the axis with index 'axis_index', giving the column density (in g m^-2) as a 2D map.
     The cell size follows from 'cube_size_mpc' (comoving) and the cube's shape.
     """
     mpc_to_m = u.Mpc.to(u.m) # in m; 3.0857e22
