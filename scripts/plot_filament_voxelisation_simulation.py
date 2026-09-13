@@ -27,7 +27,7 @@ vmin           = 0.0
 vmax           = 1.0
 
 rng                = np.random.default_rng(SEED)
-cube, axis, offset = make_beta_cylinder_density_cube(N = N, rng = rng, radius_mpc = 1.2, beta = 2.0, rho0 = 1.6e-23) # Parameters from Tuominen et al. (2021).
+cube, axis, offset = make_beta_cylinder_density_cube(N = N, rng = rng, radius_core = 1.2, beta = 2.0, rho0 = 1.6e-23) # Parameters from Tuominen et al. (2021).
 cube_coarse        = average_down(cube, numberOfVoxels)
 cube_size_mpc      = BORG_VOXEL_SIZE_MPC * numberOfVoxels
 col_fine           = column_density_along_axis(cube,        cube_size_mpc, axis_index = 0)
