@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt
 
 def set_plot_styles ():
