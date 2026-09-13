@@ -1,8 +1,6 @@
 """
 Martijn Simon Soen Liong Oei, September 12026 H.E.
 """
-# Imports: Python
-import ast
 # Imports: third-party
 import numpy as np
 import pandas as pd
@@ -82,10 +80,10 @@ class FilamentOrientationFinder:
 
             # Excise a smaller cube from the big cube.
             #densitiesSmall     = densities[voxelIndices[2] - self.voxelRadius : voxelIndices[2] + self.voxelRadius + 1, voxelIndices[1] - self.voxelRadius : voxelIndices[1] + self.voxelRadius + 1, voxelIndices[0] - self.voxelRadius : voxelIndices[0] + self.voxelRadius + 1]
-            cube, axis, offset = make_beta_cylinder_density_cube(N=205,radius_mpc=1.2,beta=2.0,rho0=1.6e-23)
+            cube, axis, offset = make_beta_cylinder_density_cube(N=205,radius_core=1.2,beta=2.0,rho0=1.6e-23)
             axes.append(axis)
             offsets.append(offset)
-            densitiesSmall = average_down_to_5(cube)
+            densitiesSmall = average_down(cube, 5)
 
             # Initialise the loop over filament orientations.
             indexAltitudeBest  = None
@@ -183,18 +181,3 @@ class FilamentOrientationFinder:
         """
         """
         np.save(pathNumPy, self.columnDensities)
-
-
-# Initialise FOF.
-lambdaMax              = 2.5 # in 2.93 Mpc / h
-stepAngle              = 1.  # in deg
-FOF                    = FilamentOrientationFinder(lambdaMax = lambdaMax, stepAngle = stepAngle)
-
-# Initialise directory paths.
-directoryExcel         = "/Users/martijnoei/Library/CloudStorage/Dropbox-Personal/Martijn/Caltech/Caltech Connection/ten_excels_1.26.26_Mpc/"
-
-# Load host galaxy voxel indices.
-pathExcel              = directoryExcel + "Mpc_filament_pa_exact_1.xlsx"#"kpc_filament_pa_exact_1.xlsx"
-df                     = pd.read_excel(pathExcel)
-voxelIndicesListDirect = [np.array(ast.literal_eval(s)) for s in df["voxel_index_r (x,y,z)"]] # list of NumPy arrays, each containing 3 integers (voxel indices)
-voxelIndicesListAdjust = [np.array(ast.literal_eval(s)) for s in df["voxel_index_j (x,y,z)"]] # list of NumPy arrays, each containing 3 integers (voxel indices)
