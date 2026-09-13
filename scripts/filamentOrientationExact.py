@@ -186,7 +186,7 @@ class FilamentOrientationFinder:
                     if (columnDensityBest == None or columnDensityBest < columnDensity):
                         columnDensityBest = columnDensity
                         indexAltitudeBest = indexAltitude
-                        indexAzimuthBest = indexAzimuth
+                        indexAzimuthBest  = indexAzimuth
 
                     self.columnDensities[indexJetSystem, indexAltitude, indexAzimuth] = columnDensity
                     #print(columnDensityBest, columnDensity)

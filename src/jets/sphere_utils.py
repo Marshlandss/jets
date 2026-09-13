@@ -1,0 +1,54 @@
+import numpy as np
+
+def distanceOnSphere(longitudes1, latitudes1, longitudes2, latitudes2, unitsDegree = True):
+    """
+    Calculate the great-circle distance between every point of '(longitudes1, latitudes1)' and every point of '(longitudes2, latitudes2)'.
+    The spherical law of cosines formula leads to numerical errors when points are very near (e.g. close to eachother).
+    The haversine                formula leads to numerical errors when points are very far  (e.g. close to antipodal).
+    The Vincenty formula is accurate in all cases, but is computationally more demanding.
+    """
+
+    # Convert to NumPy arrays.
+    longitudes1        = np.atleast_1d(longitudes1) # in degrees or radians
+    latitudes1         = np.atleast_1d(latitudes1)  # in degrees or radians
+    longitudes2        = np.atleast_1d(longitudes2) # in degrees or radians
+    latitudes2         = np.atleast_1d(latitudes2)  # in degrees or radians
+
+    # Convert to radians.
+    if (unitsDegree):
+        longitudes1 = np.radians(longitudes1) # in radians
+        latitudes1  = np.radians(latitudes1)  # in radians
+        longitudes2 = np.radians(longitudes2) # in radians
+        latitudes2  = np.radians(latitudes2)  # in radians
+
+    # To avoid duplicating calculations, we pre-calculate all factors of the Vincenty formula.
+    deltaLongitudes    = longitudes1[ : , None] - longitudes2[None, : ] # in radians
+    cosDeltaLongitudes = np.cos(deltaLongitudes)                     # in 1
+    sinDeltaLongitudes = np.sin(deltaLongitudes)                     # in 1
+    cosLatitudes1      = np.cos(latitudes1)                          # in 1
+    cosLatitudes2      = np.cos(latitudes2)                          # in 1
+    sinLatitudes1      = np.sin(latitudes1)                          # in 1
+    sinLatitudes2      = np.sin(latitudes2)                          # in 1
+
+    # Apply the Vincenty formula.
+    # This is more optimal than using the Haversine formula (https://en.wikipedia.org/wiki/Haversine_formula),
+    # which is ill-conditioned when solving for c when c is small.
+    # The angular distances resulting from the Vincenty formula fall between 0 and pi rad.
+    # This appears in tension with https://numpy.org/doc/stable/reference/generated/numpy.arctan2.html, which claims a range of -pi to pi rad.
+    distances          = np.arctan2(np.sqrt(np.square(cosLatitudes2[None, : ] * sinDeltaLongitudes) + np.square(cosLatitudes1[ : , None] * sinLatitudes2[None, : ] - sinLatitudes1[ : , None] * cosLatitudes2[None, : ] * cosDeltaLongitudes)), sinLatitudes1[ : , None] * sinLatitudes2[None, : ] + cosLatitudes1[ : , None] * cosLatitudes2[None, : ] * cosDeltaLongitudes) # in radians
+
+    if (unitsDegree):
+        distances = np.degrees(distances) # in degrees
+
+    return distances
+
+
+def convertSphericalToCartesian(azimuths, altitudes):
+    xs = np.cos(np.radians(altitudes)) * np.cos(np.radians(azimuths))
+    ys = np.cos(np.radians(altitudes)) * np.sin(np.radians(azimuths))
+    zs = np.sin(np.radians(altitudes))
+    return xs, ys, zs
+
+
+def convertCartesianToSpherical(xs, ys, zs):
+    # Waiting for input from Claudia
