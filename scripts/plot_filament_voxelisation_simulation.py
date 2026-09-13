@@ -1,7 +1,6 @@
 # Imports: third-party
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy import units as u
 from cmcrameri import cm
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import StrMethodFormatter
@@ -9,6 +8,7 @@ from matplotlib.ticker import StrMethodFormatter
 from jets.config import BORG_VOXEL_SIZE_MPC, SEED
 from jets.paths import DIR_SAVE
 from jets.plot_utils import plotGalaxySpiral
+from jets.filament_simulation import make_beta_cylinder_density_cube, average_down, column_density_along_axis
 
 plt.rcParams.update({
     "text.usetex":     True,
@@ -21,17 +21,18 @@ plt.rcParams.update({
 # ============================================================
 # Main
 # ============================================================
-N    = 205
-vmin = 0.0
-vmax = 1.0
+N              = 205
+numberOfVoxels = 5
+vmin           = 0.0
+vmax           = 1.0
 
 rng                = np.random.default_rng(SEED)
 cube, axis, offset = make_beta_cylinder_density_cube(N = N, rng = rng, radius_mpc = 1.2, beta = 2.0, rho0 = 1.6e-23) # Parameters from Tuominen et al. (2021).
-cube5              = average_down_to_5(cube)
+cube_coarse        = average_down(cube, numberOfVoxels)
+cube_size_mpc      = BORG_VOXEL_SIZE_MPC * numberOfVoxels
+col_fine           = column_density_along_axis(cube,        cube_size_mpc, axis_index = 0)
+col_coarse         = column_density_along_axis(cube_coarse, cube_size_mpc, axis_index = 0)
 
-cube_size_mpc = BORG_VOXEL_SIZE_MPC * 5
-col_fine      = column_density_along_x(cube,  cube_size_mpc)
-col_coarse    = column_density_along_x(cube5, cube_size_mpc)
 
 half        = cube_size_mpc / 2.
 extent      = [-half, half, -half, half]
@@ -66,6 +67,7 @@ ax1.set_xlim(extent[0], extent[1])
 ax1.set_ylim(extent[2], extent[3])
 ax1.tick_params(labelleft = False)
 
+# Draw galaxy symbol.
 plotGalaxySpiral(.25, centreX = 0., centreY = 0., radiusBulgeRelative=.15, ax=ax1)
 
 # Draw grid.
