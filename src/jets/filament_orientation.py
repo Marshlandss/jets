@@ -1,76 +1,20 @@
 """
-Martijn Simon Soen Liong Oei, February 12026 H.E.
+Martijn Simon Soen Liong Oei, September 12026 H.E.
 """
 # Imports: Python
-import ast, copy, os
+import ast
 # Imports: third-party
 import numpy as np
 import pandas as pd
-import h5py, sys, time
+import h5py, time
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY
-
-def make_beta_cylinder_density_cube(
-    N,
-    numberOfVoxels=5,
-    radius_mpc=1.2,
-    beta=2.0,
-    rho0=1.6e-23,   # central density in g/m^3
-    rng=None,
-):
-    rng = np.random.default_rng() if rng is None else rng
-
-    # Low-res voxel size (BORG / SDSS scale)
-    h = 0.702
-    voxel_lowres_mpc = 750 / (256 * h)      # ≈ 4.17 Mpc
-
-    # Total cube size = 5 voxels → ≈ 20.87 Mpc
-    cube_size_mpc = voxel_lowres_mpc * numberOfVoxels
-
-    # Fine grid coordinates
-    dx_mpc = cube_size_mpc / N
-    coords = (np.arange(N) - (N - 1) / 2) * dx_mpc
-    x, y, z = np.meshgrid(coords, coords, coords, indexing="ij")
-
-    # Random cylinder axis
-    axis = rng.normal(size=3)
-    axis /= np.linalg.norm(axis)
-
-    # Offset within half a low-res voxel
-    half_voxel = 0.5 * voxel_lowres_mpc
-    offset = rng.uniform(-half_voxel, half_voxel, size=3)
-
-    # Shifted coordinates
-    xs = x - offset[0]
-    ys = y - offset[1]
-    zs = z - offset[2]
-
-    # Perpendicular distance
-    r_dot_a = axis[2]*xs + axis[1]*ys + axis[0]*zs
-    r2 = xs**2 + ys**2 + zs**2
-    d_perp2 = np.maximum(r2 - r_dot_a**2, 0.0)
-    d_perp = np.sqrt(d_perp2)
-
-    # Beta-profile density
-    cube = rho0 * (1. + (d_perp / radius_mpc)**2)**(-1.5 * beta)
-
-    return cube, axis, offset
-
-
-def average_down_to_5(cube):
-    N = cube.shape[0]
-    if N % 5 != 0:
-        raise ValueError("N must be divisible by 5.")
-    m = N // 5
-    return cube.reshape(5, m, 5, m, 5, m).mean(axis=(1, 3, 5))
-
 
 class FilamentOrientationFinder:
     """
     """
     def __init__(self, lambdaMax = 2.5, # in 1
                        stepAngle = 10., # in deg
-                       littleH   = .7   # in 1
                 ):
         self.lambdaMax           = lambdaMax
         self.stepAngle           = stepAngle
