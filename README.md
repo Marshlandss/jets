@@ -45,7 +45,7 @@ Surround paths that contain spaces with quotes: e.g. `"G:/My Drive/..."`.
 If you run code from an IDE, check that its run configuration sees these variables.
 
 # Usage
-Run `python scripts/get_jet_orientations.py` to obtain radio–optical images with jet–filament overlays:
+Run `python scripts/find_jet_orientations.py` to obtain radio–optical images with jet–filament overlays:
 <div align="center">
   <img src="figures/158.51625_18.680278_notsub.png" alt="A Mpc-scale jet system: radio view, optical host galaxy view, and jet and filament orientation in 2D" width="80%">
 </div>
