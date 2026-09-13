@@ -1,10 +1,14 @@
 """
 Martijn Simon Soen Liong Oei, February 12026 H.E.
 """
+# Imports: Python
 import ast, copy, os
+# Imports: third-party
 import numpy as np
 import pandas as pd
 import h5py, sys, time
+# Imports: first-party
+from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY
 
 def make_beta_cylinder_density_cube(
     N,
@@ -107,8 +111,8 @@ class FilamentOrientationFinder:
 
         # Initialise constants for column density calculation.
         self.metresPerMegaparsec = 3.0857e22              # in 1
-        self.densityMeanToday    = 2.6e-24                # in g/m^3
-        self.lengthVoxel         = (750. / littleH) / 256 # in Mpc
+        #self.densityMeanToday    = 2.6e-24                # in g/m^3
+        #self.lengthVoxel         = (750. / littleH) / 256 # in Mpc
 
 
     def findBest(self, voxelIndicesList, densities):
@@ -178,7 +182,7 @@ class FilamentOrientationFinder:
                         voxelIndicesDeviation[indexChange] += 1 * signChange
                         lambdaCrossingPrevious = lambdaCrossingNext
 
-                    columnDensity *= self.lengthVoxel * self.metresPerMegaparsec * self.densityMeanToday # in g/m^2
+                    columnDensity *= BORG_VOXEL_SIZE_MPC * self.metresPerMegaparsec * DENSITY_MEAN_TODAY # in g/m^2
                     if (columnDensityBest == None or columnDensityBest < columnDensity):
                         columnDensityBest = columnDensity
                         indexAltitudeBest = indexAltitude
@@ -194,8 +198,8 @@ class FilamentOrientationFinder:
             #print(azimuths[indexAzimuthBest], altitudes[indexAltitudeBest], columnDensityBest)
             #columnDensities = np.full((numberOfAltitudes, numberOfAzimuths, numberOfJetSystems))
 
-        #self.columnDensitiesBest *= self.lengthVoxel * self.metresPerMegaparsec * self.densityMeanToday # in g/m^2
-        #self.columnDensities     *= self.lengthVoxel * self.metresPerMegaparsec * self.densityMeanToday # in g/m^2
+        #self.columnDensitiesBest *= BORG_VOXEL_SIZE_MPC * self.metresPerMegaparsec * DENSITY_MEAN_TODAY # in g/m^2
+        #self.columnDensities     *= BORG_VOXEL_SIZE_MPC * self.metresPerMegaparsec * DENSITY_MEAN_TODAY # in g/m^2
         timeEnd = time.time()
         print(timeEnd - timeStart)
 
@@ -243,186 +247,10 @@ stepAngle              = 1.  # in deg
 FOF                    = FilamentOrientationFinder(lambdaMax = lambdaMax, stepAngle = stepAngle)
 
 # Initialise directory paths.
-directoryDataBORGSDSS  = "/Users/martijnoei/Library/CloudStorage/Dropbox-Personal/Martijn/PhD/Ardor Telae/data/BORG SDSS/"
 directoryExcel         = "/Users/martijnoei/Library/CloudStorage/Dropbox-Personal/Martijn/Caltech/Caltech Connection/ten_excels_1.26.26_Mpc/"
-
-#'''
-# Load BORG SDSS mean.
-dataBORGSDSSDensity    = np.load(directoryDataBORGSDSS + "borg_sdss_density.npz")
-densitiesMean          = dataBORGSDSSDensity["mean"] + 1 # in today's mean matter density
-print(densitiesMean.shape)
-print(np.amin(densitiesMean), np.amax(densitiesMean))
-print(np.mean(densitiesMean))
 
 # Load host galaxy voxel indices.
 pathExcel              = directoryExcel + "Mpc_filament_pa_exact_1.xlsx"#"kpc_filament_pa_exact_1.xlsx"
 df                     = pd.read_excel(pathExcel)
 voxelIndicesListDirect = [np.array(ast.literal_eval(s)) for s in df["voxel_index_r (x,y,z)"]] # list of NumPy arrays, each containing 3 integers (voxel indices)
 voxelIndicesListAdjust = [np.array(ast.literal_eval(s)) for s in df["voxel_index_j (x,y,z)"]] # list of NumPy arrays, each containing 3 integers (voxel indices)
-
-
-axes =[]
-offsets=[]
-FOF.findBest([np.array([128,128,128])] * 10000, densitiesMean)
-azimuths  = np.full(len(axes), np.nan)
-altitudes = np.full(len(axes), np.nan)
-distancesAng = np.full(len(axes), np.nan)
-from functionsArdorTelae import distanceOnSphere
-for axis,i in zip(axes,range(len(axes))):
-    x, y, z = axis
-    alt_rad = np.arcsin(z)
-    az_rad = np.arctan2(y, x)
-    alt_deg = np.degrees(alt_rad)
-    az_deg = np.degrees(az_rad) % 360.0
-    azimuths[i] = az_deg
-    altitudes[i] = alt_deg
-    distance1 = distanceOnSphere(az_deg, alt_deg, FOF.azimuthsBest[i], FOF.altitudesBest[i])[0,0]
-    distance2 = distanceOnSphere(az_deg, alt_deg, FOF.azimuthsBest[i] + 180, -1 * FOF.altitudesBest[i])[0,0]
-    distance  = min(distance1, distance2)
-    distancesAng[i] = distance
-    print(az_deg, alt_deg, FOF.azimuthsBest[i], FOF.altitudesBest[i], distance)
-np.save("/Users/martijnoei/Library/CloudStorage/Dropbox-Personal/Martijn/Caltech/Caltech Connection/comparisonFilamentResolution_errors.npy", distancesAng)
-from matplotlib import pyplot as plt
-plt.hist(distancesAng,bins=np.linspace(0,40,num=20+1))
-plt.show()
-#print(axes)
-import sys
-sys.exit()
-
-# Find and write to file the best filament orientations for Mpc-scale jet systems in the BORG SDSS mean (direct method).
-FOF.findBest(voxelIndicesListDirect, densitiesMean)
-from matplotlib import pyplot as plt
-for i in range(10):
-    plt.imshow(FOF.columnDensities[i+135], origin = "lower", aspect = "auto")
-    plt.title(i+135)
-    plt.show()
-FOF.writeNumPy(directoryExcel + "Mpc_column_densities_all_r.npy")
-#'''
-#FOF.write(pathExcel, methodDirect = True)
-# Find and write to file the best filament orientations for Mpc-scale jet systems in the BORG SDSS mean (adjusted method).
-FOF.findBest(voxelIndicesListAdjust, densitiesMean)
-from matplotlib import pyplot as plt
-for i in range(10):
-    plt.imshow(FOF.columnDensities[i+135], origin = "lower", aspect = "auto")
-    plt.title(i+135)
-    plt.show()
-FOF.writeNumPy(directoryExcel + "Mpc_column_densities_all_j.npy")
-#FOF.write(pathExcel, methodDirect = False)
-#'''
-import sys
-sys.exit()
-
-# Find and write to file the best filament orientations for Mpc-scale jet systems in BORG SDSS realisations (direct method).
-numberOfExcelSheets = 41 # in 1
-for i in range(0, numberOfExcelSheets):
-    realisationIndexString  = str(2000 + i * 250)
-    pathBORGSDSSRealisation = directoryDataBORGSDSS + "final_density/" + "final_density_" + realisationIndexString + ".h5"
-    pathExcelLoad           = directoryExcel + "fpa_" + realisationIndexString + ".xlsx"
-    pathExcelWrite          = directoryExcel + "fpa_" + realisationIndexString + "_exact_1.xlsx"
-
-    print("Working on realisation '" + realisationIndexString + "'...")
-    print(pathBORGSDSSRealisation)
-    print(pathExcelLoad)
-    print(pathExcelWrite)
-
-    # Load BORG SDSS realisation.
-    with h5py.File(pathBORGSDSSRealisation, "r") as hf:
-        densitiesSample = hf["scalars"]["field"][()] + 1 # in today's mean matter density
-    print(densitiesSample.shape)
-    print(np.amin(densitiesSample), np.amax(densitiesSample))
-    print(np.mean(densitiesSample))
-
-    # Load host galaxy voxel indices.
-    df                     = pd.read_excel(pathExcelLoad)
-    voxelIndicesListDirect = [np.array(ast.literal_eval(s)) for s in df["voxel_index_r (x,y,z)"]] # list of NumPy arrays, each containing 3 integers
-    voxelIndicesListAdjust = [np.array(ast.literal_eval(s)) for s in df["voxel_index_j (x,y,z)"]] # list of NumPy arrays, each containing 3 integers
-
-    # Create 'pathExcelWrite' if it doesn't exist yet.
-    if (not os.path.exists(pathExcelWrite)):
-        command = f"cp '{pathExcelLoad}' '{pathExcelWrite}'"
-        print(command)
-        os.system(command)
-
-    # Find and write to file the best filament orientations for Mpc-scale jet systems in the BORG SDSS realisation (direct method).
-    FOF.findBest(voxelIndicesListDirect, densitiesSample)
-    FOF.write(pathExcelWrite, methodDirect = True)
-    # Find and write to file the best filament orientations for Mpc-scale jet systems in the BORG SDSS realisation (adjusted method).
-    FOF.findBest(voxelIndicesListAdjust, densitiesSample)
-    FOF.write(pathExcelWrite, methodDirect = False)
-
-
-
-#voxelRadius         = int(np.ceil(lambdaMax - .5))
-#numberOfAzimuths  = int(360 / stepAngle)    # in 1
-#numberOfAltitudes = int(90 / stepAngle) + 1 # in 1
-#azimuths          = np.linspace(0., 360., num = numberOfAzimuths, endpoint = False)
-#altitudes         = np.linspace(0., 90., num = numberOfAltitudes, endpoint = True)
-# azimuthsRadians   = np.radians(azimuths)
-# altitudesRadians  = np.radians(altitudes)
-# azimuthsCos       = np.cos(azimuthsRadians)
-# azimuthsSin       = np.sin(azimuthsRadians)
-# altitudesCos      = np.cos(altitudesRadians)
-# altitudesSin      = np.sin(altitudesRadians)
-# xsFilament        = altitudesCos[ : , None] * azimuthsCos[None, : ]
-# ysFilament        = altitudesCos[ : , None] * azimuthsSin[None, : ]
-# zsFilament        = altitudesSin[ : , None] * np.ones_like(azimuths)[None, : ]
-# xsFilamentSign    = np.sign(xsFilament)
-# ysFilamentSign    = np.sign(ysFilament)
-# zsFilamentSign    = np.sign(zsFilament)
-
-#jMax             = int(np.floor(lambdaMax + .5))
-#js               = np.arange(1, jMax + 1)
-#print(js)
-# lambdasCrossingX = (2 * js[None, None, : ] - 1) / (2 * np.abs(xsFilament[ : , : , None]))
-# lambdasCrossingY = (2 * js[None, None, : ] - 1) / (2 * np.abs(ysFilament[ : , : , None]))
-# lambdasCrossingZ = (2 * js[None, None, : ] - 1) / (2 * np.abs(zsFilament[ : , : , None]))
-
-# voxelIndicesCentre  = np.array([voxelRadius, voxelRadius, voxelRadius])
-# metresPerMegaparsec = 3.0857e22         # in 1
-# densityMeanToday    = 2.6e-24           # in g/m^3
-# lengthVoxel         = (750. / .7) / 256 # in Mpc
-
-#voxelIndices        = np.array([194, 224, 119])#np.array([212, 187, 75])#np.array([195, 238, 112])#np.array([195, 239, 112])#
-
-# print(voxelIndicesS[0], type(voxelIndicesS[0]))
-# print(np.array(voxelIndicesS[0]), type(np.array(voxelIndicesS[0])))
-# print(np.array(voxelIndicesS[0])[0])
-# print(voxelIndicesS.shape)
-
-#densitiesMeanSmall = densitiesMean[voxelIndices[2] - voxelRadius : voxelIndices[2] + voxelRadius + 1, voxelIndices[1] - voxelRadius : voxelIndices[1] + voxelRadius + 1, voxelIndices[0] - voxelRadius : voxelIndices[0] + voxelRadius + 1]
-#xs = np.cos(np.radians(self.altitudesBest)) * np.cos(np.radians(self.azimuthsBest))
-#ys = np.cos(np.radians(self.altitudesBest)) * np.sin(np.radians(self.azimuthsBest))
-# print(type(df["voxel_index_r (x,y,z)"][0]))
-# print(voxelIndicesListDirect[:5])
-#final_density_2000.h5"
-#print(np.array_equal(voxelIndicesListDirect, voxelIndicesListDirectS)) # Should be True and is True.
-#print(np.array_equal(voxelIndicesListAdjust, voxelIndicesListAdjustS))
-
-# def random_unit_vector(rng=None):
-#     rng = np.random.default_rng() if rng is None else rng
-#     v = rng.normal(size=3)
-#     return v / np.linalg.norm(v)
-# def make_beta_cylinder_density_cube(
-#     N,
-#     cube_size_mpc=20.87,
-#     radius_mpc=1.2,
-#     beta=2.0,
-#     rho0=1.6e-23,   # central density in g/m^3
-#     rng=None,
-# ):
-#     rng = np.random.default_rng() if rng is None else rng
-#
-#     dx_mpc = cube_size_mpc / N
-#     coords = (np.arange(N) - (N - 1) / 2) * dx_mpc
-#     x, y, z = np.meshgrid(coords, coords, coords, indexing="ij")
-#
-#     axis = random_unit_vector(rng)
-#     #axis = [0.,0.,1.] # x,y,z
-#
-#     r_dot_a = axis[2] * x + axis[1] * y + axis[0] * z
-#     r2 = x**2 + y**2 + z**2
-#     d_perp2 = np.maximum(r2 - r_dot_a**2, 0.0)
-#     d_perp = np.sqrt(d_perp2)
-#
-#     cube = rho0 * (1.0 + (d_perp / radius_mpc) ** 2) ** (-1.5 * beta)
-#     return cube, axis
