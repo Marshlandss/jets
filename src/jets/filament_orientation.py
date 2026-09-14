@@ -2,9 +2,10 @@
 Martijn Simon Soen Liong Oei, September 12026 H.E.
 """
 # Imports: third-party
+from astropy import units as u
 import numpy as np
 import pandas as pd
-import h5py, time
+import time
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY
 
@@ -35,7 +36,6 @@ class FilamentOrientationFinder:
         ysFilament               = altitudesCos[:, None] * azimuthsSin[None, :]
         # Calculate, for each (altitude, azimuth) combination, the z-component of the corresponding unit vector.
         zsFilament               = altitudesSin[:, None] * np.ones_like(self.azimuths)[None, :]
-        print(xsFilament.shape, ysFilament.shape, zsFilament.shape)
 
         self.xsFilamentSign      = np.sign(xsFilament)
         self.ysFilamentSign      = np.sign(ysFilament)
@@ -46,15 +46,22 @@ class FilamentOrientationFinder:
         self.lambdasCrossingX    = ((2 * js[None, None, : ] - 1) / (2 * np.abs(xsFilament[ : , : , None]))).astype(np.float32)
         self.lambdasCrossingY    = ((2 * js[None, None, : ] - 1) / (2 * np.abs(ysFilament[ : , : , None]))).astype(np.float32)
         self.lambdasCrossingZ    = ((2 * js[None, None, : ] - 1) / (2 * np.abs(zsFilament[ : , : , None]))).astype(np.float32)
-        print(self.lambdasCrossingX.shape, self.lambdasCrossingY.shape, self.lambdasCrossingZ.shape)
 
         # Initialise indices of the central voxel in a smaller 'cutout cube'.
         self.voxelIndicesCentre  = np.array([self.voxelRadius, self.voxelRadius, self.voxelRadius])
 
         # Initialise constants for column density calculation.
-        self.metresPerMegaparsec = 3.0857e22              # in 1
-        #self.densityMeanToday    = 2.6e-24                # in g/m^3
-        #self.lengthVoxel         = (750. / littleH) / 256 # in Mpc
+        self.metresPerMegaparsec = u.Mpc.to(u.m) # in 1
+
+
+    def cutout(self, densities, voxelIndices):
+        """
+        Excise the (2 voxelRadius + 1)^3 cube centred on 'voxelIndices' from 'densities'.
+        'densities' is indexed [iz, iy, ix] (BORG SDSS layout); 'voxelIndices' is (x, y, z), as in the Excel catalogue.
+        """
+        ix, iy, iz = voxelIndices
+        r          = self.voxelRadius
+        return densities[iz - r : iz + r + 1, iy - r : iy + r + 1, ix - r : ix + r + 1]
 
 
     def findBest(self, voxelIndicesList, densities):
@@ -69,8 +76,6 @@ class FilamentOrientationFinder:
         self.columnDensitiesBest = np.full(numberOfJetSystems, np.nan)
         self.columnDensities     = np.full((numberOfJetSystems, self.numberOfAltitudes, self.numberOfAzimuths), np.nan)
         #print(self.columnDensities.shape)
-        #import sys
-        #sys.exit()
 
         timeStart = time.time()
         for indexJetSystem in range(numberOfJetSystems):
@@ -80,10 +85,6 @@ class FilamentOrientationFinder:
 
             # Excise a smaller cube from the big cube.
             #densitiesSmall     = densities[voxelIndices[2] - self.voxelRadius : voxelIndices[2] + self.voxelRadius + 1, voxelIndices[1] - self.voxelRadius : voxelIndices[1] + self.voxelRadius + 1, voxelIndices[0] - self.voxelRadius : voxelIndices[0] + self.voxelRadius + 1]
-            cube, axis, offset = make_beta_cylinder_density_cube(N=205,radius_core=1.2,beta=2.0,rho0=1.6e-23)
-            axes.append(axis)
-            offsets.append(offset)
-            densitiesSmall = average_down(cube, 5)
 
             # Initialise the loop over filament orientations.
             indexAltitudeBest  = None
