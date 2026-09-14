@@ -1,3 +1,8 @@
+# Large input cubes (BORG SDSS mean density and realisations).
+# These are never committed.
+*.npz
+*.h5
+
 # macOS junk
 .DS_Store
 
