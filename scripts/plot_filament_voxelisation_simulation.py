@@ -8,7 +8,7 @@ from matplotlib.ticker import StrMethodFormatter
 from jets.config import BORG_VOXEL_SIZE_MPC, SEED
 from jets.paths import DIR_SAVE
 from jets.plot_utils import plotGalaxySpiral
-from jets.filament_simulation import cubeGenerateFilamentProfileBeta, cubeAverageDown, column_density_along_axis
+from jets.filament_simulation import cubeGenerateFilamentProfileBeta, cubeAverageDown, cubeColumnDensityAlongAxis
 
 plt.rcParams.update({
     "text.usetex":     True,
@@ -30,8 +30,8 @@ RNG                = np.random.default_rng(SEED)
 cube, axis, offset = cubeGenerateFilamentProfileBeta(numberOfVoxelsFine = numberOfVoxelsFine, numberOfVoxelsCoarse = numberOfVoxelsCoarse, RNG = RNG, radiusCore = 1.2, beta = 2.0, rho0 = 1.6e-23) # Parameters from Tuominen et al. (2021).
 cube_coarse        = cubeAverageDown(cube, numberOfVoxelsCoarse)
 cube_size_mpc      = BORG_VOXEL_SIZE_MPC * numberOfVoxelsCoarse
-col_fine           = column_density_along_axis(cube,        cube_size_mpc, axis_index = 0)
-col_coarse         = column_density_along_axis(cube_coarse, cube_size_mpc, axis_index = 0)
+col_fine           = cubeColumnDensityAlongAxis(cube,        cube_size_mpc, axis_index = 0)
+col_coarse         = cubeColumnDensityAlongAxis(cube_coarse, cube_size_mpc, axis_index = 0)
 
 
 half        = cube_size_mpc / 2.
