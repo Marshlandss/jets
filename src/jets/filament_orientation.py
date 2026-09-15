@@ -66,6 +66,22 @@ class FilamentOrientationFinder:
 
     def columnDensities(self, cutout):
         """
+        Calculate the column density through the centre of 'cutout' for every orientation on the (altitude, azimuth) grid.
+
+        For each orientation, a line segment passes through the centre of the central voxel and extends 'lambdaMax' voxel side
+        lengths in both directions. The column density is the integral of the mass density along this segment, evaluated
+        exactly for a piecewise-constant density field: each voxel the segment crosses contributes its density times the length
+        of the segment inside it. The crossing points are precomputed in '__init__' and do not depend on the data.
+
+        Parameters
+        ----------
+        cutout : array of shape (2 voxelRadius + 1,) * 3, indexed [iz, iy, ix]; mass density in units of the present-day
+                cosmic mean ('DENSITY_MEAN_TODAY'), as in the BORG SDSS cubes. Use 'cutout' to excise it from a full cube.
+
+        Returns
+        -------
+        columnDensities : array of shape (numberOfAltitudes, numberOfAzimuths); column density (in g m^-2), with
+                        columnDensities[i, j] corresponding to orientation ('altitudes[i]', 'azimuths[j]')
         """
 
 

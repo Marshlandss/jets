@@ -2,9 +2,10 @@
 import os
 # Imports: third-party
 from astropy.io import fits
+import numpy as np
 import pandas as pd
 # Imports: first-party
-from jets.config import ANGLES, BEST_ANGLE_THRESHOLD, NAN_PERCENTAGE_CUTOFF, PIXEL_SHIFT, SAVING_PLOTS, SAVE_FORMAT, OVERWRITE_FILES
+from jets.config import STEP_SIZE, BEST_ANGLE_THRESHOLD, NAN_PERCENTAGE_CUTOFF, PIXEL_SHIFT, SAVING_PLOTS, SAVE_FORMAT, OVERWRITE_FILES
 from jets.paths import DIR_LOAD, DIR_SAVE
 from jets.jet_system import JetSystem
 from jets.jet_plotter import JetPlotter
@@ -14,6 +15,8 @@ from jets.plot_styles import set_plot_styles
 
 # === Plot Formatting ===
 axis_font_size    = set_plot_styles()
+
+angles            = np.linspace(0, np.pi, num = int(180 / STEP_SIZE), endpoint = False) # in radians
 
 
 # === Load data ===
@@ -133,7 +136,7 @@ for filename in filenames:
     if OVERWRITE_FILES or not check_if_file_exists_in_correct_location(adjustment_status, save_a, save_sa, save_m):
 
         jet_system = JetSystem(
-            file_path, ra, dec, image_width_arcmins, adjustment_status, SA_LIST, M_LIST, ANGLES,
+            file_path, ra, dec, image_width_arcmins, adjustment_status, SA_LIST, M_LIST, angles,
             # Data
             go_right_ascensions, go_declinations, go_length_angular_means, go_redshift_means, areSpectroscopic,
             # Thresholds and Parameters

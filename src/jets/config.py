@@ -1,28 +1,26 @@
-# Imports: third-party
-import numpy as np
+# Set random seed.
+SEED = 0
 
-# === Constants ===
+# Set jet orientation finding parameters.
 STEP_SIZE             = 1.
-NUMBER_OF_STEPS       = int(180 / STEP_SIZE)
-ANGLES                = np.linspace(0, np.pi, num = NUMBER_OF_STEPS, endpoint = False) # in radians
-
-# --- Modifiable parameters (for varying results) ---
-SEED                  = 0
 BEST_ANGLE_THRESHOLD  = .85
-NAN_PERCENTAGE_CUTOFF = 43  # in %
-PIXEL_SHIFT           = 1   # shifts plot by indicated number of pixels to the top right; Martijn: 0, Martin: 1
+PIXEL_SHIFT           = 1.   # shifts plot by indicated number of pixels to the top right; Martijn: 0, Martin: 1
+NAN_PERCENTAGE_CUTOFF = 43.  # in %
 
-# --- Cosmology and BORG SDSS ---
+# Set cosmology and BORG SDSS parameters.
 LITTLE_H              = 0.702                                                    # in 1; H_0 / (100 km s^-1 Mpc^-1), matching Jasche et al. (12015)
 DENSITY_MEAN_TODAY    = 2.6e-24                                                  # in g/m^3
 BORG_BOX_SIZE_MPC_H   = 750.                                                     # in Mpc / h; comoving
 BORG_NUMBER_OF_VOXELS = 256                                                      # in 1; per axis
 BORG_VOXEL_SIZE_MPC   = BORG_BOX_SIZE_MPC_H / (BORG_NUMBER_OF_VOXELS * LITTLE_H) # in Mpc (≈ 4.17); comoving
 
-# --- Saving ---
-SAVING_PLOTS          = True
+# Set beta-profile filament parameters from Tuominen et al. (2021), used for voxelisation error simulations.
+FILAMENT_RADIUS_CORE     = 1.2     # in Mpc
+FILAMENT_BETA            = 2.0     # in 1
+FILAMENT_DENSITY_CENTRAL = 1.6e-23 # in g m^-3
 
-# OVERWRITE FILES -
+# Set saving parameters.
+SAVING_PLOTS          = True
 # If True:  Replaces all files
 # If False: Only adds missing files 
 #           OR if file is placed in the wrong folder, file will be removed and recreated in the correct folder
