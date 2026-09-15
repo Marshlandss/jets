@@ -1,5 +1,5 @@
 # Imports: Python
-import math, os
+import math
 # Imports: third-party
 from astropy.io import fits
 from astropy.convolution import Gaussian1DKernel, convolve

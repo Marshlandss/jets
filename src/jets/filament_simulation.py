@@ -5,13 +5,13 @@ import numpy as np
 from jets.config import BORG_VOXEL_SIZE_MPC
 
 def cubeGenerateFilamentProfileBeta(
-    numberOfVoxelsFine,
+    numberOfVoxelsFine,   # in 1
+    numberOfVoxelsCoarse, # in 1
     RNG,
-    radiusCore = 1.2,      # in Mpc
-    beta        = 2.0,     # in 1
-    rho0        = 1.6e-23, # in g/m^3; central density
-    axis        = None,
-    numberOfVoxelsCoarse = 5):
+    radiusCore     = 1.2,      # in Mpc
+    beta           = 2.0,     # in 1
+    densityCentral = 1.6e-23, # in g/m^3; central density
+    axis           = None):
     """
     Generate a fine-grained mass density cube containing a single straight filament with a beta-profile cross-section,
     rho(d) = rho0 (1 + (d / radiusCore)^2)^(-3 beta / 2), where d is the perpendicular distance to the filament axis.

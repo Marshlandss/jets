@@ -1,22 +1,12 @@
-# === imports ===
-
-import math
-import os
-import pandas as pd
-import numpy as np
-
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-
-from astropy.io import fits
+# Imports: third-party
 from astropy.visualization import ImageNormalize, ManualInterval, SqrtStretch
-from astropy.convolution import Gaussian1DKernel, convolve
-
 from scipy.interpolate import make_interp_spline
 from scipy.signal import find_peaks
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import numpy as np
 
 # === JetPlotter class ===
-
 class JetPlotter:
     def __init__(self, jet_system, save_a, save_sa, save_m, save_format, axis_font_size):
         self.jet = jet_system
