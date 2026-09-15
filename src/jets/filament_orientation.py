@@ -64,8 +64,16 @@ class FilamentOrientationFinder:
         return densities[iz - r : iz + r + 1, iy - r : iy + r + 1, ix - r : ix + r + 1]
 
 
+    def columnDensities(self, cutout):
+        """
+        """
+
+
+
     def findBest(self, voxelIndicesList, densities):
         """
+        Return the (altitude, azimuth) index pair of the maximum of 'columnDensities'.
+        On ties, the first maximum in row-major order is returned — the same rule as the original strict '<' comparison.
         """
         numberOfJetSystems  = len(voxelIndicesList)  # in 1
         print(numberOfJetSystems, type(voxelIndicesList))

@@ -10,7 +10,8 @@ def cubeGenerateFilamentProfileBeta(
     radiusCore = 1.2,      # in Mpc
     beta        = 2.0,     # in 1
     rho0        = 1.6e-23, # in g/m^3; central density
-    axis        = None):
+    axis        = None,
+    numberOfVoxelsCoarse = 5):
     """
     Generate a fine-grained mass density cube containing a single straight filament with a beta-profile cross-section,
     rho(d) = rho0 (1 + (d / radiusCore)^2)^(-3 beta / 2), where d is the perpendicular distance to the filament axis.
@@ -21,7 +22,7 @@ def cubeGenerateFilamentProfileBeta(
 
     Parameters
     ----------
-    numberOfVoxelsFine : int; fine cells per side, must be divisible by 5
+    numberOfVoxelsFine : int; fine cells per side, must be divisible by 'numberOfVoxelsCoarse'
     RNG                : numpy.random.Generator
     radiusCore         : float; core radius of the beta profile (in Mpc, comoving)
     beta               : float; beta-profile exponent (in 1)
@@ -34,10 +35,9 @@ def cubeGenerateFilamentProfileBeta(
     offset : array of shape (3,); point on the filament axis (in Mpc, comoving)
     """
     # Fine grid coordinates
-    cube_size_mpc = 5 * BORG_VOXEL_SIZE_MPC # Total cube size = 5 voxels → ≈ 20.87 Mpc
-    dx_mpc        = cube_size_mpc / numberOfVoxelsFine
+    dx_mpc        = BORG_VOXEL_SIZE_MPC * numberOfVoxelsCoarse / numberOfVoxelsFine
     coords        = (np.arange(numberOfVoxelsFine) - (numberOfVoxelsFine - 1) / 2) * dx_mpc
-    x, y, z       = np.meshgrid(coords, coords, coords, indexing="ij")
+    x, y, z       = np.meshgrid(coords, coords, coords, indexing = "ij")
 
     # If 'axis' is given, use it; otherwise, generate a random axis.
     if axis is None:
@@ -46,7 +46,7 @@ def cubeGenerateFilamentProfileBeta(
 
     # Offset within half a low-res voxel
     half_voxel = 0.5 * BORG_VOXEL_SIZE_MPC
-    offset     = RNG.uniform(-half_voxel, half_voxel, size=3) # Rather than 'np.array([0.,0.,0.])'.
+    offset     = RNG.uniform(-half_voxel, half_voxel, size = 3) # Rather than 'np.array([0.,0.,0.])'.
 
     # Shifted coordinates
     xs = x - offset[0]
@@ -60,7 +60,7 @@ def cubeGenerateFilamentProfileBeta(
     d_perp  = np.sqrt(d_perp2)
 
     # Beta-profile density
-    cube = rho0 * (1 + (d_perp / radiusCore)**2)**(-1.5 * beta)
+    cube = rho0 * (1 + (d_perp / radiusCore) ** 2) ** (-1.5 * beta)
 
     return cube, axis, offset
 
@@ -70,7 +70,7 @@ def cubeAverageDown(cube, numberOfVoxelsCoarse):
     Degrade a cube to 'numberOfVoxelsCoarse' voxels per side by averaging over blocks of (numberOfVoxelsFine / numberOfVoxelsCoarse)^3 fine cells, mimicking BORG's resolution.
     """
     if len(set(cube.shape)) != 1:
-        raise ValueError("'average_down' only works on arrays equally sized along all dimensions.")
+        raise ValueError("This function only works on arrays equally sized along all dimensions.")
     numberOfVoxelsFine = cube.shape[0]
     if numberOfVoxelsFine % numberOfVoxelsCoarse != 0:
         raise ValueError(f"'numberOfVoxelsFine' must be divisible by {numberOfVoxelsCoarse}.")
