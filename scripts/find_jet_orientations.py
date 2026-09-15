@@ -16,6 +16,7 @@ from jets.plot_styles import set_plot_styles
 # === Plot Formatting ===
 axis_font_size    = set_plot_styles()
 
+# Initialise line segment angles.
 angles            = np.linspace(0, np.pi, num = int(180 / STEP_SIZE), endpoint = False) # in radians
 
 
@@ -79,7 +80,7 @@ if not os.path.exists(path_excel):
         "adjustment_status"            : [],
         "redshift"                     : []
     }
-    # Sets excel sheet columns
+    # Sets Excel sheet columns
     df = pd.DataFrame(columns = columns)
     df.to_excel(path_excel, index = False)
 

@@ -2,19 +2,19 @@
 from astropy import units as u
 import numpy as np
 # Imports: first-party
-from jets.config import BORG_VOXEL_SIZE_MPC
+from jets.config import BORG_VOXEL_SIZE_MPC, FILAMENT_BETA, FILAMENT_DENSITY_CENTRAL, FILAMENT_RADIUS_CORE
 
 def cubeGenerateFilamentProfileBeta(
     numberOfVoxelsFine,   # in 1
     numberOfVoxelsCoarse, # in 1
     RNG,
-    radiusCore     = 1.2,      # in Mpc
-    beta           = 2.0,     # in 1
-    densityCentral = 1.6e-23, # in g/m^3; central density
-    axis           = None):
+    beta           = FILAMENT_BETA,            # in 1
+    densityCentral = FILAMENT_DENSITY_CENTRAL, # in g/m^3; central density
+    radiusCore     = FILAMENT_RADIUS_CORE,     # in Mpc
+    axis           = None):                    # in 1
     """
     Generate a fine-grained mass density cube containing a single straight filament with a beta-profile cross-section,
-    rho(d) = rho0 (1 + (d / radiusCore)^2)^(-3 beta / 2), where d is the perpendicular distance to the filament axis.
+    rho(d) = densityCentral (1 + (d / radiusCore)^2)^(-3 beta / 2), where d is the perpendicular distance to the filament axis.
 
     The cube spans 'numberOfVoxels' BORG voxels per side (≈ 20.9 Mpc comoving) at numberOfVoxelsFine fine cells per side.
     The filament axis has a random (isotropic) orientation and passes through a random point within half a BORG voxel of the cube centre,
@@ -22,11 +22,13 @@ def cubeGenerateFilamentProfileBeta(
 
     Parameters
     ----------
-    numberOfVoxelsFine : int; fine cells per side, must be divisible by 'numberOfVoxelsCoarse'
-    RNG                : numpy.random.Generator
-    radiusCore         : float; core radius of the beta profile (in Mpc, comoving)
-    beta               : float; beta-profile exponent (in 1)
-    rho0               : float; central mass density (in g m^-3)
+    numberOfVoxelsFine   : int; fine cells per side, must be divisible by 'numberOfVoxelsCoarse'
+    numberOfVoxelsCoarse : int; coarse cells per side
+    RNG                  : numpy.random.Generator
+    beta                 : float; beta-profile exponent (in 1)
+    densityCentral       : float; central mass density (in g m^-3)
+    radiusCore           : float; core radius of the beta profile (in Mpc, comoving)
+    axis                 :
 
     Returns
     -------
@@ -60,7 +62,7 @@ def cubeGenerateFilamentProfileBeta(
     d_perp  = np.sqrt(d_perp2)
 
     # Beta-profile density
-    cube = rho0 * (1 + (d_perp / radiusCore) ** 2) ** (-1.5 * beta)
+    cube = densityCentral * (1 + (d_perp / radiusCore) ** 2) ** (-1.5 * beta)
 
     return cube, axis, offset
 
@@ -79,11 +81,11 @@ def cubeAverageDown(cube, numberOfVoxelsCoarse):
     return cube.reshape(numberOfVoxelsCoarse, m, numberOfVoxelsCoarse, m, numberOfVoxelsCoarse, m).mean(axis = (1, 3, 5))
 
 
-def cubeColumnDensityAlongAxis(cube, cube_size_mpc, axis_index):
+def cubeColumnDensityAlongAxis(cube, cubeLengthMpc, axisIndex):
     """
-    Integrate a mass density cube (in g m^-3) along the axis with index 'axis_index', giving the column density (in g m^-2) as a 2D map.
-    The cell size follows from 'cube_size_mpc' (comoving) and the cube's shape.
+    Integrate a mass density cube (in g m^-3) along the axis with index 'axisIndex', giving the column density (in g m^-2) as a 2D map.
+    The cell size follows from 'cubeLengthMpc' (comoving) and the cube's shape.
     """
     mpc_to_m = u.Mpc.to(u.m) # in m; 3.0857e22
-    dx_m     = (cube_size_mpc / cube.shape[axis_index]) * mpc_to_m
-    return np.sum(cube, axis = axis_index) * dx_m
+    dx_m     = (cubeLengthMpc / cube.shape[axisIndex]) * mpc_to_m # in m (per pixel)
+    return np.sum(cube, axis = axisIndex) * dx_m

@@ -25,13 +25,14 @@ numberOfVoxelsFine   = 205 # in 1
 numberOfVoxelsCoarse = 5   # in 1
 vmin                 = 0.0
 vmax                 = 1.0
+colourMap            = cm.lipari
 
 RNG                = np.random.default_rng(SEED)
-cube, axis, offset = cubeGenerateFilamentProfileBeta(numberOfVoxelsFine = numberOfVoxelsFine, numberOfVoxelsCoarse = numberOfVoxelsCoarse, RNG = RNG, radiusCore = 1.2, beta = 2.0, rho0 = 1.6e-23) # Parameters from Tuominen et al. (2021).
+cube, axis, offset = cubeGenerateFilamentProfileBeta(numberOfVoxelsFine, numberOfVoxelsCoarse, RNG)
 cube_coarse        = cubeAverageDown(cube, numberOfVoxelsCoarse)
 cube_size_mpc      = BORG_VOXEL_SIZE_MPC * numberOfVoxelsCoarse
-col_fine           = cubeColumnDensityAlongAxis(cube,        cube_size_mpc, axis_index = 0)
-col_coarse         = cubeColumnDensityAlongAxis(cube_coarse, cube_size_mpc, axis_index = 0)
+col_fine           = cubeColumnDensityAlongAxis(cube,        cube_size_mpc, axisIndex = 0)
+col_coarse         = cubeColumnDensityAlongAxis(cube_coarse, cube_size_mpc, axisIndex = 0)
 
 
 half        = cube_size_mpc / 2.
@@ -47,7 +48,7 @@ ax0 = fig.add_subplot(gs[0, 0])
 ax1 = fig.add_subplot(gs[0, 1], sharey = ax0)
 cax = fig.add_subplot(gs[0, 2])
 
-im0 = ax0.imshow(col_fine, interpolation = "bilinear", origin = "lower", cmap = cm.lipari, vmin = vmin, vmax = vmax, extent = extent)
+im0 = ax0.imshow(col_fine, interpolation = "bilinear", origin = "lower", cmap = colourMap, vmin = vmin, vmax = vmax, extent = extent)
 ax0.set_title(r"\textbf{filament:} ground truth")
 ax0.set_xlabel(r"comoving $x\ (\mathrm{Mpc})$")
 ax0.set_ylabel(r"comoving $y\ (\mathrm{Mpc})$")
@@ -58,7 +59,7 @@ ax0.set_yticklabels(ticklabels0)
 ax0.set_xlim(extent[0], extent[1])
 ax0.set_ylim(extent[2], extent[3])
 
-im1 = ax1.imshow(col_coarse, interpolation = "nearest", origin = "lower", cmap = cm.lipari, vmin = vmin, vmax = vmax, extent = extent)
+im1 = ax1.imshow(col_coarse, interpolation = "nearest", origin = "lower", cmap = colourMap, vmin = vmin, vmax = vmax, extent = extent)
 ax1.set_title(r"\textbf{filament:} reconstruction resolution")
 ax1.set_xlabel(r"comoving $x\ (\mathrm{Mpc})$")
 ax1.set_xticks(ticks)
@@ -68,7 +69,7 @@ ax1.set_ylim(extent[2], extent[3])
 ax1.tick_params(labelleft = False)
 
 # Draw galaxy symbol.
-plotGalaxySpiral(.25, centreX = 0., centreY = 0., radiusBulgeRelative=.15, ax=ax1)
+plotGalaxySpiral(.25, centreX = 0., centreY = 0., radiusBulgeRelative = .15, ax = ax1)
 
 # Draw grid.
 edges = -half + np.arange(6) * BORG_VOXEL_SIZE_MPC  # 6 edges → 5 cells

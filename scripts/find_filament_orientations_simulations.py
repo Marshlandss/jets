@@ -30,7 +30,7 @@ errorsAngular        = np.full(numberOfRealisations, np.nan) # in deg
 # Loop over realisations.
 for i in range(numberOfRealisations):
     # Generate a fine-grained filament with a random orientation and offset, and degrade it to BORG resolution.
-    cube, axis, offset = cubeGenerateFilamentProfileBeta(numberOfVoxelsFine, RNG, numberOfVoxelsCoarse = numberOfVoxelsCoarse, radiusCore = 1.2, beta = 2.0, rho0 = 1.6e-23)
+    cube, axis, offset = cubeGenerateFilamentProfileBeta(numberOfVoxelsFine, numberOfVoxelsCoarse, RNG)
     cubeCoarse         = cubeAverageDown(cube, numberOfVoxelsCoarse)
 
     # Calculate column densities for a swathe of line segment orientations.
