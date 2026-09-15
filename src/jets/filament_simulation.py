@@ -45,7 +45,9 @@ def cubeGenerateFilamentProfileBeta(
 
     # If 'axis' is given, use it; otherwise, generate a random axis.
     if axis is None:
-        axis  = RNG.normal(size = 3)
+        axis = RNG.normal(size = 3)
+    else:
+        axis = np.asarray(axis, dtype = float)
     axis /= np.linalg.norm(axis)
 
     # Offset within half a low-res voxel
@@ -77,7 +79,7 @@ def cubeAverageDown(cube, numberOfVoxelsCoarse):
         raise ValueError("This function only works on arrays equally sized along all dimensions.")
     numberOfVoxelsFine = cube.shape[0]
     if numberOfVoxelsFine % numberOfVoxelsCoarse != 0:
-        raise ValueError(f"'numberOfVoxelsFine' must be divisible by {numberOfVoxelsCoarse}.")
+        raise ValueError(f"'cube' has 'numberOfVoxelsFine' = {numberOfVoxelsFine} cells per side, which is not divisible by 'numberOfVoxelsCoarse' = {numberOfVoxelsCoarse}.")
 
     m = numberOfVoxelsFine // numberOfVoxelsCoarse
     return cube.reshape(numberOfVoxelsCoarse, m, numberOfVoxelsCoarse, m, numberOfVoxelsCoarse, m).mean(axis = (1, 3, 5))
