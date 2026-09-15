@@ -72,7 +72,7 @@ ax1.tick_params(labelleft = False)
 plotGalaxySpiral(.25, centreX = 0., centreY = 0., radiusBulgeRelative = .15, ax = ax1)
 
 # Draw grid.
-edges = -half + np.arange(numberOfVoxelsCoarse + 1) * BORG_VOXEL_SIZE_MPC # Because 5 cells require 6 edges, we use 'np.arange(numberOfVoxelsCoarse + 1)'.
+edges = -half + np.arange(numberOfVoxelsCoarse + 1) * BORG_VOXEL_SIZE_MPC # Because N cells require N + 1 edges, we use 'np.arange(numberOfVoxelsCoarse + 1)'.
 for ax in (ax0, ax1):
     for e in edges:
         ax.axvline(e, color = ".4", lw = 0.2, alpha = 0.3, zorder = 3)
