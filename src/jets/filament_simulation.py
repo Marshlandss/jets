@@ -4,10 +4,10 @@ import numpy as np
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC
 
-def make_beta_cylinder_density_cube(
+def cubeGenerateFilamentProfileBeta(
     numberOfVoxelsFine,
     RNG,
-    radiusCore = 1.2,     # in Mpc
+    radiusCore = 1.2,      # in Mpc
     beta        = 2.0,     # in 1
     rho0        = 1.6e-23, # in g/m^3; central density
     axis        = None):
@@ -21,11 +21,11 @@ def make_beta_cylinder_density_cube(
 
     Parameters
     ----------
-    numberOfVoxelsFine          : int; fine cells per side, must be divisible by 5
-    RNG        : numpy.random.Generator
-    radiusCore : float; core radius of the beta profile (in Mpc, comoving)
-    beta       : float; beta-profile exponent (in 1)
-    rho0       : float; central mass density (in g m^-3)
+    numberOfVoxelsFine : int; fine cells per side, must be divisible by 5
+    RNG                : numpy.random.Generator
+    radiusCore         : float; core radius of the beta profile (in Mpc, comoving)
+    beta               : float; beta-profile exponent (in 1)
+    rho0               : float; central mass density (in g m^-3)
 
     Returns
     -------
@@ -65,7 +65,7 @@ def make_beta_cylinder_density_cube(
     return cube, axis, offset
 
 
-def average_down(cube, numberOfVoxelsCoarse):
+def cubeAverageDown(cube, numberOfVoxelsCoarse):
     """
     Degrade a cube to 'numberOfVoxelsCoarse' voxels per side by averaging over blocks of (numberOfVoxelsFine / numberOfVoxelsCoarse)^3 fine cells, mimicking BORG's resolution.
     """

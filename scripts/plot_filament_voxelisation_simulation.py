@@ -8,7 +8,7 @@ from matplotlib.ticker import StrMethodFormatter
 from jets.config import BORG_VOXEL_SIZE_MPC, SEED
 from jets.paths import DIR_SAVE
 from jets.plot_utils import plotGalaxySpiral
-from jets.filament_simulation import make_beta_cylinder_density_cube, average_down, column_density_along_axis
+from jets.filament_simulation import cubeGenerateFilamentProfileBeta, cubeAverageDown, column_density_along_axis
 
 plt.rcParams.update({
     "text.usetex":     True,
@@ -21,15 +21,15 @@ plt.rcParams.update({
 # ============================================================
 # Main
 # ============================================================
-N              = 205
-numberOfVoxels = 5
-vmin           = 0.0
-vmax           = 1.0
+numberOfVoxelsFine   = 205 # in 1
+numberOfVoxelsCoarse = 5   # in 1
+vmin                 = 0.0
+vmax                 = 1.0
 
-rng                = np.random.default_rng(SEED)
-cube, axis, offset = make_beta_cylinder_density_cube(N = N, rng = rng, radius_core = 1.2, beta = 2.0, rho0 = 1.6e-23) # Parameters from Tuominen et al. (2021).
-cube_coarse        = average_down(cube, numberOfVoxels)
-cube_size_mpc      = BORG_VOXEL_SIZE_MPC * numberOfVoxels
+RNG                = np.random.default_rng(SEED)
+cube, axis, offset = cubeGenerateFilamentProfileBeta(numberOfVoxelsFine = numberOfVoxelsFine, RNG = RNG, radiusCore = 1.2, beta = 2.0, rho0 = 1.6e-23) # Parameters from Tuominen et al. (2021).
+cube_coarse        = cubeAverageDown(cube, numberOfVoxelsCoarse)
+cube_size_mpc      = BORG_VOXEL_SIZE_MPC * numberOfVoxelsCoarse
 col_fine           = column_density_along_axis(cube,        cube_size_mpc, axis_index = 0)
 col_coarse         = column_density_along_axis(cube_coarse, cube_size_mpc, axis_index = 0)
 
