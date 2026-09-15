@@ -16,9 +16,9 @@ def cubeGenerateFilamentProfileBeta(
     Generate a fine-grained mass density cube containing a single straight filament with a beta-profile cross-section,
     rho(d) = densityCentral (1 + (d / radiusCore)^2)^(-3 beta / 2), where d is the perpendicular distance to the filament axis.
 
-    The cube spans 'numberOfVoxels' BORG voxels per side (≈ 20.9 Mpc comoving) at numberOfVoxelsFine fine cells per side.
+    The cube spans 'numberOfVoxelsCoarse' BORG voxels per side at 'numberOfVoxelsFine' fine cells per side.
     The filament axis has a random (isotropic) orientation and passes through a random point within half a BORG voxel of the cube centre,
-    so that 'average_down' samples the voxelisation error at a random phase.
+    so that 'cubeAverageDown' samples the voxelisation error at a random phase.
 
     Parameters
     ----------
@@ -28,7 +28,9 @@ def cubeGenerateFilamentProfileBeta(
     beta                 : float; beta-profile exponent (in 1)
     densityCentral       : float; central mass density (in g m^-3)
     radiusCore           : float; core radius of the beta profile (in Mpc, comoving)
-    axis                 :
+    axis                 : array of shape (3,) or None; direction of the filament axis, normalised internally.
+                           If None (default), an isotropically random direction is drawn from 'RNG'.
+                           Supply a fixed direction to test the pipeline.
 
     Returns
     -------
@@ -44,7 +46,7 @@ def cubeGenerateFilamentProfileBeta(
     # If 'axis' is given, use it; otherwise, generate a random axis.
     if axis is None:
         axis  = RNG.normal(size = 3)
-        axis /= np.linalg.norm(axis)
+    axis /= np.linalg.norm(axis)
 
     # Offset within half a low-res voxel
     half_voxel = 0.5 * BORG_VOXEL_SIZE_MPC
@@ -81,11 +83,11 @@ def cubeAverageDown(cube, numberOfVoxelsCoarse):
     return cube.reshape(numberOfVoxelsCoarse, m, numberOfVoxelsCoarse, m, numberOfVoxelsCoarse, m).mean(axis = (1, 3, 5))
 
 
-def cubeColumnDensityAlongAxis(cube, cubeLengthMpc, axisIndex):
+def cubeColumnDensityAlongAxis(cube, cubeLength, axisIndex):
     """
     Integrate a mass density cube (in g m^-3) along the axis with index 'axisIndex', giving the column density (in g m^-2) as a 2D map.
-    The cell size follows from 'cubeLengthMpc' (comoving) and the cube's shape.
+    The cell size follows from 'cubeLength' (in Mpc; comoving) and the cube's shape.
     """
     mpc_to_m = u.Mpc.to(u.m) # in m; 3.0857e22
-    dx_m     = (cubeLengthMpc / cube.shape[axisIndex]) * mpc_to_m # in m (per pixel)
+    dx_m     = (cubeLength / cube.shape[axisIndex]) * mpc_to_m # in m (per pixel)
     return np.sum(cube, axis = axisIndex) * dx_m
