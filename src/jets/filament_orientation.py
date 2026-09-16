@@ -5,9 +5,11 @@ Martijn Simon Soen Liong Oei, September 12026 H.E.
 from astropy import units as u
 import numpy as np
 import pandas as pd
-import time
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY
+from jets.sphere_utils import convertSphericalToCartesian
+from scripts.plot_column_densities_hemisphere import numberOfJetSystems
+
 
 class FilamentOrientationFinder:
     """
@@ -68,7 +70,7 @@ class FilamentOrientationFinder:
         """
         Calculate the column density through the centre of 'cutout' for every orientation on the (altitude, azimuth) grid.
 
-        For each orientation, a line segment passes through the centre of the central voxel and extends 'lambdaMax' voxel side
+        For each orientation, a line segment passes through the centre of the central voxel and extends 'self.lambdaMax' voxel side
         lengths in both directions. The column density is the integral of the mass density along this segment, evaluated
         exactly for a piecewise-constant density field: each voxel the segment crosses contributes its density times the length
         of the segment inside it. The crossing points are precomputed in '__init__' and do not depend on the data.
@@ -83,14 +85,88 @@ class FilamentOrientationFinder:
         columnDensities : array of shape (numberOfAltitudes, numberOfAzimuths); column density (in g m^-2), with
                         columnDensities[i, j] corresponding to orientation ('altitudes[i]', 'azimuths[j]')
         """
+        columnDensities = np.full((self.numberOfAltitudes, self.numberOfAzimuths), np.nan)
+
+        for indexAltitude in range(self.numberOfAltitudes):
+            for indexAzimuth in range(self.numberOfAzimuths):
+                lambdasCrossingXCurrent = list(self.lambdasCrossingX[indexAltitude, indexAzimuth])
+                lambdasCrossingYCurrent = list(self.lambdasCrossingY[indexAltitude, indexAzimuth])
+                lambdasCrossingZCurrent = list(self.lambdasCrossingZ[indexAltitude, indexAzimuth])
+                # print(lambdasCrossingXCurrent, lambdasCrossingYCurrent, lambdasCrossingZCurrent)
+                # print(type(lambdasCrossingXCurrent), type(lambdasCrossingYCurrent), type(lambdasCrossingZCurrent))
+                lambdaCrossingPrevious  = 0.
+                voxelIndicesDeviation   = np.array([0, 0, 0])
+                columnDensity           = 0.
+                while lambdaCrossingPrevious < self.lambdaMax:
+                    # Find the lambda value of the next border crossing.
+                    lambdaCrossingNext = min(lambdasCrossingXCurrent[0], lambdasCrossingYCurrent[0], lambdasCrossingZCurrent[0])
+                    # Calculate the lambda interval of the line segment in the current voxel(s).
+                    lambdaInterval = min(lambdaCrossingNext, self.lambdaMax) - lambdaCrossingPrevious
+                    # print(lambdaCrossingPrevious, lambdaCrossingNext, lambdaInterval, voxelIndicesDeviation, densitiesMeanSmall[tuple(voxelIndicesCentre + voxelIndicesDeviation)])
+                    # Add the column density contributions of the current voxels.
+                    columnDensity += lambdaInterval * (cutout[tuple(self.voxelIndicesCentre + voxelIndicesDeviation)] + cutout[tuple(self.voxelIndicesCentre - voxelIndicesDeviation)])
+
+                    if lambdaCrossingNext == lambdasCrossingXCurrent[0]:
+                        lambdasCrossingXCurrent.pop(0)
+                        indexChange = 2
+                        signChange = self.xsFilamentSign[indexAltitude, indexAzimuth]
+                    elif lambdaCrossingNext == lambdasCrossingYCurrent[0]:
+                        lambdasCrossingYCurrent.pop(0)
+                        indexChange = 1
+                        signChange = self.ysFilamentSign[indexAltitude, indexAzimuth]
+                    else:
+                        lambdasCrossingZCurrent.pop(0)
+                        indexChange = 0
+                        signChange = self.zsFilamentSign[indexAltitude, indexAzimuth]
+                    voxelIndicesDeviation[indexChange] += 1 * signChange
+                    lambdaCrossingPrevious = lambdaCrossingNext
+
+                columnDensity *= BORG_VOXEL_SIZE_MPC * self.metresPerMegaparsec * DENSITY_MEAN_TODAY  # in g/m^2
+                columnDensities[indexAltitude, indexAzimuth] = columnDensity
+        return columnDensities
 
 
-
-    def findBest(self, voxelIndicesList, densities):
+    def findBest(self, columnDensities):
         """
         Return the (altitude, azimuth) index pair of the maximum of 'columnDensities'.
-        On ties, the first maximum in row-major order is returned — the same rule as the original strict '<' comparison.
+        On ties, the first maximum in row-major order is returned (the same rule as the original strict '<' comparison).
         """
+        return np.unravel_index(np.argmax(columnDensities), columnDensities.shape)
+
+
+def findFilamentOrientations(FOF, densities, voxelIndicesList):
+    """
+    """
+    numberOfJetSystems  = len(voxelIndicesList) # in 1
+
+    columnDensitiesAll  = np.full((numberOfJetSystems, FOF.numberOfAltitudes, FOF.numberOfAzimuths), np.nan)
+    azimuthsBest        = np.full(numberOfJetSystems, np.nan)
+    altitudesBest       = np.full(numberOfJetSystems, np.nan)
+    columnDensitiesBest = np.full(numberOfJetSystems, np.nan)
+    for i, voxelIndices in enumerate(voxelIndicesList):
+        columnDensitiesAll[i]  = FOF.columnDensities(FOF.cutout(densities, voxelIndices))
+        iAlt, iAz              = FOF.findBest(columnDensitiesAll[i])
+        azimuthsBest[i]        = FOF.azimuths[iAz]
+        altitudesBest[i]       = FOF.altitudes[iAlt]
+        columnDensitiesBest[i] = columnDensitiesAll[i, iAlt, iAz]
+    return azimuthsBest, altitudesBest, columnDensitiesBest
+
+
+def writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDensitiesBest, method):
+    """
+    Add best filament orientations to the jet system catalogue at 'pathExcel'. 'method' is "d" (direct) or "a" (adjusted).
+    """
+    xs, ys, zs = convertSphericalToCartesian(azimuthsBest, altitudesBest)
+    dataFrame  = pd.read_excel(pathExcel)
+    dataFrame[f"best_angle_{method} (az,alt)(deg)"]     = [f"[{az:.1f}, {alt:.1f}]" for az, alt in zip(azimuthsBest, altitudesBest)]
+    dataFrame[f"cartesian_best_angle_{method} (x,y,z)"] = [f"[{x:.5f}, {y:.5f}, {z:.5f}]" for x, y, z in zip(xs, ys, zs)]
+    dataFrame[f"column_density_{method} (g/m^2)"]       = np.round(columnDensitiesBest, 3)
+    dataFrame.to_excel(pathExcel, index = False)
+
+
+'''
+import time
+    def findBest(self, voxelIndicesList, densities):
         numberOfJetSystems  = len(voxelIndicesList)  # in 1
         print(numberOfJetSystems, type(voxelIndicesList))
         print(voxelIndicesList[0], type(voxelIndicesList[0]), voxelIndicesList[0][0], type(voxelIndicesList[0][0]))
@@ -115,41 +191,7 @@ class FilamentOrientationFinder:
             indexAzimuthBest   = None
             columnDensityBest  = None
 
-            for indexAltitude in range(self.numberOfAltitudes):
-                for indexAzimuth in range(self.numberOfAzimuths):
-                    lambdasCrossingXCurrent = list(self.lambdasCrossingX[indexAltitude, indexAzimuth])
-                    lambdasCrossingYCurrent = list(self.lambdasCrossingY[indexAltitude, indexAzimuth])
-                    lambdasCrossingZCurrent = list(self.lambdasCrossingZ[indexAltitude, indexAzimuth])
-                    #print(lambdasCrossingXCurrent, lambdasCrossingYCurrent, lambdasCrossingZCurrent)
-                    #print(type(lambdasCrossingXCurrent), type(lambdasCrossingYCurrent), type(lambdasCrossingZCurrent))
-                    lambdaCrossingPrevious = 0.
-                    voxelIndicesDeviation  = np.array([0, 0, 0])
-                    columnDensity          = 0.
-                    while lambdaCrossingPrevious < lambdaMax:
-                        # Find the lambda value of the next border crossing.
-                        lambdaCrossingNext = min(lambdasCrossingXCurrent[0], lambdasCrossingYCurrent[0], lambdasCrossingZCurrent[0])
-                        # Calculate the lambda interval of the line segment in the current voxel(s).
-                        lambdaInterval     = min(lambdaCrossingNext, lambdaMax) - lambdaCrossingPrevious
-                        #print(lambdaCrossingPrevious, lambdaCrossingNext, lambdaInterval, voxelIndicesDeviation, densitiesMeanSmall[tuple(voxelIndicesCentre + voxelIndicesDeviation)])
-                        # Add the column density contributions of the current voxels.
-                        columnDensity     += lambdaInterval * (densitiesSmall[tuple(self.voxelIndicesCentre + voxelIndicesDeviation)] + densitiesSmall[tuple(self.voxelIndicesCentre - voxelIndicesDeviation)])
 
-                        if   lambdaCrossingNext == lambdasCrossingXCurrent[0]:
-                            lambdasCrossingXCurrent.pop(0)
-                            indexChange = 2
-                            signChange  = self.xsFilamentSign[indexAltitude, indexAzimuth]
-                        elif lambdaCrossingNext == lambdasCrossingYCurrent[0]:
-                            lambdasCrossingYCurrent.pop(0)
-                            indexChange = 1
-                            signChange  = self.ysFilamentSign[indexAltitude, indexAzimuth]
-                        else:
-                            lambdasCrossingZCurrent.pop(0)
-                            indexChange = 0
-                            signChange  = self.zsFilamentSign[indexAltitude, indexAzimuth]
-                        voxelIndicesDeviation[indexChange] += 1 * signChange
-                        lambdaCrossingPrevious = lambdaCrossingNext
-
-                    columnDensity *= BORG_VOXEL_SIZE_MPC * self.metresPerMegaparsec * DENSITY_MEAN_TODAY # in g/m^2
                     if (columnDensityBest == None or columnDensityBest < columnDensity):
                         columnDensityBest = columnDensity
                         indexAltitudeBest = indexAltitude
@@ -178,15 +220,14 @@ class FilamentOrientationFinder:
 
         #for az,alt,cd in zip(self.azimuthsBest, self.altitudesBest, self.columnDensitiesBest):
         #    print(az,alt,cd)
-        '''
+        
         from matplotlib import pyplot as plt
         plt.figure(figsize=(8,7))
         plt.scatter(self.xsBest, self.ysBest, c = np.arange(numberOfJetSystems))
         plt.gca().set_aspect("equal")
         plt.tight_layout()
         plt.show()
-        '''
-
+        
 
     def write(self, pathExcel, methodDirect = True):
         """
@@ -206,3 +247,4 @@ class FilamentOrientationFinder:
         """
         """
         np.save(pathNumPy, self.columnDensities)
+'''
