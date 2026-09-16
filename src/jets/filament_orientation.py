@@ -8,7 +8,6 @@ import pandas as pd
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY
 from jets.sphere_utils import convertSphericalToCartesian
-from scripts.plot_column_densities_hemisphere import numberOfJetSystems
 
 
 class FilamentOrientationFinder:
@@ -76,7 +75,7 @@ class FilamentOrientationFinder:
         of the segment inside it. The crossing points are precomputed in '__init__' and do not depend on the data.
 
         Parameters
-        ----------
+        -------
         cutout : array of shape (2 voxelRadius + 1,) * 3, indexed [iz, iy, ix]; mass density in units of the present-day
                 cosmic mean ('DENSITY_MEAN_TODAY'), as in the BORG SDSS cubes. Use 'cutout' to excise it from a full cube.
 
@@ -139,17 +138,17 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
     """
     numberOfJetSystems  = len(voxelIndicesList) # in 1
 
-    columnDensitiesAll  = np.full((numberOfJetSystems, FOF.numberOfAltitudes, FOF.numberOfAzimuths), np.nan)
-    azimuthsBest        = np.full(numberOfJetSystems, np.nan)
-    altitudesBest       = np.full(numberOfJetSystems, np.nan)
-    columnDensitiesBest = np.full(numberOfJetSystems, np.nan)
+    columnDensitiesAll  = np.full((numberOfJetSystems, FOF.numberOfAltitudes, FOF.numberOfAzimuths), np.nan) # in g/m^2
+    azimuthsBest        = np.full(numberOfJetSystems, np.nan) # in deg
+    altitudesBest       = np.full(numberOfJetSystems, np.nan) # in deg
+    columnDensitiesBest = np.full(numberOfJetSystems, np.nan) # in g/m^2
     for i, voxelIndices in enumerate(voxelIndicesList):
         columnDensitiesAll[i]  = FOF.columnDensities(FOF.cutout(densities, voxelIndices))
         iAlt, iAz              = FOF.findBest(columnDensitiesAll[i])
         azimuthsBest[i]        = FOF.azimuths[iAz]
         altitudesBest[i]       = FOF.altitudes[iAlt]
         columnDensitiesBest[i] = columnDensitiesAll[i, iAlt, iAz]
-    return azimuthsBest, altitudesBest, columnDensitiesBest
+    return columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest
 
 
 def writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDensitiesBest, method):
