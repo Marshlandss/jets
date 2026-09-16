@@ -1,4 +1,46 @@
+"""
+Find the Cosmic Web filament orientations of Mpc-scale jet systems, using 41 BORG SDSS posterior realisations.
+"""
+# Imports: standard library
+import shutil
+# Imports: third-party
+import h5py
+# Imports: first-party
+from jets.filament_orientation import FilamentOrientationFinder, findFilamentOrientations, writeFilamentOrientations, loadVoxelIndices
+from jets.paths import DIR_LOAD, DIR_SAVE
 
+# Initialise settings.
+lambdaMax            = 2.5  # in BORG voxel side lengths
+stepAngle            = 1.   # in deg
+methods              = ["d", "a"] # "d": direct, "a": adjusted
+numberOfRealisations = 41   # in 1
+indexFirst           = 2000 # in 1; index of the first realisation
+indexStep            = 250  # in 1; index spacing between consecutive realisations
+
+# Initialise filament orientation finding.
+FOF                  = FilamentOrientationFinder(lambdaMax, stepAngle)
+
+for i in range(numberOfRealisations):
+    indexRealisation = indexFirst + i * indexStep
+    pathDensities    = DIR_LOAD / "borg_sdss" / "final_density" / f"final_density_{indexRealisation}.h5"
+    pathExcelLoad    = DIR_SAVE / f"fpa_{indexRealisation}.xlsx"
+    pathExcelWrite   = DIR_SAVE / f"fpa_{indexRealisation}_exact_1.xlsx"
+    print(f"Working on realisation {indexRealisation} ({i + 1} of {numberOfRealisations})...")
+
+    # Load the BORG SDSS realisation.
+    with h5py.File(pathDensities, "r") as file:
+        densitiesRealisation = file["scalars"]["field"][()] + 1 # in today's mean matter density
+
+    # Copy the catalogue, so that the filament orientations are added to a new file.
+    if not pathExcelWrite.exists():
+        shutil.copy(pathExcelLoad, pathExcelWrite)
+
+    for method in methods:
+        voxelIndicesList = loadVoxelIndices(pathExcelLoad, method)
+        _, azimuthsBest, altitudesBest, columnDensitiesBest = findFilamentOrientations(FOF, densitiesRealisation, voxelIndicesList)
+        writeFilamentOrientations(pathExcelWrite, azimuthsBest, altitudesBest, columnDensitiesBest, method)
+
+'''
 # Find and write to file the best filament orientations for Mpc-scale jet systems in BORG SDSS realisations (direct method).
 numberOfExcelSheets = 41 # in 1
 for i in range(0, numberOfExcelSheets):
@@ -36,3 +78,4 @@ for i in range(0, numberOfExcelSheets):
     # Find and write to file the best filament orientations for Mpc-scale jet systems in the BORG SDSS realisation (adjusted method).
     FOF.findBest(voxelIndicesListAdjust, densitiesSample)
     FOF.write(pathExcelWrite, methodDirect = False)
+'''
