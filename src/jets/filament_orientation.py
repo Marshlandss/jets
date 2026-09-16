@@ -1,6 +1,8 @@
 """
 Martijn Simon Soen Liong Oei, September 12026 H.E.
 """
+# Imports: Python
+import ast
 # Imports: third-party
 from astropy import units as u
 import numpy as np
@@ -182,3 +184,13 @@ def writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDens
     dataFrame[f"cartesian_best_angle_{method} (x,y,z)"] = [f"[{x:.5f}, {y:.5f}, {z:.5f}]" for x, y, z in zip(xs, ys, zs)]
     dataFrame[f"column_density_{method} (g/m^2)"]       = np.round(columnDensitiesBest, 3)
     dataFrame.to_excel(pathExcel, index = False)
+
+
+def loadVoxelIndices(pathExcel, method):
+    """
+    Load the (x, y, z) voxel indices of the jet system hosts from the catalogue at 'pathExcel'.
+    'method' is "d" (direct) or "a" (adjusted).
+    """
+    columnName = {"d" : "voxel_index_r (x,y,z)", "a" : "voxel_index_j (x,y,z)"}[method]
+    dataFrame  = pd.read_excel(pathExcel)
+    return [np.array(ast.literal_eval(string)) for string in dataFrame[columnName]]
