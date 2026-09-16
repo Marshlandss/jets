@@ -78,15 +78,19 @@ class FilamentOrientationFinder:
         of the segment inside it. The crossing points are precomputed in '__init__' and do not depend on the data.
 
         Parameters
-        -------
+        ----------
         cutout : array of shape (2 voxelRadius + 1,) * 3, indexed [iz, iy, ix]; mass density in units of the present-day
-                cosmic mean ('DENSITY_MEAN_TODAY'), as in the BORG SDSS cubes. Use 'cutout' to excise it from a full cube.
+                 cosmic mean ('DENSITY_MEAN_TODAY'), as in the BORG SDSS cubes. Use 'cutout' to excise it from a full cube.
 
         Returns
         -------
         columnDensities : array of shape (numberOfAltitudes, numberOfAzimuths); column density (in g m^-2), with
-                        columnDensities[i, j] corresponding to orientation ('altitudes[i]', 'azimuths[j]')
+                          columnDensities[i, j] corresponding to orientation ('altitudes[i]', 'azimuths[j]')
         """
+        shapeExpected = (2 * self.voxelRadius + 1,) * 3
+        if cutout.shape != shapeExpected:
+            raise ValueError(f"The cutout's shape is {cutout.shape}, while {shapeExpected} was expected.")
+
         columnDensities = np.full((self.numberOfAltitudes, self.numberOfAzimuths), np.nan)
 
         for indexAltitude in range(self.numberOfAltitudes):
@@ -133,6 +137,7 @@ class FilamentOrientationFinder:
         return np.unravel_index(np.argmax(columnDensities), columnDensities.shape)
 
 
+
 def findFilamentOrientations(FOF, densities, voxelIndicesList):
     """
     Find the filament orientation of every jet system whose voxel coordinates are listed in 'voxelIndicesList'.
@@ -158,12 +163,12 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
     azimuthsBest        = np.full(numberOfJetSystems, np.nan) # in deg
     altitudesBest       = np.full(numberOfJetSystems, np.nan) # in deg
     columnDensitiesBest = np.full(numberOfJetSystems, np.nan) # in g/m^2
-    for i, voxelIndices in enumerate(voxelIndicesList):
-        columnDensitiesAll[i]  = FOF.columnDensities(FOF.cutout(densities, voxelIndices))
-        iAlt, iAz              = FOF.findBest(columnDensitiesAll[i])
-        azimuthsBest[i]        = FOF.azimuths[iAz]
-        altitudesBest[i]       = FOF.altitudes[iAlt]
-        columnDensitiesBest[i] = columnDensitiesAll[i, iAlt, iAz]
+    for indexJetSystem, voxelIndices in enumerate(voxelIndicesList):
+        columnDensitiesAll [indexJetSystem] = FOF.columnDensities(FOF.cutout(densities, voxelIndices))
+        indexAltitudeBest, indexAzimuthBest = FOF.findBest(columnDensitiesAll[indexJetSystem])
+        azimuthsBest       [indexJetSystem] = FOF.azimuths [indexAzimuthBest]
+        altitudesBest      [indexJetSystem] = FOF.altitudes[indexAltitudeBest]
+        columnDensitiesBest[indexJetSystem] = columnDensitiesAll[indexJetSystem, indexAltitudeBest, indexAzimuthBest]
     return columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest
 
 
