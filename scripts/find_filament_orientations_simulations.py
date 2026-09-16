@@ -18,7 +18,7 @@ lambdaMax            = 2.5      # in BORG voxel side lengths
 stepAngle            = 1.       # in deg
 
 # Initialise filament orientation finding.
-FOF                  = FilamentOrientationFinder(lambdaMax = lambdaMax, stepAngle = stepAngle)
+FOF                  = FilamentOrientationFinder(lambdaMax, stepAngle)
 numberOfVoxelsCoarse = 2 * FOF.voxelRadius + 1 # in 1; per side
 RNG                  = np.random.default_rng(SEED)
 azimuthsTrue         = np.full(numberOfRealisations, np.nan) # in deg
