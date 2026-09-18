@@ -1,4 +1,6 @@
+# Imports: standard library
 import os
+# Imports: third-party
 import pandas as pd
 
 def format_sheet(excel_location):

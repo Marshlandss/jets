@@ -14,7 +14,7 @@ BORG_BOX_SIZE_MPC_H   = 750.                                                    
 BORG_NUMBER_OF_VOXELS = 256                                                      # in 1; per axis
 BORG_VOXEL_SIZE_MPC   = BORG_BOX_SIZE_MPC_H / (BORG_NUMBER_OF_VOXELS * LITTLE_H) # in Mpc (≈ 4.17); comoving
 
-# Set beta-profile filament parameters from Tuominen et al. (2021), used for voxelisation error simulations.
+# Set beta-profile filament parameters from Tuominen et al. (12021), used for voxelisation error simulations.
 FILAMENT_BETA            = 2.0     # in 1
 FILAMENT_DENSITY_CENTRAL = 1.6e-23 # in g m^-3
 FILAMENT_RADIUS_CORE     = 1.2     # in Mpc

@@ -1,3 +1,4 @@
+# Imports: third-party
 import numpy as np
 
 def distanceOnSphere(longitudes1, latitudes1, longitudes2, latitudes2, unitsDegree = True):
@@ -15,7 +16,7 @@ def distanceOnSphere(longitudes1, latitudes1, longitudes2, latitudes2, unitsDegr
     latitudes2         = np.atleast_1d(latitudes2)  # in degrees or radians
 
     # Convert to radians.
-    if (unitsDegree):
+    if unitsDegree:
         longitudes1 = np.radians(longitudes1) # in radians
         latitudes1  = np.radians(latitudes1)  # in radians
         longitudes2 = np.radians(longitudes2) # in radians
@@ -37,7 +38,7 @@ def distanceOnSphere(longitudes1, latitudes1, longitudes2, latitudes2, unitsDegr
     # This appears in tension with https://numpy.org/doc/stable/reference/generated/numpy.arctan2.html, which claims a range of -pi to pi rad.
     distances          = np.arctan2(np.sqrt(np.square(cosLatitudes2[None, : ] * sinDeltaLongitudes) + np.square(cosLatitudes1[ : , None] * sinLatitudes2[None, : ] - sinLatitudes1[ : , None] * cosLatitudes2[None, : ] * cosDeltaLongitudes)), sinLatitudes1[ : , None] * sinLatitudes2[None, : ] + cosLatitudes1[ : , None] * cosLatitudes2[None, : ] * cosDeltaLongitudes) # in radians
 
-    if (unitsDegree):
+    if unitsDegree:
         distances = np.degrees(distances) # in degrees
 
     return distances

@@ -1,4 +1,4 @@
-# Imports: Python
+# Imports: standard library
 import os
 # Imports: third-party
 from astropy.io import fits

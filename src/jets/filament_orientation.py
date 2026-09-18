@@ -1,7 +1,7 @@
 """
 Martijn Simon Soen Liong Oei, September 12026 H.E.
 """
-# Imports: Python
+# Imports: standard library
 import ast
 # Imports: third-party
 from astropy import units as u
