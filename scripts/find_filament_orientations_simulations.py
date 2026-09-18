@@ -5,7 +5,7 @@ by voxelising synthetic straight filaments with known orientations and running '
 # Imports: third-party
 import numpy as np
 # Imports: first-party
-from jets.config import SEED
+from jets.config import SEED, FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP
 from jets.filament_orientation import FilamentOrientationFinder
 from jets.filament_simulation import cubeGenerateFilamentProfileBeta, cubeAverageDown
 from jets.paths import DIR_SAVE
@@ -14,11 +14,9 @@ from jets.sphere_utils import axialSeparation, convertCartesianToSpherical
 # Initialise settings.
 numberOfRealisations = int(1e4) # in 1
 numberOfVoxelsFine   = 205      # in 1; per side
-lambdaMax            = 2.5      # in BORG voxel side lengths
-stepAngle            = 1.       # in deg
 
 # Initialise filament orientation finding.
-FOF                  = FilamentOrientationFinder(lambdaMax, stepAngle)
+FOF                  = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)
 numberOfVoxelsCoarse = 2 * FOF.voxelRadius + 1 # in 1; per side
 RNG                  = np.random.default_rng(SEED)
 azimuthsTrue         = np.full(numberOfRealisations, np.nan) # in deg

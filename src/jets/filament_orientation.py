@@ -186,10 +186,12 @@ def writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDens
     dataFrame.to_excel(pathExcel, index = False)
 
 
-def loadVoxelIndices(pathExcel, method):
+def loadVoxelIndicesList(pathExcel, method):
     """
     Load the (x, y, z) voxel indices of the jet system hosts from the catalogue at 'pathExcel'.
     'method' is "d" (direct) or "a" (adjusted).
+
+    Return a list of 1D NumPy arrays. Each array contains three indices.
     """
     columnName = {"d" : "voxel_index_r (x,y,z)", "a" : "voxel_index_j (x,y,z)"}[method]
     dataFrame  = pd.read_excel(pathExcel)
