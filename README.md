@@ -22,15 +22,15 @@ The package is now installed in editable mode: a `git pull` updates your install
 
 # Configuration
 Before running any code, set two environment variables:
-- `JETS_DIR_LOAD`: the directory containing the input catalogue, BORG SDSS cubes, and a subdirectory `fits/` with the radio cutouts;
-- `JETS_DIR_SAVE`: the directory to which output (tables and plots) is written; the code creates any subdirectories it needs.
+- `JETS_DIR_INPUT`: the directory containing the input catalogue, BORG SDSS cubes, and a subdirectory `fits/` with the radio cutouts;
+- `JETS_DIR_OUTPUT`: the directory to which output (tables and plots) is written; the code creates any subdirectories it needs.
 
 Choose either of these options:
 
 ```bash
 # Option 1 (all OSs): Store the variables in your conda environment.
 conda activate jets
-conda env config vars set JETS_DIR_LOAD="/path/to/load" JETS_DIR_SAVE="/path/to/save"
+conda env config vars set JETS_DIR_INPUT="/path/to/load" JETS_DIR_OUTPUT="/path/to/save"
 conda deactivate
 conda activate jets            # Re-activate so that the variables take effect.
 conda env config vars list     # Check.
@@ -38,8 +38,8 @@ conda env config vars list     # Check.
 # Option 2 (macOS and Linux): Store the variables in your shell profile.
 # For instance, to edit ~/.zshrc on macOS, type 'open -e ~/.zshrc'.
 # The changes take effect in new terminal windows.
-export JETS_DIR_LOAD="/path/to/load"
-export JETS_DIR_SAVE="/path/to/save"
+export JETS_DIR_INPUT="/path/to/load"
+export JETS_DIR_OUTPUT="/path/to/save"
 ```
 Surround paths that contain spaces with quotes: e.g. `"G:/My Drive/..."`.
 If you run code from an IDE, check that its run configuration sees these variables.
