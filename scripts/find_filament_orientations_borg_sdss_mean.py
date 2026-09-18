@@ -6,14 +6,14 @@ import numpy as np
 # Imports: first-party
 from jets.config import FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP
 from jets.filament_orientation import FilamentOrientationFinder, findFilamentOrientations, writeFilamentOrientations, loadVoxelIndicesList
-from jets.paths import DIR_LOAD, DIR_SAVE
+from jets.paths import DIR_INPUT, DIR_OUTPUT
 
 # Initialise settings.
 methods       = ["d", "a"] # "d": direct, "a": adjusted
 
 # Initialise paths.
-pathDensities = DIR_LOAD / "borg_sdss" / "borg_sdss_density.npz"
-pathExcel     = DIR_SAVE / "Mpc_filament_pa_exact_1.xlsx"
+pathDensities = DIR_INPUT  / "borg_sdss_density.npz"
+pathExcel     = DIR_OUTPUT / "Mpc_filament_pa_exact_1.xlsx"
 
 # Initialise filament orientation finding.
 FOF           = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)
@@ -29,5 +29,5 @@ for method in methods:
     # Find all column densities and best orientations.
     columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest = findFilamentOrientations(FOF, densitiesMean, voxelIndicesList)
 
-    np.save(DIR_SAVE / f"Mpc_column_densities_all_{method}.npy", columnDensitiesAll)
+    np.save(DIR_OUTPUT / f"Mpc_column_densities_all_{method}.npy", columnDensitiesAll)
     writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDensitiesBest, method)
