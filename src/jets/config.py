@@ -1,8 +1,8 @@
 # Set random seed.
 SEED = 0
 
-# Set jet orientation finding parameters.
-STEP_SIZE             = 1.   # in deg
+# Set jet orientation search parameters.
+JET_ANGLE_STEP        = 1.   # in deg; angular resolution of the jet orientation search
 BEST_ANGLE_THRESHOLD  = .85
 PIXEL_SHIFT           = 1    # shifts plot by indicated number of pixels to the top right; Martijn: 0, Martin: 1
 NAN_PERCENTAGE_CUTOFF = 43.  # in %
@@ -18,6 +18,10 @@ BORG_VOXEL_SIZE_MPC   = BORG_BOX_SIZE_MPC_H / (BORG_NUMBER_OF_VOXELS * LITTLE_H)
 FILAMENT_BETA            = 2.0     # in 1
 FILAMENT_DENSITY_CENTRAL = 1.6e-23 # in g m^-3
 FILAMENT_RADIUS_CORE     = 1.2     # in Mpc
+
+# Set filament orientation search parameters.
+FILAMENT_ANGLE_STEP = 1.  # in deg; angular resolution of the filament orientation search
+FILAMENT_LAMBDA_MAX = 2.5 # in BORG voxel side lengths; half-length of the line segment integrated over
 
 # Set saving parameters.
 SAVING_PLOTS    = True
