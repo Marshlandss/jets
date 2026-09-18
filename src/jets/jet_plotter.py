@@ -19,6 +19,7 @@ class JetPlotter:
                 
         self.save_plots()
 
+
     def save_plots(self):
         """
         Saves plots based on self.folder_status.
@@ -106,6 +107,7 @@ class JetPlotter:
                 # plt.show()
                 plt.close()
 
+
     def create_scatter_ax(self, scatter_ax, light_values, light_values_convolved, threshold, best_angle_index):
         """
         Creates a scatter plot of the data and saves it to self.scatter_plot_data
@@ -166,6 +168,7 @@ class JetPlotter:
 
         scatter_ax.set_xticklabels(xlab)
 
+
     def create_overlay_ax(self, overlay_ax, best_angle_index, radius):
         """
         Creates a plot of the cutout image and overlays the line of the best angle. Saves to self.overlay_image_data.
@@ -211,11 +214,12 @@ class JetPlotter:
         overlay_ax.add_artist(circle)
         overlay_ax.add_artist(central_point)
 
+
     def calculate_pixel_size_deg(self, img, angular_length):
         pixel_size = angular_length / img.shape[0]  # in arcmin
         pixel_size = pixel_size / 60  # in deg
-
         return pixel_size
+
 
     def format_ticks(self, image, pixel_size_arcmin, center_angle, ax, id, shift_value_dec, dec):
         ticks = np.linspace(0, image.shape[0], 5, endpoint = True)
@@ -238,17 +242,10 @@ class JetPlotter:
             ax.set_yticks(ticks)
             tick_labels = ax.set_yticklabels(ticks_converted)
 
-
         tick_labels[1].set_bbox(dict(facecolor='none', boxstyle='round,pad=0.3', linewidth = .5, edgecolor = "white"))
-
-
         return shift
 
+
     def add_text_to_ax(self, ax, text):
-            ax.text(
-                self.jet.image.shape[0] * 0.05, self.jet.image.shape[1] * 0.88,
-                text,
-                fontsize = self.axis_font_size,
-                color = "white",
-                bbox = dict(facecolor = "gray", edgecolor = "none", boxstyle = "round,pad=0.3", alpha = 0.5)
-            )
+        ax.text(self.jet.image.shape[0] * 0.05, self.jet.image.shape[1] * 0.88, text,
+        fontsize = self.axis_font_size, color = "white", bbox = dict(facecolor = "gray", edgecolor = "none", boxstyle = "round,pad=0.3", alpha = 0.5))

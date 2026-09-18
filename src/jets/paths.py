@@ -1,11 +1,10 @@
 """
 Read machine-specific directories from environment variables.
 """
+# Imports: standard library
 import os
 from pathlib import Path
 
-try:
-    DIR_LOAD = Path(os.environ["JETS_DIR_LOAD"]).expanduser()
-    DIR_SAVE = Path(os.environ["JETS_DIR_SAVE"]).expanduser()
-except KeyError as error:
-    raise RuntimeError(f"Environment variable {error} is not set; see README.md.") from None
+DIR_REPO   = Path(__file__).resolve().parents[2]
+DIR_INPUT  = Path(os.environ.get("JETS_DIR_INPUT",  DIR_REPO / "data" / "input")).expanduser()
+DIR_OUTPUT = Path(os.environ.get("JETS_DIR_OUTPUT", DIR_REPO / "data" / "output")).expanduser()

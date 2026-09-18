@@ -1,4 +1,4 @@
-# Imports: Python
+# Imports: standard library
 import math
 # Imports: third-party
 from astropy.io import fits
@@ -7,7 +7,6 @@ from scipy.signal import find_peaks
 import pandas as pd
 import numpy as np
 
-# === JetSystem class ===
 
 class JetSystem:
 
