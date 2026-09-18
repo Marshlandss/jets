@@ -8,7 +8,7 @@ import h5py
 # Imports: first-party
 from jets.config import FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP
 from jets.filament_orientation import FilamentOrientationFinder, findFilamentOrientations, writeFilamentOrientations, loadVoxelIndicesList
-from jets.paths import DIR_LOAD, DIR_SAVE
+from jets.paths import DIR_INPUT, DIR_OUTPUT
 
 # Initialise settings.
 methods              = ["d", "a"] # "d": direct, "a": adjusted
@@ -21,9 +21,9 @@ FOF                  = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_A
 
 for i in range(numberOfRealisations):
     indexRealisation = indexFirst + i * indexStep
-    pathDensities    = DIR_LOAD / "borg_sdss" / f"final_density_{indexRealisation}.h5"
-    pathExcelLoad    = DIR_SAVE / f"fpa_{indexRealisation}.xlsx"
-    pathExcelWrite   = DIR_SAVE / f"fpa_{indexRealisation}_exact_1.xlsx"
+    pathDensities    = DIR_INPUT  / f"final_density_{indexRealisation}.h5"
+    pathExcelLoad    = DIR_OUTPUT / f"fpa_{indexRealisation}.xlsx"
+    pathExcelWrite   = DIR_OUTPUT / f"fpa_{indexRealisation}_exact_1.xlsx"
     print(f"Working on realisation {indexRealisation} ({i + 1} of {numberOfRealisations})...")
 
     # Load the BORG SDSS realisation.
