@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 # Imports: first-party
-from jets.paths import DIR_LOAD, DIR_SAVE
+from jets.paths import DIR_OUTPUT
 
-matplotlib.rcParams['text.usetex'] = True
-matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{gensymb}"
+matplotlib.rcParams["text.usetex"] = True
+matplotlib.rcParams["text.latex.preamble"] = r"\usepackage{gensymb}"
 
 
 def add_curved_label_chunks(
@@ -20,10 +20,10 @@ def add_curved_label_chunks(
     chunks,
     *,
     t_values,
-    offset=0.08,
-    color="white",
-    fontsize=11,
-    path_effects=None,
+    offset = 0.08,
+    color = "white",
+    fontsize = 11,
+    path_effects = None,
 ):
     """
     Draw a label along the upper half-Mollweide boundary using a few chunks.
@@ -316,17 +316,17 @@ azimuths  = np.linspace(0, 360, 360, endpoint = False) # in deg
 altitudes = np.linspace(0,  90,  91)                   # in deg
 
 # Load pandas DataFrame with general data.
-dataGeneral        = pd.read_excel(DIR_LOAD / "Mpc_filament_pa_exact_1.xlsx") # Shape: (242, 20)
+dataGeneral        = pd.read_excel(DIR_OUTPUT / "Mpc_filament_pa_exact_1.xlsx") # Shape: (242, 20)
 numberOfJetSystems = dataGeneral.shape[0] # in 1
 
 # Create figure directory if she doesn't exist yet.
-directoryFigures = DIR_SAVE / "column_densities_hemisphere"
+directoryFigures = DIR_OUTPUT / "column_densities_hemisphere"
 directoryFigures.mkdir(parents = True, exist_ok = True)
 
 # Loop over the 'direct' and 'adjusted' host galaxy localisation methods.
 for method in ("d", "a"):
     # Load column density data.
-    dataCDs = np.load(DIR_LOAD / f"Mpc_column_densities_all_{method}.npy") # Shape: (242, 91, 360)
+    dataCDs = np.load(DIR_OUTPUT / f"Mpc_column_densities_all_{method}.npy") # Shape: (242, 91, 360)
 
     # Loop over jet systems.
     for indexJetSystem in range(numberOfJetSystems):

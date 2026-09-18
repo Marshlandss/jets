@@ -8,7 +8,7 @@ import numpy as np
 from jets.config import SEED, FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP
 from jets.filament_orientation import FilamentOrientationFinder
 from jets.filament_simulation import cubeGenerateFilamentProfileBeta, cubeAverageDown
-from jets.paths import DIR_SAVE
+from jets.paths import DIR_OUTPUT
 from jets.sphere_utils import axialSeparation, convertCartesianToSpherical
 
 # Initialise settings.
@@ -45,4 +45,4 @@ for i in range(numberOfRealisations):
         print(f"Realisation {i + 1} of {numberOfRealisations}: error {errorsAngular[i]:.1f} deg")
 
 # Store angular errors.
-np.save(DIR_SAVE / f"filament_voxelisation_errors_{numberOfRealisations}.npy", errorsAngular)
+np.save(DIR_OUTPUT / f"filament_voxelisation_errors_{numberOfRealisations}.npy", errorsAngular)

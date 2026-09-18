@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 # Imports: first-party
 from jets.config import JET_ANGLE_STEP, BEST_ANGLE_THRESHOLD, NAN_PERCENTAGE_CUTOFF, PIXEL_SHIFT, SAVING_PLOTS, SAVE_FORMAT, OVERWRITE_FILES
-from jets.paths import DIR_LOAD, DIR_SAVE
+from jets.paths import DIR_INPUT, DIR_OUTPUT
 from jets.jet_system import JetSystem
 from jets.jet_plotter import JetPlotter
 from jets.manual_adjustments import M_LIST, SA_LIST
@@ -22,12 +22,12 @@ angles            = np.linspace(0, np.pi, num = int(180 / JET_ANGLE_STEP), endpo
 
 # === Load data ===
 # --- For Martijn's catalogue ---
-path_catalogue_go = DIR_LOAD / "GGO_catalogue_2025_02_with3C236.fits"
-directory_fits    = DIR_LOAD / "fits"
+path_catalogue_go = DIR_INPUT / "GGO_catalogue_2025_02_with3C236.fits"
+directory_fits    = DIR_INPUT / "fits"
 
 # --- For Martin's catalogue ---
-#path_catalogue_go = DIR_LOAD / "agn-v1.1.fits"
-#directory_fits    = DIR_LOAD / "cleaned_fits_without_dups"
+#path_catalogue_go = DIR_INPUT / "agn-v1.1.fits"
+#directory_fits    = DIR_INPUT / "cleaned_fits_without_dups"
 
 hdu_list          = fits.open(path_catalogue_go)
 
@@ -55,8 +55,8 @@ hdu_list.close()
 
 # === Create Folders ===
 # The following paths are for saving output.
-path_excel     = DIR_SAVE / f"{DIR_SAVE.name}.xlsx"
-save_plots_loc = DIR_SAVE / "jet_orientation_plots"
+path_excel     = DIR_OUTPUT / f"{DIR_OUTPUT.name}.xlsx"
+save_plots_loc = DIR_OUTPUT / "jet_orientation_plots"
 save_a_loc     = save_plots_loc / "a"
 save_sa_loc    = save_plots_loc / "sa"
 save_m_loc     = save_plots_loc / "m"

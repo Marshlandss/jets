@@ -6,7 +6,7 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import StrMethodFormatter
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC, SEED
-from jets.paths import DIR_SAVE
+from jets.paths import DIR_OUTPUT
 from jets.plot_utils import plotGalaxySpiral
 from jets.filament_simulation import cubeGenerateFilamentProfileBeta, cubeAverageDown, cubeColumnDensityAlongAxis
 
@@ -85,7 +85,7 @@ cbar.ax.yaxis.set_major_formatter(StrMethodFormatter('${x:.1f}$'))
 plt.subplots_adjust(left = 0.11, right = 0.91, top = 0.9, bottom = 0.15, wspace = 0.01)
 
 # Save figure.
-pathFigure = DIR_SAVE / "filament_voxelisation_simulation.pdf"
+pathFigure = DIR_OUTPUT / "filament_voxelisation_simulation.pdf"
 plt.savefig(pathFigure, dpi = 1000)
 print(f"Saved figure to '{pathFigure}'.")
 plt.close()
