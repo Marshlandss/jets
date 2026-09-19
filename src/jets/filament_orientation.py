@@ -144,7 +144,7 @@ class FilamentOrientationFinder:
         """
         columnDensityMax            = np.nanmax(columnDensities)
 
-        indexAltitude, indexAzimuth = np.unravel_index(np.argmax(columnDensities), columnDensities.shape)
+        indexAltitude, indexAzimuth = np.unravel_index(np.nanargmax(columnDensities), columnDensities.shape)
         axis                        = np.array(convertSphericalToCartesian(self.azimuths[indexAzimuth], self.altitudes[indexAltitude]))
         return axis, columnDensityMax
 
@@ -164,11 +164,11 @@ class FilamentOrientationFinder:
         xs, ys, zs                      = convertSphericalToCartesian(self.azimuths[indicesAzimuth], self.altitudes[indicesAltitude])
         vectors                         = np.stack([xs, ys, zs], axis = 1)  # shape (n, 3)
 
-        # Calculate principle axis 'axis'.
+        # Calculate principal axis.
         weights                         = self.weightsSolidAngle[indicesAltitude]
         scatter                         = (vectors * weights[:, None]).T @ vectors
         eigenvalues, eigenvectors       = np.linalg.eigh(scatter)  # ascending
-        axis                            = eigenvectors[:, -1]
+        axis                            = eigenvectors[ : , -1]
 
         # Make sure 'axis' is a vector pointing in the upper hemisphere.
         if axis[2] < 0:
@@ -192,10 +192,10 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
 
     Returns
     -------
-    columnDensitiesAll  : array of shape (numberOfJetSystems, numberOfAltitudes, numberOfAzimuths); column density (in g m^-2)
+    columnDensitiesAll  : array of shape (numberOfJetSystems, numberOfAltitudes, numberOfAzimuths); column density (in g/m^2)
     azimuthsBest        : array of shape (numberOfJetSystems,); azimuth        (in deg) of the best-fitting orientation
     altitudesBest       : array of shape (numberOfJetSystems,); altitude       (in deg) of the best-fitting orientation
-    columnDensitiesBest : array of shape (numberOfJetSystems,); column density (in g m^-2) at that orientation
+    columnDensitiesBest : array of shape (numberOfJetSystems,); column density (in g/m^2) at that orientation
     """
     numberOfJetSystems  = len(voxelIndicesList) # in 1
 
@@ -210,10 +210,7 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
         azimuthsBest       [indexJetSystem] = azimuthBest
         altitudesBest      [indexJetSystem] = altitudeBest
         columnDensitiesBest[indexJetSystem] = columnDensityBest
-        #indexAltitudeBest, indexAzimuthBest = FOF.findBest(columnDensitiesAll[indexJetSystem])
-        #azimuthsBest       [indexJetSystem] = FOF.azimuths [indexAzimuthBest]
-        #altitudesBest      [indexJetSystem] = FOF.altitudes[indexAltitudeBest]
-        #columnDensitiesBest[indexJetSystem] = columnDensitiesAll[indexJetSystem, indexAltitudeBest, indexAzimuthBest]
+
     return columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest
 
 
