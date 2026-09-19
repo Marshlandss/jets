@@ -49,9 +49,11 @@ class FilamentOrientationFinder:
 
         jMax                     = int(np.floor(lambdaMax + .5))
         js                       = np.arange(1, jMax + 1)
-        self.lambdasCrossingX    = ((2 * js[None, None, : ] - 1) / (2 * np.abs(xsFilament[ : , : , None]))).astype(np.float32)
-        self.lambdasCrossingY    = ((2 * js[None, None, : ] - 1) / (2 * np.abs(ysFilament[ : , : , None]))).astype(np.float32)
-        self.lambdasCrossingZ    = ((2 * js[None, None, : ] - 1) / (2 * np.abs(zsFilament[ : , : , None]))).astype(np.float32)
+
+        with np.errstate(divide = "ignore"): # A vanishing direction component gives an infinite crossing parameter, which is intended: the line segment never crosses a border perpendicular to that axis.
+            self.lambdasCrossingX = ((2 * js[None, None, : ] - 1) / (2 * np.abs(xsFilament[ : , : , None]))).astype(np.float32)
+            self.lambdasCrossingY = ((2 * js[None, None, : ] - 1) / (2 * np.abs(ysFilament[ : , : , None]))).astype(np.float32)
+            self.lambdasCrossingZ = ((2 * js[None, None, : ] - 1) / (2 * np.abs(zsFilament[ : , : , None]))).astype(np.float32)
 
         # Initialise indices of the central voxel in a smaller 'cutout cube'.
         self.voxelIndicesCentre  = np.array([self.voxelRadius, self.voxelRadius, self.voxelRadius])
