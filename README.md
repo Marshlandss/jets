@@ -22,23 +22,22 @@ The package is now installed in editable mode: a `git pull` updates your install
 
 # Configuration
 By default, the code reads input from `data/input/` and writes output to `data/output/` within the repository, so no configuration is needed.
-Just place your input files in `data/input/` and run! Note that this assumes an editable install
-(see above).
+Just place your input files in `data/input/` and run. Note that this assumes an editable install (see above).
 
-- `data/input/` holds data the package does not produce: the input jet system catalogue, a subdirectory `fits/` with radio cutouts, and BORG SDSS cubes. It is otherwise flat: no further subdirectories are needed.
-- `data/output/` holds everything the package produces: tables, intermediate arrays, and plots. The code creates any
-  subdirectories it needs.
+`data/input/` holds data that the package does not produce, in subdirectories:
+- `data/input/catalogues/` holds jet system catalogues;
+- `data/input/images/` holds radio (and optical) cutouts;
+- `data/input/reconstructions/` holds BORG SDSS cubes.
 
-Before running any code, set two environment variables:
-- `JETS_DIR_INPUT`: the directory containing the input catalogue, BORG SDSS cubes, and a subdirectory `fits/` with the radio cutouts;
-- `JETS_DIR_OUTPUT`: the directory to which output (tables and plots) is written; the code creates any subdirectories it needs.
+`data/output/` holds everything the package produces: tables, intermediate arrays, and plots. The code creates any subdirectories it needs.
 
+To store the data elsewhere, set the environment variables `JETS_DIR_INPUT` and `JETS_DIR_OUTPUT`.
 Choose either of these options:
 
 ```bash
 # Option 1 (all OSs): Store the variables in your conda environment.
 conda activate jets
-conda env config vars set JETS_DIR_INPUT="/path/to/load" JETS_DIR_OUTPUT="/path/to/save"
+conda env config vars set JETS_DIR_INPUT="/path/to/input" JETS_DIR_OUTPUT="/path/to/output"
 conda deactivate
 conda activate jets            # Re-activate so that the variables take effect.
 conda env config vars list     # Check.
@@ -46,8 +45,8 @@ conda env config vars list     # Check.
 # Option 2 (macOS and Linux): Store the variables in your shell profile.
 # For instance, to edit ~/.zshrc on macOS, type 'open -e ~/.zshrc'.
 # The changes take effect in new terminal windows.
-export JETS_DIR_INPUT="/path/to/load"
-export JETS_DIR_OUTPUT="/path/to/save"
+export JETS_DIR_INPUT="/path/to/input"
+export JETS_DIR_OUTPUT="/path/to/output"
 ```
 Surround paths that contain spaces with quotes: e.g. `"G:/My Drive/..."`.
 If you run code from an IDE, check that its run configuration sees these variables.
@@ -55,10 +54,10 @@ If you run code from an IDE, check that its run configuration sees these variabl
 # Usage
 Run `python scripts/find_jet_orientations.py` to obtain radio–optical images with jet–filament overlays:
 <div align="center">
-  <img src="figures/158.51625_18.680278_notsub.png" alt="A Mpc-scale jet system: radio view, optical host galaxy view, and jet and filament orientation in 2D" width="80%">
+  <img src="docs/figures/158.51625_18.680278_notsub.png" alt="A Mpc-scale jet system: radio view, optical host galaxy view, and jet and filament orientation in 2D" width="80%">
 </div>
 
 Run `python scripts/plot_column_densities_hemisphere.py` to visualise the galactocentric cosmic web column density as a function of line segment orientation:
 <div align="center">
-  <img src="figures/column_densities_hemisphere_083_d.png" alt="Cosmic Web column densities obtained by integrating along a line segment spanning 5 BORG SDSS voxel side lengths, and oriented along each possible direction in a hemisphere" width="80%">
+  <img src="docs/figures/column_densities_hemisphere_083_d.png" alt="Cosmic Web column densities obtained by integrating along a line segment spanning 5 BORG SDSS voxel side lengths, and oriented along each possible direction in a hemisphere" width="80%">
 </div>
