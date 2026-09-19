@@ -11,7 +11,8 @@ def cubeGenerateFilamentProfileBeta(
     beta           = FILAMENT_BETA,            # in 1
     densityCentral = FILAMENT_DENSITY_CENTRAL, # in g/m^3; central density
     radiusCore     = FILAMENT_RADIUS_CORE,     # in Mpc
-    axis           = None):                    # in 1
+    axis           = None,                     # in 1
+    offset         = None):                    # in 1
     """
     Generate a fine-grained mass density cube containing a single straight filament with a beta-profile cross-section,
     rho(d) = densityCentral (1 + (d / radiusCore)^2)^(-3 beta / 2), where d is the perpendicular distance to the filament axis.
@@ -31,6 +32,9 @@ def cubeGenerateFilamentProfileBeta(
     axis                 : array of shape (3,) or None; direction of the filament axis, normalised internally.
                            If None (default), an isotropically random direction is drawn from 'RNG'.
                            Supply a fixed direction to test the pipeline.
+    offset               : array of shape (3,) or None; point on the filament axis
+                           If None (default), a random offset is drawn from 'RNG'.
+                           Supply a fixed offset to test the pipeline.
 
     Returns
     -------
@@ -51,8 +55,9 @@ def cubeGenerateFilamentProfileBeta(
     axis /= np.linalg.norm(axis)
 
     # Offset within half a low-res voxel
-    half_voxel = 0.5 * BORG_VOXEL_SIZE_MPC
-    offset     = RNG.uniform(-half_voxel, half_voxel, size = 3) # Rather than 'np.array([0.,0.,0.])'.
+    if offset is None:
+        half_voxel = 0.5 * BORG_VOXEL_SIZE_MPC
+        offset     = RNG.uniform(-half_voxel, half_voxel, size = 3) # Rather than 'np.array([0., 0., 0.])'.
 
     # Shifted coordinates
     xs = x - offset[0]
