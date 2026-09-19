@@ -10,15 +10,11 @@ git clone git@github.com:Marshlandss/jets.git
 ```
 ```bash
 cd jets
-
-# Option 1: Install dependencies with conda (recommended).
 conda env create -f environment.yaml
 conda activate jets
-# Option 2: Install dependencies with pip.
-python -m pip install -e .
 ```
 The package is now installed in editable mode: a `git pull` updates your installation immediately.
-(Re-run `python -m pip install -e .` if dependencies change.)
+(Re-run `python -m pip install -e .` from the activated environment if dependencies change.)
 
 # Configuration
 By default, the code reads input from `data/input/` and writes output to `data/output/` within the repository, so no configuration is needed.
