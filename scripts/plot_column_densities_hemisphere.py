@@ -9,35 +9,32 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 # Imports: first-party
+from jets.config import FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP
+from jets.filament_orientation import FilamentOrientationFinder
 from jets.paths import DIR_OUTPUT
+from jets.sphere_utils import convertCartesianToSpherical
 
 matplotlib.rcParams["text.usetex"] = True
 matplotlib.rcParams["text.latex.preamble"] = r"\usepackage{gensymb}"
 
 
-def add_curved_label_chunks(
-    ax,
-    chunks,
-    *,
-    t_values,
-    offset = 0.08,
-    color = "white",
-    fontsize = 11,
-    path_effects = None,
-):
+def add_curved_label_chunks(ax, chunks, *, t_values,
+    offset       = 0.08,
+    color        = "white",
+    fontsize     = 11,
+    path_effects = None):
     """
     Draw a label along the upper half-Mollweide boundary using a few chunks.
     Each chunk is placed at its own tangent angle, kept upright.
     """
-
     for text, t in zip(chunks, t_values):
         # Boundary point
         x = 2 * np.sqrt(2) * np.cos(t)
         y = np.sqrt(2) * np.sin(t)
 
         # Tangent
-        dxdt = -2 * np.sqrt(2) * np.sin(t)
-        dydt =  np.sqrt(2) * np.cos(t)
+        dxdt  = -2 * np.sqrt(2) * np.sin(t)
+        dydt  = np.sqrt(2) * np.cos(t)
         angle = np.degrees(np.arctan2(dydt, dxdt))
 
         # Keep text upright
@@ -62,6 +59,7 @@ def add_curved_label_chunks(
         if path_effects is not None:
             txt.set_path_effects(path_effects)
 
+
 def mollweide_forward(lon, lat):
     """
     Forward Mollweide projection.
@@ -81,7 +79,7 @@ def mollweide_forward(lon, lat):
     theta = lat.copy()
 
     # Good special-case handling near the pole
-    pole = np.isclose(np.abs(lat), np.pi/2)
+    pole        = np.isclose(np.abs(lat), np.pi/2)
     theta[pole] = np.sign(lat[pole]) * np.pi/2
 
     not_pole = ~pole
@@ -121,7 +119,7 @@ def edges_from_centers(x, periodic=False, period=None):
     return edges
 
 
-def make_upper_half_mollweide_boundary(n=800):
+def make_upper_half_mollweide_boundary(n = 800):
     """
     Returns a Path for the upper half of the Mollweide ellipse,
     closed along the equator.
@@ -134,22 +132,13 @@ def make_upper_half_mollweide_boundary(n=800):
     verts = np.column_stack([x, y])
 
     # Close along equator back to start
-    verts = np.vstack([
-        verts,
-        [x_max, 0.0],
-        [-x_max, 0.0],
-        verts[0]
-    ])
+    verts = np.vstack([verts, [x_max, 0.0], [-x_max, 0.0], verts[0]])
 
     codes = [Path.MOVETO] + [Path.LINETO] * (len(verts) - 2) + [Path.CLOSEPOLY]
     return Path(verts, codes)
 
 
-def plot_half_mollweide_compact(
-    az_deg,
-    alt_deg,
-    values,
-    *,
+def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
     cmap           = "viridis",
     cbar_label     = "Value",
     rightAscension = None,
@@ -159,8 +148,7 @@ def plot_half_mollweide_compact(
     vmin           = None,
     vmax           = None,
     contours       = None,
-    figsize        = (10, 3.8),
-):
+    figsize        = (10, 3.8)):
     """
     Compact northern-hemisphere-only Mollweide plot.
 
@@ -182,10 +170,7 @@ def plot_half_mollweide_compact(
     values  = np.asarray(values,  dtype = float)
 
     if values.shape != (len(alt_deg), len(az_deg)):
-        raise ValueError(
-            f"values must have shape ({len(alt_deg)}, {len(az_deg)}), "
-            f"got {values.shape}"
-        )
+        raise ValueError(f"values must have shape ({len(alt_deg)}, {len(az_deg)}), ", f"got {values.shape}")
 
     # Use a non-duplicated azimuth grid if both 0 and 360 are present
     if np.isclose((az_deg[-1] - az_deg[0]) % 360, 0) and len(az_deg) > 2:
@@ -218,15 +203,13 @@ def plot_half_mollweide_compact(
 
     fig, ax = plt.subplots(figsize=figsize)
 
-    mesh = ax.pcolormesh(
-        X_e, Y_e, values,
+    mesh = ax.pcolormesh(X_e, Y_e, values,
         shading="auto",
         cmap=cmap,
         norm=norm,
         edgecolors='none',
         linewidth=0,
-        rasterized=True
-    )
+        rasterized=True)
 
     # Clip to upper half-Mollweide boundary.
     boundary   = make_upper_half_mollweide_boundary()
@@ -312,46 +295,49 @@ def plot_half_mollweide_compact(
 
 
 # Initialize settings.
-labelSample = "Mpc"
-labelCube   = "mean"
-labelMethod = "d"
+labelsSample = ("Mpc", "kpc")
+labelCube    = "mean"
+labelsMethod = ("d", "a")
 
 # Initialize Northern Hemisphere coordinate grids.
 azimuths  = np.linspace(0, 360, 360, endpoint = False) # in deg
 altitudes = np.linspace(0,  90,  91)                   # in deg
 
-# Load pandas DataFrame with general data.
-#dataGeneral        = pd.read_excel(DIR_OUTPUT / "Mpc_filament_pa_exact_1.xlsx") # Shape: (242, 20)
-dataGeneral        = pd.read_excel(DIR_OUTPUT / f"catalogue_filament_{labelSample}_{labelCube}.xlsx") # Shape: (242, ?)
-numberOfJetSystems = dataGeneral.shape[0] # in 1
+# We choose to recompute the best filament orientation on the spot given column densities,
+# instead of using the best filament orientation on file. This allows for experimentation with 'FILAMENT_TOLERANCE_REL'.
+FOF = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)
 
-# Create figure directory if she doesn't exist yet.
-directoryFigures = DIR_OUTPUT / "column_densities_hemisphere"
-directoryFigures.mkdir(parents = True, exist_ok = True)
+for labelSample in labelsSample:
+    # Load pandas DataFrame with general data.
+    dataGeneral        = pd.read_excel(DIR_OUTPUT / f"catalogue_filament_{labelSample}_{labelCube}.xlsx") # Shape: (242, ?)
+    numberOfJetSystems = dataGeneral.shape[0] # in 1
 
-# Loop over the 'direct' and 'adjusted' host galaxy localization methods.
-for method in ("d", "a"):
-    # Load column density data.
-    #dataCDs = np.load(DIR_OUTPUT / f"Mpc_column_densities_all_{method}.npy") # Shape: (242, 91, 360)
-    dataCDs = np.load(DIR_OUTPUT / f"column_densities_{labelSample}_{labelCube}_{labelMethod}.npy") # Shape: (242, 91, 360)
+    # Create figure directory if she doesn't exist yet.
+    directoryFigures = DIR_OUTPUT / f"column_densities_hemisphere_{labelSample}_{labelCube}"
+    directoryFigures.mkdir(parents = True, exist_ok = True)
 
-    # Loop over jet systems.
-    for indexJetSystem in range(numberOfJetSystems):
-        rightAscension = float(dataGeneral.loc[indexJetSystem, "right_ascension (deg)"])
-        declination    = float(dataGeneral.loc[indexJetSystem, "declination (deg)"])
-        pathFigure     = directoryFigures / f"column_densities_hemisphere_{indexJetSystem:03d}_{method}.pdf"
-        print(f"Saving figure to '{pathFigure}'...")
-        fig, ax        = plot_half_mollweide_compact(
-            azimuths,
-            altitudes,
-            dataCDs[indexJetSystem],
-            cmap           = cm.lipari,
-            cbar_label     = r"Cosmic Web column density $\sigma_\mathrm{CW}\ (\mathrm{g\ m^{-2}})$",
-            rightAscension = rightAscension,
-            declination    = declination,
-            central_az_deg = 180,
-            contours       = None, #(1., 2., 3., 4., 5., 6., 7., 8., 9., 10.), # in g/m^2
-            figsize        = (6, 2.5))
-        plt.subplots_adjust(left = 0.015, right = 0.985, top = 0.99, bottom = 0.2)
-        plt.savefig(pathFigure, dpi = 1000)
-        plt.close()
+    # Loop over the 'direct' and 'adjusted' host galaxy localization methods.
+    for labelMethod in labelsMethod:
+        # Load column density data.
+        dataCDs = np.load(DIR_OUTPUT / f"column_densities_{labelSample}_{labelCube}_{labelMethod}.npy") # Shape: (242, 91, 360)
+
+        # Loop over jet systems.
+        for indexJetSystem in range(numberOfJetSystems):
+            rightAscension            = float(dataGeneral.loc[indexJetSystem, "right_ascension (deg)"])
+            declination               = float(dataGeneral.loc[indexJetSystem, "declination (deg)"])
+            axisBest, _               = FOF.findBestPlateau(dataCDs[indexJetSystem])
+            azimuthBest, altitudeBest = convertCartesianToSpherical(*axisBest)
+            pathFigure                = directoryFigures / f"column_densities_hemisphere_{indexJetSystem:03d}_{labelMethod}.pdf"
+            print(f"Saving figure to '{pathFigure}'...")
+
+            fig, ax = plot_half_mollweide_compact(azimuths, altitudes, dataCDs[indexJetSystem],
+                cmap           = cm.lipari,
+                cbar_label     = r"Cosmic Web column density $\sigma_\mathrm{CW}\ (\mathrm{g\ m^{-2}})$",
+                rightAscension = rightAscension,
+                declination    = declination,
+                central_az_deg = 180,
+                contours       = None, # in g/m^2; e.g. (2., 4., 6., 8., 10.)
+                figsize        = (6, 2.5))
+            plt.subplots_adjust(left = 0.015, right = 0.985, top = 0.99, bottom = 0.2)
+            plt.savefig(pathFigure, dpi = 1000)
+            plt.close()

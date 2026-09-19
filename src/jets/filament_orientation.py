@@ -8,7 +8,7 @@ from astropy import units as u
 import numpy as np
 import pandas as pd
 # Imports: first-party
-from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY
+from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY, FILAMENT_TOLERANCE_REL
 from jets.sphere_utils import convertCartesianToSpherical, convertSphericalToCartesian
 
 
@@ -149,7 +149,7 @@ class FilamentOrientationFinder:
         return axis, columnDensityMax
 
 
-    def findBestPlateau(self, columnDensities, toleranceRelative = 1e-6):
+    def findBestPlateau(self, columnDensities, toleranceRelative = FILAMENT_TOLERANCE_REL):
         """
         Return (axis, columnDensityMax): the unit vector of the best-fitting filament orientation,
         defined as the principal axis of all orientations whose column density lies within 'toleranceRelative' of the maximum, and that maximum.
