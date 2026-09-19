@@ -216,7 +216,8 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
 
 def writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDensitiesBest, method):
     """
-    Add best filament orientations to the jet system catalogue at 'pathExcel'. 'method' is "d" (direct) or "a" (adjusted).
+    Add best filament orientations to the jet system catalogue at 'pathExcel'.
+    'method' is "d" (direct) or "a" (adjusted).
     """
     xs, ys, zs = convertSphericalToCartesian(azimuthsBest, altitudesBest)
     dataFrame  = pd.read_excel(pathExcel)

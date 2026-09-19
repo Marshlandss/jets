@@ -12,7 +12,7 @@ from jets.paths import DIR_OUTPUT
 from jets.sphere_utils import axialSeparation, convertCartesianToSpherical
 
 # Initialise settings.
-numberOfVoxelsFine   = 205      # in 1; per side
+numberOfVoxelsFine   = 205 # in 1; per side
 
 # Initialise filament orientation finding.
 FOF                  = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)
@@ -24,7 +24,7 @@ azimuthsBest         = np.full(FILAMENT_REALIZATION_N, np.nan) # in deg
 altitudesBest        = np.full(FILAMENT_REALIZATION_N, np.nan) # in deg
 errorsAngular        = np.full(FILAMENT_REALIZATION_N, np.nan) # in deg
 
-# Loop over realisations.
+# Loop over realizations.
 for i in range(FILAMENT_REALIZATION_N):
     # Generate a fine-grained filament with a random orientation and offset, and degrade it to BORG resolution.
     cube, axis, _ = cubeGenerateFilamentProfileBeta(numberOfVoxelsFine, numberOfVoxelsCoarse, RNG)
@@ -41,7 +41,7 @@ for i in range(FILAMENT_REALIZATION_N):
     errorsAngular[i]                  = axialSeparation(azimuthsTrue[i], altitudesTrue[i], azimuthsBest[i], altitudesBest[i])[0, 0]
 
     if (i + 1) % 10 == 0:
-        print(f"Realisation {i + 1} of {FILAMENT_REALIZATION_N}: error {errorsAngular[i]:.1f} deg")
+        print(f"Realization {i + 1} of {FILAMENT_REALIZATION_N}: error {errorsAngular[i]:.1f} deg")
 
 # Store angular errors.
-np.save(DIR_OUTPUT / f"filament_voxelisation_errors_{FILAMENT_REALIZATION_N}.npy", errorsAngular)
+np.save(DIR_OUTPUT / f"filament_voxelization_errors_{FILAMENT_REALIZATION_N}.npy", errorsAngular)

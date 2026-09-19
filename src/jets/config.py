@@ -15,7 +15,7 @@ BORG_NUMBER_OF_VOXELS = 256                                                     
 BORG_VOXEL_SIZE_MPC   = BORG_BOX_SIZE_MPC_H / (BORG_NUMBER_OF_VOXELS * LITTLE_H) # in Mpc (≈ 4.17); comoving
 
 # Set voxelization error simulation parameters.
-FILAMENT_REALIZATION_N   = int(1e3) # in 1
+FILAMENT_REALIZATION_N   = int(1e4) # in 1
 FILAMENT_TOLERANCE_REL   = 1e-3     # in 1
 # Set beta-profile filament parameters from Tuominen et al. (12021).
 FILAMENT_BETA            = 2.0      # in 1

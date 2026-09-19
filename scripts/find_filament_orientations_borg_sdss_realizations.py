@@ -1,8 +1,6 @@
 """
-Find the Cosmic Web filament orientations of Mpc-scale jet systems, using 41 BORG SDSS posterior realisations.
+Find the Cosmic Web filament orientations of Mpc-scale jet systems, using 41 BORG SDSS posterior realizations.
 """
-# Imports: standard library
-import shutil
 # Imports: third-party
 import h5py
 # Imports: first-party
@@ -11,31 +9,29 @@ from jets.filament_orientation import FilamentOrientationFinder, findFilamentOri
 from jets.paths import DIR_INPUT, DIR_OUTPUT
 
 # Initialise settings.
-methods              = ["d", "a"] # "d": direct, "a": adjusted
-numberOfRealisations = 41   # in 1
-indexFirst           = 2000 # in 1; index of the first realisation
-indexStep            = 250  # in 1; index spacing between consecutive realisations
+labelsSample         = ("Mpc", "kpc")
+labelsMethod         = ("d", "a") # "d": direct, "a": adjusted
+numberOfRealizations = 41   # in 1
+indexFirst           = 2000 # in 1; index of the first realization
+indexStep            = 250  # in 1; index spacing between consecutive realizations
 
-# Initialise filament orientation finding.
+# Initialize filament orientation finding.
 FOF                  = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)
 
-for i in range(numberOfRealisations):
-    indexRealisation = indexFirst + i * indexStep
-    pathDensities    = DIR_INPUT  / "reconstructions" / f"final_density_{indexRealisation}.h5"
-    pathExcelLoad    = DIR_OUTPUT / f"fpa_{indexRealisation}.xlsx"
-    pathExcelWrite   = DIR_OUTPUT / f"fpa_{indexRealisation}_exact_1.xlsx"
-    print(f"Working on realisation {indexRealisation} ({i + 1} of {numberOfRealisations})...")
+for labelSample in labelsSample:
+    for i in range(numberOfRealizations):
+        indexRealization = indexFirst + i * indexStep
+        pathDensities    = DIR_INPUT  / "reconstructions" / f"final_density_{indexRealization}.h5"
+        pathExcel        = DIR_OUTPUT / f"catalogue_filament_{labelSample}_{indexRealization}.xlsx"
+        print(f"Working on realization {indexRealization} ({i + 1} of {numberOfRealizations})...")
 
-    # Load the BORG SDSS realisation.
-    with h5py.File(pathDensities, "r") as file:
-        densitiesRealisation = file["scalars"]["field"][()] + 1 # in today's mean matter density
+        # Load the BORG SDSS realization.
+        with h5py.File(pathDensities, "r") as file:
+            densitiesRealization = file["scalars"]["field"][()] + 1 # in today's mean matter density
 
-    # Copy the catalogue, so that the filament orientations are added to a new file.
-    if not pathExcelWrite.exists():
-        shutil.copy(pathExcelLoad, pathExcelWrite)
-
-    for method in methods:
-        # For the adjusted method, host galaxy localisation is density realisation–dependent, and thus must be loaded in the loop over realisations.
-        voxelIndicesList = loadVoxelIndicesList(pathExcelLoad, method)
-        _, azimuthsBest, altitudesBest, columnDensitiesBest = findFilamentOrientations(FOF, densitiesRealisation, voxelIndicesList)
-        writeFilamentOrientations(pathExcelWrite, azimuthsBest, altitudesBest, columnDensitiesBest, method)
+        for labelMethod in labelsMethod:
+            # For the adjusted method, host galaxy localization is density realization–dependent,
+            # and thus voxel indices must be loaded in the loop over realizations.
+            voxelIndicesList = loadVoxelIndicesList(pathExcel, labelMethod)
+            _, azimuthsBest, altitudesBest, columnDensitiesBest = findFilamentOrientations(FOF, densitiesRealization, voxelIndicesList)
+            writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDensitiesBest, labelMethod)
