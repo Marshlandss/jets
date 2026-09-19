@@ -12,7 +12,7 @@ from jets.paths import DIR_INPUT, DIR_OUTPUT
 methods       = ["d", "a"] # "d": direct, "a": adjusted
 
 # Initialise paths.
-pathDensities = DIR_INPUT  / "borg_sdss_density.npz"
+pathDensities = DIR_INPUT  / "reconstructions" / "borg_sdss_density.npz"
 pathExcel     = DIR_OUTPUT / "Mpc_filament_pa_exact_1.xlsx"
 
 # Initialise filament orientation finding.

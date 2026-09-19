@@ -1,7 +1,13 @@
-# Large input cubes (BORG SDSS mean density and realisations).
-# These are never committed.
-*.npz
-*.h5
+# Data: ignore by default; whitelist a few files.
+# Large input cubes (e.g. borg_sdss_density.npz) are too large for GitHub.
+data/input/*
+!data/input/.gitkeep
+data/output/*
+!data/output/.gitkeep
+!data/output/Mpc_column_densities_all_*.npy
+!data/output/Mpc_filament_pa_exact_1.xlsx
+!data/output/kpc_filament_pa_exact_1.xlsx
+!data/output/filament_voxelisation_errors_10000.npy
 
 # macOS junk
 .DS_Store
