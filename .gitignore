@@ -14,10 +14,11 @@ data/input/reconstructions/*
 # Output data: ignore by default; whitelist a few files.
 data/output/*
 !data/output/.gitkeep
-!data/output/Mpc_column_densities_all_*.npy
-!data/output/Mpc_filament_pa_exact_1.xlsx
-!data/output/kpc_filament_pa_exact_1.xlsx
-!data/output/filament_voxelisation_errors_10000.npy
+!data/output/column_densities_Mpc_mean_d.npy
+!data/output/column_densities_Mpc_mean_a.npy
+!data/output/catalogue_filament_Mpc_mean.xlsx
+!data/output/catalogue_filament_kpc_mean.xlsx
+!data/output/filament_voxelization_errors_*.npy
 
 # Ignore anything starting with 'scratch', to allow for quick local experimentation.
 # Such files (e.g. scripts or configuration files) may include private information, such as machine-specific paths, and thus should not be tracked.
