@@ -37,10 +37,11 @@ Choose either of these options:
 ```bash
 # Option 1 (all OSs): Store the variables in your conda environment.
 conda activate jets
-conda env config vars set JETS_DIR_INPUT="/path/to/input" JETS_DIR_OUTPUT="/path/to/output"
+conda env config vars set JETS_DIR_INPUT="/path/to/input"
+conda env config vars set JETS_DIR_OUTPUT="/path/to/output"
 conda deactivate
-conda activate jets            # Re-activate so that the variables take effect.
-conda env config vars list     # Check.
+conda activate jets        # Re-activate so that the variables take effect.
+conda env config vars list # Check.
 
 # Option 2 (macOS and Linux): Store the variables in your shell profile.
 # For instance, to edit ~/.zshrc on macOS, type 'open -e ~/.zshrc'.
