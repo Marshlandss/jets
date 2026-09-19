@@ -3,7 +3,7 @@ Provide the directories that the scripts read from (both 'DIR_INPUT' and 'DIR_OU
 
 'DIR_INPUT'  holds data this package did not produce (jet system catalogues and FITS cutouts, BORG SDSS cubes);
 'DIR_OUTPUT' holds everything it did, including files that other scripts read in turn.
-Both default to subdirectories of the repository's 'data/', which assumes an editable install ('python -m pip install -e .').
+Both default to subdirectories of the repository's 'data/', which assumes an editable installation.
 Override defaults with the environment variables 'JETS_DIR_INPUT' and 'JETS_DIR_OUTPUT' to store data elsewhere.
 """
 
