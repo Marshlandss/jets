@@ -56,10 +56,11 @@ def convertSphericalToCartesian(azimuths, altitudes):
 
 def convertCartesianToSpherical(xs, ys, zs):
     """
-    Convert Cartesian unit vectors, given by 'xs', 'ys', and 'zs', to 'azimuths' and 'altitudes' in degrees.
+    Convert Cartesian vectors, given by 'xs', 'ys', and 'zs', to 'azimuths' and 'altitudes' in degrees.
+    Works for both unit vectors and non-unit vectors.
     """
     azimuths  = np.degrees(np.arctan2(ys, xs)) % 360.
-    altitudes = np.degrees(np.arcsin(zs))
+    altitudes = np.degrees(np.arctan2(zs, np.hypot(xs, ys)))
     return azimuths, altitudes
 
 
