@@ -25,9 +25,9 @@ By default, the code reads input from `data/input/` and writes output to `data/o
 Just place your input files in `data/input/` and run. Note that this assumes an editable install (see above).
 
 `data/input/` holds data that the package does not produce, in subdirectories:
-- `data/input/catalogues/` holds jet system catalogues;
-- `data/input/images/` holds radio (and optical) cutouts;
-- `data/input/reconstructions/` holds BORG SDSS cubes.
+- `catalogues/` holds jet system catalogues;
+- `images/` holds radio (and optical) cutouts;
+- `reconstructions/` holds BORG SDSS cubes.
 
 `data/output/` holds everything the package produces: tables, intermediate arrays, and plots. The code creates any subdirectories it needs.
 
