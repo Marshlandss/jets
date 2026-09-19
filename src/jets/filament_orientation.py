@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY
-from jets.sphere_utils import convertSphericalToCartesian
+from jets.sphere_utils import convertCartesianToSpherical, convertSphericalToCartesian
 
 
 class FilamentOrientationFinder:
@@ -28,6 +28,10 @@ class FilamentOrientationFinder:
         self.numberOfAltitudes   = int(90.  / stepAngle) + 1 # in 1
         self.azimuths            = np.linspace(0., 360., num = self.numberOfAzimuths,  endpoint = False)
         self.altitudes           = np.linspace(0., 90.,  num = self.numberOfAltitudes, endpoint = True)
+
+        altitudesLower           = np.maximum(self.altitudes - stepAngle * .5, 0.)
+        altitudesUpper           = np.minimum(self.altitudes + stepAngle * .5, 90.)
+        self.weightsSolidAngle   = np.sin(np.radians(altitudesUpper)) - np.sin(np.radians(altitudesLower)) # in 1; per altitude row, up to a constant
 
         azimuthsRadians          = np.radians(self.azimuths)
         altitudesRadians         = np.radians(self.altitudes)
@@ -139,6 +143,35 @@ class FilamentOrientationFinder:
         On ties, the first maximum in row-major order is returned (the same rule as the original strict '<' comparison).
         """
         return np.unravel_index(np.argmax(columnDensities), columnDensities.shape)
+
+
+    def findBestPlateau(self, columnDensities, toleranceRelative = 1e-6):
+        """
+        Return (azimuth, altitude, column density) of the best-fitting filament orientation, defined as the mean axis of all
+        orientations whose column density lies within 'toleranceRelative' of the maximum.
+        On voxelised data the maximum is typically a flat plateau (all directions through the same voxels); 'findBest' returns
+        an arbitrary point on it, this method its solid-angle-weighted centre. Orientations are axial, so the mean is the
+        principal eigenvector of the weighted scatter matrix, not the vector mean (which would cancel opposite lobes).
+        """
+        columnDensityMax                = np.nanmax(columnDensities)
+
+        # Find all upper-hemisphere vectors for which the column density is the maximum.
+        indicesAltitude, indicesAzimuth = np.nonzero(columnDensities >= columnDensityMax * (1 - toleranceRelative))
+        xs, ys, zs                      = convertSphericalToCartesian(self.azimuths[indicesAzimuth], self.altitudes[indicesAltitude])
+        vectors                         = np.stack([xs, ys, zs], axis = 1)  # shape (n, 3)
+
+        # Calculate principle axis 'axis'.
+        weights                         = self.weightsSolidAngle[indicesAltitude]
+        scatter                         = (vectors * weights[:, None]).T @ vectors
+        eigenvalues, eigenvectors       = np.linalg.eigh(scatter)  # ascending
+        axis                            = eigenvectors[:, -1]
+
+        # Make sure 'axis' is a vector pointing in the upper hemisphere.
+        if axis[2] < 0:
+            axis = -axis
+
+        azimuthBest, altitudeBest = convertCartesianToSpherical(*axis)
+        return azimuthBest, altitudeBest, columnDensityMax
 
 
 
