@@ -12,7 +12,7 @@ from jets.paths import DIR_OUTPUT
 from jets.sphere_utils import axialSeparation, convertCartesianToSpherical
 
 # Initialise settings.
-numberOfRealisations = int(1e4) # in 1
+numberOfRealisations = int(1e3) # in 1
 numberOfVoxelsFine   = 205      # in 1; per side
 
 # Initialise filament orientation finding.
@@ -37,11 +37,11 @@ for i in range(numberOfRealisations):
 
     # Store the ground-truth and recovered filament orientations, as well as the error between them.
     azimuthsTrue[i], altitudesTrue[i] = convertCartesianToSpherical(*axis)
-    azimuthBest, altitudeBest, _      = FOF.findBestPlateau(columnDensities)
-    azimuthsBest[i], altitudesBest[i] = azimuthBest, altitudeBest
+    axisBest, _                       = FOF.findBestPlateau(columnDensities)
+    azimuthsBest[i], altitudesBest[i] = convertCartesianToSpherical(*axisBest)
     errorsAngular[i]                  = axialSeparation(azimuthsTrue[i], altitudesTrue[i], azimuthsBest[i], altitudesBest[i])[0, 0]
 
-    if (i + 1) % 100 == 0:
+    if (i + 1) % 10 == 0:
         print(f"Realisation {i + 1} of {numberOfRealisations}: error {errorsAngular[i]:.1f} deg")
 
 # Store angular errors.
