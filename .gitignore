@@ -1,13 +1,24 @@
-# Data: ignore by default; whitelist a few files.
+# Input data: ignore contents, keep the directory structure.
 # Large input cubes (e.g. borg_sdss_density.npz) are too large for GitHub.
 data/input/*
-!data/input/.gitkeep
+!data/input/catalogues/
+!data/input/images/
+!data/input/reconstructions/
+data/input/catalogues/*
+data/input/images/*
+data/input/reconstructions/*
+!data/input/catalogues/.gitkeep
+!data/input/images/.gitkeep
+!data/input/reconstructions/.gitkeep
+
+# Output data: ignore by default; whitelist a few files.
 data/output/*
 !data/output/.gitkeep
 !data/output/Mpc_column_densities_all_*.npy
 !data/output/Mpc_filament_pa_exact_1.xlsx
 !data/output/kpc_filament_pa_exact_1.xlsx
 !data/output/filament_voxelisation_errors_10000.npy
+
 
 # macOS junk
 .DS_Store
