@@ -36,9 +36,9 @@ for i in range(numberOfRealisations):
     columnDensities = FOF.columnDensities(np.transpose(cubeCoarse, (2, 1, 0)))
 
     # Store the ground-truth and recovered filament orientations, as well as the error between them.
-    iAlt, iAz                         = FOF.findBest(columnDensities)
     azimuthsTrue[i], altitudesTrue[i] = convertCartesianToSpherical(*axis)
-    azimuthsBest[i], altitudesBest[i] = FOF.azimuths[iAz], FOF.altitudes[iAlt]
+    azimuthBest, altitudeBest, _      = FOF.findBestPlateau(columnDensities)
+    azimuthsBest[i], altitudesBest[i] = azimuthBest, altitudeBest
     errorsAngular[i]                  = axialSeparation(azimuthsTrue[i], altitudesTrue[i], azimuthsBest[i], altitudesBest[i])[0, 0]
 
     if (i + 1) % 100 == 0:
