@@ -21,7 +21,7 @@ FOF                  = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_A
 
 for i in range(numberOfRealisations):
     indexRealisation = indexFirst + i * indexStep
-    pathDensities    = DIR_INPUT  / f"final_density_{indexRealisation}.h5"
+    pathDensities    = DIR_INPUT  / "reconstructions" / f"final_density_{indexRealisation}.h5"
     pathExcelLoad    = DIR_OUTPUT / f"fpa_{indexRealisation}.xlsx"
     pathExcelWrite   = DIR_OUTPUT / f"fpa_{indexRealisation}_exact_1.xlsx"
     print(f"Working on realisation {indexRealisation} ({i + 1} of {numberOfRealisations})...")

@@ -23,7 +23,7 @@ angles            = np.linspace(0, np.pi, num = int(180 / JET_ANGLE_STEP), endpo
 # === Load data ===
 # --- For Martijn's catalogue ---
 path_catalogue_go = DIR_INPUT / "GGO_catalogue_2025_02_with3C236.fits"
-directory_fits    = DIR_INPUT / "fits"
+directory_fits    = DIR_INPUT / "images"
 
 # --- For Martin's catalogue ---
 #path_catalogue_go = DIR_INPUT / "agn-v1.1.fits"

@@ -21,6 +21,14 @@ The package is now installed in editable mode: a `git pull` updates your install
 (Re-run `python -m pip install -e .` if dependencies change.)
 
 # Configuration
+By default, the code reads input from `data/input/` and writes output to `data/output/` within the repository, so no configuration is needed.
+Just place your input files in `data/input/` and run! Note that this assumes an editable install
+(see above).
+
+- `data/input/` holds data the package does not produce: the input jet system catalogue, a subdirectory `fits/` with radio cutouts, and BORG SDSS cubes. It is otherwise flat: no further subdirectories are needed.
+- `data/output/` holds everything the package produces: tables, intermediate arrays, and plots. The code creates any
+  subdirectories it needs.
+
 Before running any code, set two environment variables:
 - `JETS_DIR_INPUT`: the directory containing the input catalogue, BORG SDSS cubes, and a subdirectory `fits/` with the radio cutouts;
 - `JETS_DIR_OUTPUT`: the directory to which output (tables and plots) is written; the code creates any subdirectories it needs.
