@@ -139,16 +139,20 @@ class FilamentOrientationFinder:
 
     def findBest(self, columnDensities):
         """
-        Return the (altitude, azimuth) index pair of the maximum of 'columnDensities'.
+        Return (axis, columnDensityMax): the unit vector of the orientation with the highest column density, and that maximum.
         On ties, the first maximum in row-major order is returned (the same rule as the original strict '<' comparison).
         """
-        return np.unravel_index(np.argmax(columnDensities), columnDensities.shape)
+        columnDensityMax            = np.nanmax(columnDensities)
+
+        indexAltitude, indexAzimuth = np.unravel_index(np.argmax(columnDensities), columnDensities.shape)
+        axis                        = np.array(convertSphericalToCartesian(self.azimuths[indexAzimuth], self.altitudes[indexAltitude]))
+        return axis, columnDensityMax
 
 
     def findBestPlateau(self, columnDensities, toleranceRelative = 1e-6):
         """
-        Return (azimuth, altitude, column density) of the best-fitting filament orientation, defined as the mean axis of all
-        orientations whose column density lies within 'toleranceRelative' of the maximum.
+        Return (axis, columnDensityMax): the unit vector of the best-fitting filament orientation,
+        defined as the principal axis of all orientations whose column density lies within 'toleranceRelative' of the maximum, and that maximum.
         On voxelised data the maximum is typically a flat plateau (all directions through the same voxels); 'findBest' returns
         an arbitrary point on it, this method its solid-angle-weighted centre. Orientations are axial, so the mean is the
         principal eigenvector of the weighted scatter matrix, not the vector mean (which would cancel opposite lobes).
@@ -170,8 +174,7 @@ class FilamentOrientationFinder:
         if axis[2] < 0:
             axis = -axis
 
-        azimuthBest, altitudeBest = convertCartesianToSpherical(*axis)
-        return azimuthBest, altitudeBest, columnDensityMax
+        return axis, columnDensityMax
 
 
 
@@ -202,10 +205,15 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
     columnDensitiesBest = np.full(numberOfJetSystems, np.nan) # in g/m^2
     for indexJetSystem, voxelIndices in enumerate(voxelIndicesList):
         columnDensitiesAll [indexJetSystem] = FOF.columnDensities(FOF.cutout(densities, voxelIndices))
-        indexAltitudeBest, indexAzimuthBest = FOF.findBest(columnDensitiesAll[indexJetSystem])
-        azimuthsBest       [indexJetSystem] = FOF.azimuths [indexAzimuthBest]
-        altitudesBest      [indexJetSystem] = FOF.altitudes[indexAltitudeBest]
-        columnDensitiesBest[indexJetSystem] = columnDensitiesAll[indexJetSystem, indexAltitudeBest, indexAzimuthBest]
+        axisBest, columnDensityBest         = FOF.findBestPlateau(columnDensitiesAll[indexJetSystem])
+        azimuthBest, altitudeBest           = convertCartesianToSpherical(*axisBest)
+        azimuthsBest       [indexJetSystem] = azimuthBest
+        altitudesBest      [indexJetSystem] = altitudeBest
+        columnDensitiesBest[indexJetSystem] = columnDensityBest
+        #indexAltitudeBest, indexAzimuthBest = FOF.findBest(columnDensitiesAll[indexJetSystem])
+        #azimuthsBest       [indexJetSystem] = FOF.azimuths [indexAzimuthBest]
+        #altitudesBest      [indexJetSystem] = FOF.altitudes[indexAltitudeBest]
+        #columnDensitiesBest[indexJetSystem] = columnDensitiesAll[indexJetSystem, indexAltitudeBest, indexAzimuthBest]
     return columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest
 
 
