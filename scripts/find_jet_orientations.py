@@ -16,7 +16,7 @@ from jets.plot_styles import set_plot_styles
 # === Plot Formatting ===
 axis_font_size    = set_plot_styles()
 
-# Initialise line segment angles.
+# Initialize line segment angles.
 angles            = np.linspace(0, np.pi, num = int(180 / JET_ANGLE_STEP), endpoint = False) # in radians
 
 
@@ -24,6 +24,7 @@ angles            = np.linspace(0, np.pi, num = int(180 / JET_ANGLE_STEP), endpo
 # --- For Martijn's catalogue ---
 path_catalogue_go = DIR_INPUT / "catalogues" / "GGO_catalogue_2025_02_with3C236.fits"
 directory_fits    = DIR_INPUT / "images"
+labelSample       = "Mpc"
 
 # --- For Martin's catalogue ---
 #path_catalogue_go = DIR_INPUT / "catalogues" / "agn-v1.1.fits"
@@ -55,7 +56,7 @@ hdu_list.close()
 
 # === Create Folders ===
 # The following paths are for saving output.
-path_excel     = DIR_OUTPUT / f"{DIR_OUTPUT.name}.xlsx"
+path_excel     = DIR_OUTPUT / f"catalogue_jet_{labelSample}.xlsx"
 save_plots_loc = DIR_OUTPUT / "jet_orientation_plots"
 save_a_loc     = save_plots_loc / "a"
 save_sa_loc    = save_plots_loc / "sa"
@@ -97,7 +98,7 @@ for filename in sorted(os.listdir(directory_fits)):
 filenames = [min(cutouts)[1] for cutouts in cutouts_per_system.values()]
 
 
-# === Create plots and update excel ===
+# === Create plots and update Excel ===
 if OVERWRITE_FILES:
     print("!!! Overwriting data and files")
 else:
@@ -149,7 +150,7 @@ for filename in filenames:
         )
 
         if SAVING_PLOTS:
-            print("\n> Creating and saving plot... ")
+            print("\n> Creating and saving plot...")
             jet_plotter = JetPlotter(jet_system, save_a, save_sa, save_m, SAVE_FORMAT, axis_font_size)
 
     print("-" * 60)
