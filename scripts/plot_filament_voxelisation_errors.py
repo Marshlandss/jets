@@ -16,7 +16,7 @@ Assuming the direction of the second error is isotropic, phi ~ Uniform(0, 2 pi).
 import matplotlib.pyplot as plt
 import numpy as np
 # Imports: first-party
-from jets.config import SEED
+from jets.config import SEED, FILAMENT_REALIZATION_N
 from jets.paths import DIR_OUTPUT
 
 def composeAngularErrors(alpha, beta, rng):
@@ -32,7 +32,7 @@ def composeAngularErrors(alpha, beta, rng):
 
 # Initialise settings.
 numberOfSamples        = int(1e6)
-numberOfSystematics    = 2  # 1: voxelisation errors only; each extra systematic error source is drawn from the same distribution
+numberOfSystematics    = 3  # 1: voxelisation errors only; each extra systematic error source is drawn from the same distribution
 errorAngularDegreesMin = 0  # in deg
 errorAngularDegreesMax = 60 # in deg
 numberOfBins           = 30
@@ -40,8 +40,8 @@ colour                 = "mediumseagreen"
 
 # Initialise random number generator and voxelisation-induced error data.
 rng                  = np.random.default_rng(SEED)
-errorsAngularDegrees = np.load(DIR_OUTPUT / "filament_voxelisation_errors_10000.npy") # in deg
-errorsAngularRadians = np.radians(errorsAngularDegrees)                             # in rad
+errorsAngularDegrees = np.load(DIR_OUTPUT / f"filament_voxelisation_errors_{FILAMENT_REALIZATION_N}.npy") # in deg
+errorsAngularRadians = np.radians(errorsAngularDegrees) # in rad
 
 
 # Bootstrap the voxelisation errors; every additional systematic is assumed to be an independent draw from the same distribution.

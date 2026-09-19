@@ -14,10 +14,12 @@ BORG_BOX_SIZE_MPC_H   = 750.                                                    
 BORG_NUMBER_OF_VOXELS = 256                                                      # in 1; per axis
 BORG_VOXEL_SIZE_MPC   = BORG_BOX_SIZE_MPC_H / (BORG_NUMBER_OF_VOXELS * LITTLE_H) # in Mpc (≈ 4.17); comoving
 
-# Set beta-profile filament parameters from Tuominen et al. (12021), used for voxelisation error simulations.
-FILAMENT_BETA            = 2.0     # in 1
-FILAMENT_DENSITY_CENTRAL = 1.6e-23 # in g/m^3
-FILAMENT_RADIUS_CORE     = 1.2     # in Mpc
+# Set voxelization error simulation parameters.
+FILAMENT_REALIZATION_N   = int(1e3) # in 1
+# Set beta-profile filament parameters from Tuominen et al. (12021).
+FILAMENT_BETA            = 2.0      # in 1
+FILAMENT_DENSITY_CENTRAL = 1.6e-23  # in g/m^3
+FILAMENT_RADIUS_CORE     = 1.2      # in Mpc
 
 # Set filament orientation search parameters.
 FILAMENT_ANGLE_STEP = 1.  # in deg; angular resolution of the filament orientation search

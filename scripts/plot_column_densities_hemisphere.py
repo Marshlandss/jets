@@ -150,16 +150,16 @@ def plot_half_mollweide_compact(
     alt_deg,
     values,
     *,
-    cmap="viridis",
-    cbar_label="Value",
+    cmap           = "viridis",
+    cbar_label     = "Value",
     rightAscension = None,
     declination    = None,
-    central_az_deg=180,
-    logscale=False,
-    vmin=None,
-    vmax=None,
-    contours=None,
-    figsize=(10, 3.8),
+    central_az_deg = 180,
+    logscale       = False,
+    vmin           = None,
+    vmax           = None,
+    contours       = None,
+    figsize        = (10, 3.8),
 ):
     """
     Compact northern-hemisphere-only Mollweide plot.
@@ -311,22 +311,29 @@ def plot_half_mollweide_compact(
     return fig, ax
 
 
-# Initialise Northern Hemisphere coordinate grids.
+# Initialize settings.
+labelSample = "Mpc"
+labelCube   = "mean"
+labelMethod = "d"
+
+# Initialize Northern Hemisphere coordinate grids.
 azimuths  = np.linspace(0, 360, 360, endpoint = False) # in deg
 altitudes = np.linspace(0,  90,  91)                   # in deg
 
 # Load pandas DataFrame with general data.
-dataGeneral        = pd.read_excel(DIR_OUTPUT / "Mpc_filament_pa_exact_1.xlsx") # Shape: (242, 20)
+#dataGeneral        = pd.read_excel(DIR_OUTPUT / "Mpc_filament_pa_exact_1.xlsx") # Shape: (242, 20)
+dataGeneral        = pd.read_excel(DIR_OUTPUT / f"catalogue_filament_{labelSample}_{labelCube}.xlsx") # Shape: (242, ?)
 numberOfJetSystems = dataGeneral.shape[0] # in 1
 
 # Create figure directory if she doesn't exist yet.
 directoryFigures = DIR_OUTPUT / "column_densities_hemisphere"
 directoryFigures.mkdir(parents = True, exist_ok = True)
 
-# Loop over the 'direct' and 'adjusted' host galaxy localisation methods.
+# Loop over the 'direct' and 'adjusted' host galaxy localization methods.
 for method in ("d", "a"):
     # Load column density data.
-    dataCDs = np.load(DIR_OUTPUT / f"Mpc_column_densities_all_{method}.npy") # Shape: (242, 91, 360)
+    #dataCDs = np.load(DIR_OUTPUT / f"Mpc_column_densities_all_{method}.npy") # Shape: (242, 91, 360)
+    dataCDs = np.load(DIR_OUTPUT / f"column_densities_{labelSample}_{labelCube}_{labelMethod}.npy") # Shape: (242, 91, 360)
 
     # Loop over jet systems.
     for indexJetSystem in range(numberOfJetSystems):
