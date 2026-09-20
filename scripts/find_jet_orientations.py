@@ -5,7 +5,7 @@ from astropy.io import fits
 import numpy as np
 import pandas as pd
 # Imports: first-party
-from jets.config import JET_ANGLE_STEP, BEST_ANGLE_THRESHOLD, NAN_PERCENTAGE_CUTOFF, PIXEL_SHIFT, SAVING_PLOTS, SAVE_FORMAT, OVERWRITE_FILES
+from jets.config import JET_ANGLE_STEP, BEST_ANGLE_THRESHOLD, NAN_PERCENTAGE_CUTOFF, SAMPLES, SAVING_PLOTS, SAVE_FORMAT, OVERWRITE_FILES
 from jets.paths import DIR_INPUT, DIR_OUTPUT
 from jets.jet_system import JetSystem
 from jets.jet_plotter import JetPlotter
@@ -17,7 +17,7 @@ from jets.plot_styles import set_plot_styles
 axis_font_size    = set_plot_styles()
 
 # Initialize line segment angles.
-angles            = np.linspace(0, np.pi, num = int(180 / JET_ANGLE_STEP), endpoint = False) # in radians
+angles            = np.linspace(0, np.pi, num = int(180 / JET_ANGLE_STEP), endpoint = False) # in rad
 
 
 # === Load data ===

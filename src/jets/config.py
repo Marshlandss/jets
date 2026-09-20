@@ -1,7 +1,7 @@
 # Set the jet system samples to analyse. The key is the sample label, used in output file names.
 SAMPLES = {"Mpc" : {"nameCatalogue"   : "GGO_catalogue_2025_02_with3C236.fits",
                     "directoryImages" : "images",
-                    "pixelShift"      : 0, # in pixels
+                    "pixelShift"      : 0, # in pixels; shifts plot by indicated number of pixels to the top right
                     "namesColumn"     : {"rightAscension"   : "host_right_ascension_(deg)",
                                          "declination"      : "host_declination_(deg)",
                                          "redshift"         : "host_redshift_mean_(1)",
@@ -22,7 +22,6 @@ SEED = 0
 # Set jet orientation search parameters.
 JET_ANGLE_STEP        = 1.  # in deg; angular resolution of the jet orientation search
 BEST_ANGLE_THRESHOLD  = .85 # in 1
-PIXEL_SHIFT           = 1   # shifts plot by indicated number of pixels to the top right; Martijn: 0, Martin: 1
 NAN_PERCENTAGE_CUTOFF = 43. # in %
 
 # Set cosmology and BORG SDSS parameters.

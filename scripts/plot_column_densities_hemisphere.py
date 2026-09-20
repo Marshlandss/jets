@@ -289,7 +289,7 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
 
 
 # Initialize settings.
-labelsSample = ("Mpc",)#"kpc"
+labelsSample = ("Mpc",) # Only "Mpc" column densities ship with the repository; "kpc" arrays exceed GitHub's file size limit.
 labelCube    = "mean"
 labelsMethod = ("d", "a")
 

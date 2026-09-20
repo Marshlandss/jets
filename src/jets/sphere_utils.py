@@ -10,20 +10,20 @@ def distanceOnSphere(longitudes1, latitudes1, longitudes2, latitudes2, unitsDegr
     """
 
     # Convert to NumPy arrays.
-    longitudes1        = np.atleast_1d(longitudes1) # in degrees or radians
-    latitudes1         = np.atleast_1d(latitudes1)  # in degrees or radians
-    longitudes2        = np.atleast_1d(longitudes2) # in degrees or radians
-    latitudes2         = np.atleast_1d(latitudes2)  # in degrees or radians
+    longitudes1        = np.atleast_1d(longitudes1) # in deg or rad
+    latitudes1         = np.atleast_1d(latitudes1)  # in deg or rad
+    longitudes2        = np.atleast_1d(longitudes2) # in deg or rad
+    latitudes2         = np.atleast_1d(latitudes2)  # in deg or rad
 
     # Convert to radians.
     if unitsDegree:
-        longitudes1 = np.radians(longitudes1) # in radians
-        latitudes1  = np.radians(latitudes1)  # in radians
-        longitudes2 = np.radians(longitudes2) # in radians
-        latitudes2  = np.radians(latitudes2)  # in radians
+        longitudes1 = np.radians(longitudes1) # in rad
+        latitudes1  = np.radians(latitudes1)  # in rad
+        longitudes2 = np.radians(longitudes2) # in rad
+        latitudes2  = np.radians(latitudes2)  # in rad
 
     # To avoid duplicating calculations, we pre-calculate all factors of the Vincenty formula.
-    deltaLongitudes    = longitudes1[ : , None] - longitudes2[None, : ] # in radians
+    deltaLongitudes    = longitudes1[ : , None] - longitudes2[None, : ] # in rad
     cosDeltaLongitudes = np.cos(deltaLongitudes)                     # in 1
     sinDeltaLongitudes = np.sin(deltaLongitudes)                     # in 1
     cosLatitudes1      = np.cos(latitudes1)                          # in 1
@@ -36,10 +36,10 @@ def distanceOnSphere(longitudes1, latitudes1, longitudes2, latitudes2, unitsDegr
     # which is ill-conditioned when solving for c when c is small.
     # The angular distances resulting from the Vincenty formula fall between 0 and pi rad.
     # This appears in tension with https://numpy.org/doc/stable/reference/generated/numpy.arctan2.html, which claims a range of -pi to pi rad.
-    distances          = np.arctan2(np.sqrt(np.square(cosLatitudes2[None, : ] * sinDeltaLongitudes) + np.square(cosLatitudes1[ : , None] * sinLatitudes2[None, : ] - sinLatitudes1[ : , None] * cosLatitudes2[None, : ] * cosDeltaLongitudes)), sinLatitudes1[ : , None] * sinLatitudes2[None, : ] + cosLatitudes1[ : , None] * cosLatitudes2[None, : ] * cosDeltaLongitudes) # in radians
+    distances          = np.arctan2(np.sqrt(np.square(cosLatitudes2[None, : ] * sinDeltaLongitudes) + np.square(cosLatitudes1[ : , None] * sinLatitudes2[None, : ] - sinLatitudes1[ : , None] * cosLatitudes2[None, : ] * cosDeltaLongitudes)), sinLatitudes1[ : , None] * sinLatitudes2[None, : ] + cosLatitudes1[ : , None] * cosLatitudes2[None, : ] * cosDeltaLongitudes) # in rad
 
     if unitsDegree:
-        distances = np.degrees(distances) # in degrees
+        distances = np.degrees(distances) # in deg
 
     return distances
 
