@@ -1,0 +1,99 @@
+"""
+Watson distribution quantities that depend on the concentration 'kappa' alone.
+
+The (antipodally symmetric) Watson distribution on the sphere with mean axis mu and concentration kappa has a
+probability density proportional to exp(kappa (mu . x)^2). Writing Z := mu . x = cos A, with A the polar angle
+measured from mu, this module provides the probability density of A, and the concentration's maximum likelihood
+estimate given the sample mean of Z^2.
+
+Positive kappa concentrates the distribution around the axis mu (polar clustering); negative kappa concentrates it
+around the equator (girdle clustering); kappa = 0 is the uniform distribution on the sphere.
+"""
+# Imports: third-party
+import numpy as np
+from scipy.special import erf, erfi
+
+
+def PDsPolarAngle(angles, kappa, assumeDegrees = True):
+    """
+    Calculate the probability density of the polar angle A for a Watson distribution of concentration 'kappa'.
+
+    Parameters
+    ----------
+    angles : np.ndarray
+        Polar angles at which to evaluate the density; in deg if 'assumeDegrees', else in rad.
+    kappa : float
+        Watson distribution concentration; in 1.
+    assumeDegrees : bool
+        If True, 'angles' are in deg and the density is returned in deg^-1; if False, both are in rad.
+
+    Returns
+    -------
+    np.ndarray
+        Probability density at 'angles'; in deg^-1 if 'assumeDegrees', else in rad^-1. Same shape as 'angles'.
+    """
+    if (assumeDegrees):
+        angles = np.radians(angles)
+    if   (kappa < 0):
+        PDs = np.sqrt(-1 * kappa / np.pi) * 2 / erf(np.sqrt(-1 * kappa)) * np.exp(kappa * np.square(np.cos(angles))) * np.sin(angles)
+    elif (kappa == 0):
+        PDs = np.sin(angles)
+    elif (kappa > 0):
+        PDs = np.sqrt(kappa / np.pi) * 2 / erfi(np.sqrt(kappa)) * np.exp(kappa * np.square(np.cos(angles))) * np.sin(angles)
+    if (assumeDegrees):
+        PDs *= np.pi / 180
+    return PDs
+
+
+def MLEExpressionKappa(kappas):
+    """
+    Calculate E[Z^2] as a function of the Watson distribution concentration, where Z is the cosine of the polar angle.
+
+    The maximum likelihood estimate of the concentration is the 'kappa' for which this expression equals the sample
+    mean of Z^2; see 'MLEKappa'. The expression increases monotonically from 0 (kappa -> -infinity) through 1 / 3
+    (kappa = 0, the uniform distribution) to 1 (kappa -> +infinity).
+
+    Parameters
+    ----------
+    kappas : np.ndarray
+        Watson distribution concentrations; in 1. Must be a float array, as the result is built with 'np.full_like'.
+
+    Returns
+    -------
+    np.ndarray
+        E[Z^2] at 'kappas'; in 1. Same shape as 'kappas'.
+    """
+    MLEExpressions = np.full_like(kappas, np.nan)
+    kappasPositive = kappas[kappas > 0]
+    kappasNegative = kappas[kappas < 0]
+    MLEExpressions[kappas >  0] = np.exp(kappasPositive) / (np.sqrt(np.pi * kappasPositive) * erfi(np.sqrt(kappasPositive))) - 1. / (2 * kappasPositive)
+    MLEExpressions[kappas == 0] = 1 / 3.
+    MLEExpressions[kappas <  0] = -1 * np.exp(kappasNegative) / (np.sqrt(np.pi * -1 * kappasNegative) * erf(np.sqrt(-1 * kappasNegative))) - 1. / (2 * kappasNegative)
+    return MLEExpressions
+
+
+def MLEKappa(MLEExpressionData, kappaHalfWidth = 10., kappaStepSize = 1e-2):
+    """
+    Calculate the maximum likelihood estimate of the Watson distribution concentration from the sample mean of Z^2.
+
+    The estimate is found by inverting 'MLEExpressionKappa' on a grid through linear interpolation, and is therefore
+    clipped to [-'kappaHalfWidth', +'kappaHalfWidth'].
+
+    Parameters
+    ----------
+    MLEExpressionData : float or np.ndarray
+        Sample mean of Z^2, with Z the cosine of the polar angle; in 1.
+    kappaHalfWidth : float
+        Half-width of the concentration grid searched; in 1.
+    kappaStepSize : float
+        Spacing of the concentration grid searched; in 1.
+
+    Returns
+    -------
+    float or np.ndarray
+        Maximum likelihood estimate of the concentration; in 1. Same shape as 'MLEExpressionData'.
+    """
+    kappas              = np.linspace(-1 * kappaHalfWidth, kappaHalfWidth, num = int(np.ceil(2 * kappaHalfWidth / kappaStepSize)) + 1, endpoint = True)
+    MLEExpressionsKappa = MLEExpressionKappa(kappas)
+    kappaMLE            = np.interp(MLEExpressionData, MLEExpressionsKappa, kappas)
+    return kappaMLE
