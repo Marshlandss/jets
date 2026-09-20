@@ -148,7 +148,9 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
     vmin           = None,
     vmax           = None,
     contours       = None,
-    figsize        = (10, 3.8)):
+    figsize        = (10, 3.8),
+    azimuthBest    = None,
+    altitudeBest   = None):
     """
     Compact northern-hemisphere-only Mollweide plot.
 
@@ -203,13 +205,7 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
 
     fig, ax = plt.subplots(figsize=figsize)
 
-    mesh = ax.pcolormesh(X_e, Y_e, values,
-        shading="auto",
-        cmap=cmap,
-        norm=norm,
-        edgecolors='none',
-        linewidth=0,
-        rasterized=True)
+    mesh = ax.pcolormesh(X_e, Y_e, values, shading="auto",cmap=cmap,norm=norm,edgecolors='none',linewidth=0,rasterized=True)
 
     # Clip to upper half-Mollweide boundary.
     boundary   = make_upper_half_mollweide_boundary()
@@ -274,12 +270,10 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
         fontsize     = 10,
         path_effects = [pe.withStroke(linewidth = 1.5, foreground = ".3")])
 
-    # Draw star where the Cosmic Web column density peaks.
-    imax     = np.unravel_index(np.argmax(values), values.shape)
-    alt_peak = alt_deg[imax[0]] # in deg
-    az_peak  = az_deg [imax[1]] # in deg
-    x_peak, y_peak = mollweide_forward(np.deg2rad(az_peak - central_az_deg), np.deg2rad(alt_peak))
-    ax.scatter(x_peak, y_peak, marker = "*", s = 50, color = "white", edgecolors = ".3", linewidths = 1., zorder = 20)
+    # Draw star at the best-fitting filament orientation, if given.
+    if azimuthBest is not None:
+        x_peak, y_peak = mollweide_forward(np.deg2rad(azimuthBest - central_az_deg), np.deg2rad(altitudeBest))
+        ax.scatter(x_peak, y_peak, marker = "*", s = 50, color = "white", edgecolors = ".3", linewidths = 1., zorder = 20)
 
     # Draw colour bar.
     cbar = fig.colorbar(mesh, ax = ax, orientation = "horizontal", pad = 0.12, fraction = 0.04, aspect = 72)
@@ -337,7 +331,9 @@ for labelSample in labelsSample:
                 declination    = declination,
                 central_az_deg = 180,
                 contours       = None, # in g/m^2; e.g. (2., 4., 6., 8., 10.)
-                figsize        = (6, 2.5))
+                figsize        = (6, 2.5),
+                azimuthBest    = azimuthBest,
+                altitudeBest   = altitudeBest)
             plt.subplots_adjust(left = 0.015, right = 0.985, top = 0.99, bottom = 0.2)
             plt.savefig(pathFigure, dpi = 1000)
             plt.close()

@@ -187,7 +187,7 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
     ----------
     FOF              : FilamentOrientationFinder; determines the orientation grid and the integration length 'lambdaMax'
     densities        : array of shape (N, N, N), indexed [iz, iy, ix]; mass density in units of the present-day cosmic
-                       mean, e.g. the BORG SDSS posterior mean cube or a single realisation
+                       mean, e.g. the BORG SDSS posterior mean cube or a single realization
     voxelIndicesList : sequence of length 'numberOfJetSystems'; the (x, y, z) voxel indices of each jet system's host
 
     Returns
