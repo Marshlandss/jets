@@ -1,26 +1,30 @@
 """
 Martijn Oei & Ruby Yao, 2026
 """
-
-import ast, numpy, pandas
-
-from matplotlib import pyplot
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+# Imports: standard library
+import ast
+# Imports: third-party
+from scipy.special import erf
 import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+import numpy as np
+import pandas as pd
+# Imports: first-party
+from jets.simulatePADifferences import PADifferencesInferrer
+from jets import watson
+
 matplotlib.rcParams["text.usetex"] = True
 matplotlib.rcParams["text.latex.preamble"] = r"\usepackage{gensymb}"
-from jets.simulatePADifferences import PADifferencesInferrer
-from scipy.special import erf
 
-# Initialise settings.
+
+# Initialize settings.
 kappaJ                 = +2.       # in 1
-kappaF                 = numpy.inf # in 1
+kappaF                 = np.inf # in 1
 numberOfSamples        = int(1e6)  # in 1
 pathExcel              = "/Users/martijnoei/Downloads/Mpc_filament_pa.xlsx"
 pathExcelPADifferences = "/Users/martijnoei/Downloads/Mpc_pa_diff-2.xlsx"
 plotDirectory          = "/Users/martijnoei/Library/CloudStorage/Dropbox/Martijn/PhD/Ardor Telae/figures/GRGs/"
-plotAngularMode        = False
-plotMLEExpressionKappa = False
 inferKappaF            = False
 plotOrientationsSphere = False
 plotPDsPolarAngleRel   = False
@@ -31,22 +35,22 @@ inferrer               = PADifferencesInferrer(numberOfSamples)
 def loadFilamentVectors(pathExcel, method = "r", returnVoxelIndices = False):
     """
     """
-    dataFrame          = pandas.read_excel(pathExcel)
+    dataFrame          = pd.read_excel(pathExcel)
     angles             = dataFrame["best_angle_" + method + " (az,alt)(deg)"].apply(ast.literal_eval).to_numpy()
     if returnVoxelIndices:
         voxelIndices = dataFrame["voxel_index_" + method + " (x,y,z)"].apply(ast.literal_eval).to_numpy()
 
     numberOfJetSystems = angles.shape[0] # in 1
-    anglesAzimuth      = numpy.full(numberOfJetSystems, numpy.nan) # in deg
-    anglesAltitude     = numpy.full(numberOfJetSystems, numpy.nan) # in deg
+    anglesAzimuth      = np.full(numberOfJetSystems, np.nan) # in deg
+    anglesAltitude     = np.full(numberOfJetSystems, np.nan) # in deg
     for i in range(numberOfJetSystems):
         anglesAzimuth[i]  = angles[i][0]
         anglesAltitude[i] = angles[i][1]
 
     # Calculate Cartesian unit vectors.
-    Xs = numpy.cos(numpy.radians(anglesAltitude)) * numpy.cos(numpy.radians(anglesAzimuth)) # in 1
-    Ys = numpy.cos(numpy.radians(anglesAltitude)) * numpy.sin(numpy.radians(anglesAzimuth)) # in 1
-    Zs = numpy.sin(numpy.radians(anglesAltitude))                                           # in 1
+    Xs = np.cos(np.radians(anglesAltitude)) * np.cos(np.radians(anglesAzimuth)) # in 1
+    Ys = np.cos(np.radians(anglesAltitude)) * np.sin(np.radians(anglesAzimuth)) # in 1
+    Zs = np.sin(np.radians(anglesAltitude))                                           # in 1
 
     if returnVoxelIndices:
         return Xs, Ys, Zs, voxelIndices
@@ -75,38 +79,38 @@ def mean_axis_from_components(Xs, Ys, Zs, w=None, normalize=True):
         Eigenvalues of the scatter matrix (ascending order).
     """
 
-    Xs = numpy.asarray(Xs, float)
-    Ys = numpy.asarray(Ys, float)
-    Zs = numpy.asarray(Zs, float)
+    Xs = np.asarray(Xs, float)
+    Ys = np.asarray(Ys, float)
+    Zs = np.asarray(Zs, float)
 
     # Stack into (N, 3)
-    X = numpy.column_stack((Xs, Ys, Zs))
+    X = np.column_stack((Xs, Ys, Zs))
     print(X.shape)
 
     if normalize:
-        norms = numpy.linalg.norm(X, axis=1)
-        if numpy.any(norms == 0):
+        norms = np.linalg.norm(X, axis=1)
+        if np.any(norms == 0):
             raise ValueError("Zero-length vector encountered.")
         X = X / norms[:, None]
 
     N = X.shape[0]
 
     if w is None:
-        w = numpy.ones(N)
+        w = np.ones(N)
     else:
-        w = numpy.asarray(w, float)
-        if numpy.any(w < 0):
+        w = np.asarray(w, float)
+        if np.any(w < 0):
             raise ValueError("Weights must be non-negative.")
 
     # Scatter / second-moment matrix
     M = (X.T * w) @ X / w.sum()
 
     # Eigen-decomposition (symmetric -> eigh)
-    evals, evecs = numpy.linalg.eigh(M)
+    evals, evecs = np.linalg.eigh(M)
 
     # Top eigenvector = mean axis
-    m = evecs[:, numpy.argmax(evals)]
-    m /= numpy.linalg.norm(m)
+    m = evecs[:, np.argmax(evals)]
+    m /= np.linalg.norm(m)
 
     return m, evals
 
@@ -116,16 +120,16 @@ if (inferKappaF):
     XsDM, YsDM, ZsDM, voxelIndicesDM = loadFilamentVectors(pathExcel, method = "r", returnVoxelIndices = True)
     XsAM, YsAM, ZsAM, voxelIndicesAM = loadFilamentVectors(pathExcel, method = "j", returnVoxelIndices = True)
 
-    # df                 = pandas.read_excel(pathExcel)
+    # df                 = pd.read_excel(pathExcel)
     # anglesDM           = df["best_angle_r (az,alt)(deg)"].apply(ast.literal_eval).to_numpy()
     # anglesAM           = df["best_angle_j (az,alt)(deg)"].apply(ast.literal_eval).to_numpy()
     # voxelIndicesDM     = df["voxel_index_r (x,y,z)"].apply(ast.literal_eval).to_numpy()
     # voxelIndicesAM     = df["voxel_index_j (x,y,z)"].apply(ast.literal_eval).to_numpy()
     # numberOfJetSystems = anglesDM.shape[0] # in 1
-    # anglesDMAzimuth    = numpy.full(numberOfJetSystems, numpy.nan) # in deg
-    # anglesDMAltitude   = numpy.full(numberOfJetSystems, numpy.nan) # in deg
-    # anglesAMAzimuth    = numpy.full(numberOfJetSystems, numpy.nan) # in deg
-    # anglesAMAltitude   = numpy.full(numberOfJetSystems, numpy.nan) # in deg
+    # anglesDMAzimuth    = np.full(numberOfJetSystems, np.nan) # in deg
+    # anglesDMAltitude   = np.full(numberOfJetSystems, np.nan) # in deg
+    # anglesAMAzimuth    = np.full(numberOfJetSystems, np.nan) # in deg
+    # anglesAMAltitude   = np.full(numberOfJetSystems, np.nan) # in deg
     # for i in range(numberOfJetSystems):
     #     anglesDMAzimuth[i]  = anglesDM[i][0]
     #     anglesDMAltitude[i] = anglesDM[i][1]
@@ -133,20 +137,20 @@ if (inferKappaF):
     #     anglesAMAltitude[i] = anglesAM[i][1]
     #
     # # Calculate Cartesian unit vectors.
-    # XsDM = numpy.cos(numpy.radians(anglesDMAltitude)) * numpy.cos(numpy.radians(anglesDMAzimuth)) # in 1
-    # YsDM = numpy.cos(numpy.radians(anglesDMAltitude)) * numpy.sin(numpy.radians(anglesDMAzimuth)) # in 1
-    # ZsDM = numpy.sin(numpy.radians(anglesDMAltitude))                                       # in 1
-    # XsAM = numpy.cos(numpy.radians(anglesAMAltitude)) * numpy.cos(numpy.radians(anglesAMAzimuth)) # in 1
-    # YsAM = numpy.cos(numpy.radians(anglesAMAltitude)) * numpy.sin(numpy.radians(anglesAMAzimuth)) # in 1
-    # ZsAM = numpy.sin(numpy.radians(anglesAMAltitude))                                       # in 1
+    # XsDM = np.cos(np.radians(anglesDMAltitude)) * np.cos(np.radians(anglesDMAzimuth)) # in 1
+    # YsDM = np.cos(np.radians(anglesDMAltitude)) * np.sin(np.radians(anglesDMAzimuth)) # in 1
+    # ZsDM = np.sin(np.radians(anglesDMAltitude))                                       # in 1
+    # XsAM = np.cos(np.radians(anglesAMAltitude)) * np.cos(np.radians(anglesAMAzimuth)) # in 1
+    # YsAM = np.cos(np.radians(anglesAMAltitude)) * np.sin(np.radians(anglesAMAzimuth)) # in 1
+    # ZsAM = np.sin(np.radians(anglesAMAltitude))                                       # in 1
 
     # Calculate angle differences.
-    dotProducts = numpy.clip(XsDM * XsAM + YsDM * YsAM + ZsDM * ZsAM, -1, 1) # Add 'numpy.clip' because of numerical error.
-    anglesDelta = numpy.degrees(numpy.arccos(dotProducts)) # in deg
+    dotProducts = np.clip(XsDM * XsAM + YsDM * YsAM + ZsDM * ZsAM, -1, 1) # Add 'np.clip' because of numerical error.
+    anglesDelta = np.degrees(np.arccos(dotProducts)) # in deg
 
     # Determine for which jet systems the DM and AM identified the same host galaxy voxel.
-    areSameVoxel = numpy.equal(voxelIndicesDM, voxelIndicesAM)
-    print(numpy.sum(areSameVoxel))
+    areSameVoxel = np.equal(voxelIndicesDM, voxelIndicesAM)
+    print(np.sum(areSameVoxel))
 
     # For the moment, include all jet systems for which 'anglesDelta' exceeds 'angleDeltaThreshold'.
     angleDeltaThreshold = 1. # in deg
@@ -154,27 +158,24 @@ if (inferKappaF):
         print(a)
 
     # Calculate MLE filament measurement error kappa.
-    MLEExpressionData = numpy.mean(numpy.square(dotProducts[anglesDelta > angleDeltaThreshold]))
-    MLEKappa          = inferrer.MLEKappa(MLEExpressionData)
+    MLEExpressionData = np.mean(np.square(dotProducts[anglesDelta > angleDeltaThreshold]))
+    MLEKappa          = watson.MLEKappa(MLEExpressionData)
 
-    #plt.hist(anglesDelta[~areSameVoxel], bins = numpy.linspace(0, 90, num = 6 + 1, endpoint = True))
-    pyplot.hist(anglesDelta[anglesDelta > angleDeltaThreshold], bins = numpy.linspace(0, 90, num = 18 + 1, endpoint = True))
-    pyplot.xticks(numpy.linspace(0, 90, num = 6 + 1, endpoint = True))
+    #plt.hist(anglesDelta[~areSameVoxel], bins = np.linspace(0, 90, num = 6 + 1, endpoint = True))
+    pyplot.hist(anglesDelta[anglesDelta > angleDeltaThreshold], bins = np.linspace(0, 90, num = 18 + 1, endpoint = True))
+    pyplot.xticks(np.linspace(0, 90, num = 6 + 1, endpoint = True))
     pyplot.title(r"$\kappa_\mathrm{f} = " + "{:.2f}".format(MLEKappa) + "$")
     pyplot.show()
 
-
-import sys
-sys.exit()
 
 
 directoryExcelSheets = "/Users/martijnoei/Library/CloudStorage/Dropbox/Martijn/Caltech/Caltech Connection/ten_excels_1.26.26_kpc/"
 numberOfJetSystems   = 777#242
 numberOfExcelSheets  = 41
 # These arrays have 3 dimensions; the shape could be (242, 10, 2). (For each jet system, we have a measurement for each of the 'numberOfExcelSheets' BORG SDSS realisations, and for 2 methods: direct and adjusted.)
-XsAll                = numpy.full((numberOfJetSystems, numberOfExcelSheets, 2), numpy.nan)
-YsAll                = numpy.full((numberOfJetSystems, numberOfExcelSheets, 2), numpy.nan)
-ZsAll                = numpy.full((numberOfJetSystems, numberOfExcelSheets, 2), numpy.nan)
+XsAll                = np.full((numberOfJetSystems, numberOfExcelSheets, 2), np.nan)
+YsAll                = np.full((numberOfJetSystems, numberOfExcelSheets, 2), np.nan)
+ZsAll                = np.full((numberOfJetSystems, numberOfExcelSheets, 2), np.nan)
 for i in range(0, numberOfExcelSheets):
     fileName = "fpa_" + str(2000 + i * 250) + "_exact_1.xlsx"
     print("Loading '" + fileName + "'...")
@@ -188,9 +189,9 @@ for i in range(0, numberOfExcelSheets):
     ZsAll[ : , i, 1] = ZsAM
 
 # Load Xs, Ys, and Zs of the filament orientations deduced from the BORG SDSS mean.
-XsMean = numpy.full((numberOfJetSystems, 2), numpy.nan)
-YsMean = numpy.full((numberOfJetSystems, 2), numpy.nan)
-ZsMean = numpy.full((numberOfJetSystems, 2), numpy.nan)
+XsMean = np.full((numberOfJetSystems, 2), np.nan)
+YsMean = np.full((numberOfJetSystems, 2), np.nan)
+ZsMean = np.full((numberOfJetSystems, 2), np.nan)
 fileName = "kpc_filament_pa_exact_1.xlsx"
 print("Loading '" + fileName + "'...")
 XsDM, YsDM, ZsDM = loadFilamentVectors(directoryExcelSheets + fileName, method = "r")
@@ -208,9 +209,9 @@ pyplot.show()
 
 
 # Determine the principal axes (PA).
-XsPA = numpy.full(numberOfJetSystems, numpy.nan)
-YsPA = numpy.full(numberOfJetSystems, numpy.nan)
-ZsPA = numpy.full(numberOfJetSystems, numpy.nan)
+XsPA = np.full(numberOfJetSystems, np.nan)
+YsPA = np.full(numberOfJetSystems, np.nan)
+ZsPA = np.full(numberOfJetSystems, np.nan)
 
 for indexJetSystem in range(numberOfJetSystems):
     m, evals = mean_axis_from_components(XsAll[indexJetSystem].flatten(), YsAll[indexJetSystem].flatten(), ZsAll[indexJetSystem].flatten())
@@ -223,10 +224,10 @@ for indexJetSystem in range(numberOfJetSystems):
 
     print(indexJetSystem, "Principal axis (±):", m, "Eigenvalues:", evals, evals[2]/evals[1])
 
-altitudesPA = numpy.degrees(numpy.arcsin(ZsPA))
-azimuthsPA  = (numpy.degrees(numpy.atan2(YsPA, XsPA)) + 360) % 360
-print(numpy.amin(altitudesPA), numpy.amax(altitudesPA))
-print(numpy.amin(azimuthsPA), numpy.amax(azimuthsPA))
+altitudesPA = np.degrees(np.arcsin(ZsPA))
+azimuthsPA  = (np.degrees(np.atan2(YsPA, XsPA)) + 360) % 360
+print(np.amin(altitudesPA), np.amax(altitudesPA))
+print(np.amin(azimuthsPA), np.amax(azimuthsPA))
 for alt, az in zip(altitudesPA, azimuthsPA):
     print(alt,az)
 
@@ -255,30 +256,30 @@ df["best_angle_j (az,alt)(deg)"] = df["best_angle_r (az,alt)(deg)"]
 df.to_excel(excel_path, index = False)
 
 print("Excel updated successfully.")
-import sys
-sys.exit()
+
+
 
 # Calculate, for each jet system, the dot products of its individual vectors with its principal axis vector.
-dotProductsPA    = numpy.clip(XsAll * XsPA[ : , None, None] + YsAll * YsPA[ : , None, None] + ZsAll * ZsPA[ : , None, None], -1, +1)
-anglesPA         = numpy.degrees(numpy.arccos(numpy.abs(dotProductsPA)))
-print(numpy.amin(dotProductsPA), numpy.amax(dotProductsPA))
-print(numpy.mean(anglesPA), numpy.median(anglesPA))
-numpy.savetxt(directoryExcelSheets + "anglesPrincipalAxis.txt", anglesPA.flatten())
+dotProductsPA    = np.clip(XsAll * XsPA[ : , None, None] + YsAll * YsPA[ : , None, None] + ZsAll * ZsPA[ : , None, None], -1, +1)
+anglesPA         = np.degrees(np.arccos(np.abs(dotProductsPA)))
+print(np.amin(dotProductsPA), np.amax(dotProductsPA))
+print(np.mean(anglesPA), np.median(anglesPA))
+np.savetxt(directoryExcelSheets + "anglesPrincipalAxis.txt", anglesPA.flatten())
 
-dotProductsMeanPA = numpy.clip(XsMean * XsPA[ : , None] + YsMean * YsPA[ : , None] + ZsMean * ZsPA[ : , None], -1, +1)
-anglesMeanPA      = numpy.degrees(numpy.arccos(numpy.abs(dotProductsMeanPA)))
+dotProductsMeanPA = np.clip(XsMean * XsPA[ : , None] + YsMean * YsPA[ : , None] + ZsMean * ZsPA[ : , None], -1, +1)
+anglesMeanPA      = np.degrees(np.arccos(np.abs(dotProductsMeanPA)))
 print(anglesMeanPA.shape)
-pyplot.hist(anglesMeanPA[ : , 0], bins = numpy.linspace(0, 90, num = 30 + 1, endpoint = True))
+pyplot.hist(anglesMeanPA[ : , 0], bins = np.linspace(0, 90, num = 30 + 1, endpoint = True))
 pyplot.title("angular distances between fil. orientation in BORG SDSS mean (DM) and principal axis")
 pyplot.show()
-pyplot.hist(anglesMeanPA[ : , 1], bins = numpy.linspace(0, 90, num = 30 + 1, endpoint = True))
+pyplot.hist(anglesMeanPA[ : , 1], bins = np.linspace(0, 90, num = 30 + 1, endpoint = True))
 pyplot.title("angular distances between fil. orientation in BORG SDSS mean (AM) and principal axis")
 pyplot.show()
 
 
 print("komen ze per jet system:")
 for i in range(numberOfJetSystems):
-    print(i, "{:.2f}".format(numpy.mean(anglesPA[i, : , : ])), "deg")
+    print(i, "{:.2f}".format(np.mean(anglesPA[i, : , : ])), "deg")
 
 
 if plotOrientationsSphere:
@@ -293,48 +294,48 @@ if plotOrientationsSphere:
 
     # Generate grid of positive-z coordinates.
     numberOfPixels = 1000 + 1 # number of pixels per side
-    gridXs         = numpy.linspace(-1, +1, num = numberOfPixels, endpoint = True)
-    gridYs         = numpy.linspace(-1, +1, num = numberOfPixels, endpoint = True)
-    gridZs         = numpy.sqrt(1 - numpy.square(gridXs)[None, : ] - numpy.square(gridYs)[: , None])
+    gridXs         = np.linspace(-1, +1, num = numberOfPixels, endpoint = True)
+    gridYs         = np.linspace(-1, +1, num = numberOfPixels, endpoint = True)
+    gridZs         = np.sqrt(1 - np.square(gridXs)[None, : ] - np.square(gridYs)[: , None])
 
     # Loop over jet systems, plot a sphere for each.
     for indexJetSystem in range(numberOfJetSystems):
         pyplot.figure(figsize = (5, 4))
         im = pyplot.imshow(gridZs, cmap = colourMapObject, origin = "lower")
-        pyplot.plot(toPix(numpy.array([XsPA[indexJetSystem], -1 * XsPA[indexJetSystem]])), toPix(numpy.array([YsPA[indexJetSystem], -1 * YsPA[indexJetSystem]])), c = "lavender", ls = "--")
+        pyplot.plot(toPix(np.array([XsPA[indexJetSystem], -1 * XsPA[indexJetSystem]])), toPix(np.array([YsPA[indexJetSystem], -1 * YsPA[indexJetSystem]])), c = "lavender", ls = "--")
         for indexRealisation in range(numberOfExcelSheets):
             for indexMethod in range(2):
                 XStart              = XsAll[indexJetSystem, indexRealisation, indexMethod]
                 YStart              = YsAll[indexJetSystem, indexRealisation, indexMethod]
-                ZStart              = numpy.sqrt(1 - (XStart ** 2 + YStart ** 2)) # Note that this implicitly relies on us only exploring filament orientations in the upper (z > 0) hemisphere. #ZsAll[indexJetSystem, indexRealisation, 0]
+                ZStart              = np.sqrt(1 - (XStart ** 2 + YStart ** 2)) # Note that this implicitly relies on us only exploring filament orientations in the upper (z > 0) hemisphere. #ZsAll[indexJetSystem, indexRealisation, 0]
                 XEnd                = XsPA[indexJetSystem]
                 YEnd                = YsPA[indexJetSystem]
-                ZEnd                = numpy.sqrt(1 - (XEnd ** 2 + YEnd ** 2)) # Note that we assume that the z-component of the mean axis is positive. #ZsPA[indexJetSystem]
+                ZEnd                = np.sqrt(1 - (XEnd ** 2 + YEnd ** 2)) # Note that we assume that the z-component of the mean axis is positive. #ZsPA[indexJetSystem]
 
                 dotProduct          = XStart * XEnd + YStart * YEnd + ZStart * ZEnd
-                greatCircleDistance = numpy.arccos(dotProduct) # in rad
-                if (greatCircleDistance > numpy.pi / 2):
+                greatCircleDistance = np.arccos(dotProduct) # in rad
+                if (greatCircleDistance > np.pi / 2):
                     XEnd *= -1
                     YEnd *= -1
                     ZEnd *= -1
                     dotProduct *= -1
-                    greatCircleDistance = numpy.pi - greatCircleDistance
+                    greatCircleDistance = np.pi - greatCircleDistance
                     #continue
-                ts = numpy.linspace(0, 1, num = 100 + 1, endpoint=True)
+                ts = np.linspace(0, 1, num = 100 + 1, endpoint=True)
                 angles              = ts * greatCircleDistance
                 XStartPerp          = XEnd - dotProduct * XStart
                 YStartPerp          = YEnd - dotProduct * YStart
                 ZStartPerp          = ZEnd - dotProduct * ZStart
-                length              = numpy.sqrt(numpy.square(XStartPerp) + numpy.square(YStartPerp) + numpy.square(ZStartPerp))
+                length              = np.sqrt(np.square(XStartPerp) + np.square(YStartPerp) + np.square(ZStartPerp))
                 XStartPerp         /= length
                 YStartPerp         /= length
                 ZStartPerp         /= length
-                XsGeodesic          = numpy.cos(angles) * XStart + numpy.sin(angles) * XStartPerp
-                YsGeodesic          = numpy.cos(angles) * YStart + numpy.sin(angles) * YStartPerp
-                ZsGeodesic          = numpy.cos(angles) * ZStart + numpy.sin(angles) * ZStartPerp
+                XsGeodesic          = np.cos(angles) * XStart + np.sin(angles) * XStartPerp
+                YsGeodesic          = np.cos(angles) * YStart + np.sin(angles) * YStartPerp
+                ZsGeodesic          = np.cos(angles) * ZStart + np.sin(angles) * ZStartPerp
 
                 areVisible = (ZsGeodesic > 0)
-                pyplot.plot(toPix(numpy.array([0, XStart])), toPix(numpy.array([0, YStart])), color = "gray", ls = "-", alpha = .08)
+                pyplot.plot(toPix(np.array([0, XStart])), toPix(np.array([0, YStart])), color = "gray", ls = "-", alpha = .08)
                 pyplot.plot(toPix(XsGeodesic[areVisible]), toPix(YsGeodesic[areVisible]), color = "gray", ls = "-")#, alpha = .3)
                 pyplot.plot(toPix(XsGeodesic[~areVisible]), toPix(YsGeodesic[~areVisible]), color="gray", ls="--")#, alpha = .3)
 
@@ -350,12 +351,12 @@ if plotOrientationsSphere:
         #pyplot.scatter([XsPA[indexJetSystem]],[YsPA[indexJetSystem]],c = "green")
         #pyplot.scatter(XsDiff.flatten(), YsDiff.flatten(),c = "green", alpha = .2)
         #pyplot.scatter(XsAll.flatten(), YsAll.flatten(),c = "green", alpha = .2)
-        pyplot.xticks(numpy.linspace(0, numberOfPixels - 1, num = 5, endpoint = True), ["$-1$", "$-0.5$", "$0$", "$0.5$", "$1$"])
-        pyplot.yticks(numpy.linspace(0, numberOfPixels - 1, num = 5, endpoint = True), ["$-1$", "$-0.5$", "$0$", "$0.5$", "$1$"])
+        pyplot.xticks(np.linspace(0, numberOfPixels - 1, num = 5, endpoint = True), ["$-1$", "$-0.5$", "$0$", "$0.5$", "$1$"])
+        pyplot.yticks(np.linspace(0, numberOfPixels - 1, num = 5, endpoint = True), ["$-1$", "$-0.5$", "$0$", "$0.5$", "$1$"])
         pyplot.xlabel(r"$x\ (1)$")
         pyplot.ylabel(r"$y\ (1)$")
         #pyplot.scatter(XsAll - XsPA[ : , None, None], YsPA,c = "green")
-        #for r in numpy.sin(numpy.radians(numpy.linspace(0, 90, num = 3 + 1, endpoint = True))):
+        #for r in np.sin(np.radians(np.linspace(0, 90, num = 3 + 1, endpoint = True))):
         #    circle = pyplot.Circle((toPix(0), toPix(0)), toPix(r), color="gray", fill=False)
 
         #from matplotlib import cm
@@ -374,8 +375,6 @@ if plotOrientationsSphere:
         pyplot.savefig(directoryExcelSheets + f"filamentOrientationsSphereExact_{indexJetSystem}.pdf")
         pyplot.close()
 
-import sys
-sys.exit()
 
 
 def PDsVMFModifiedPolarAngle(angles, kappa, assumeDegrees = True):
@@ -383,38 +382,38 @@ def PDsVMFModifiedPolarAngle(angles, kappa, assumeDegrees = True):
     Calculate von Mises--Fisher distribution over the [0, 90 deg] interval (rather than the [0, 180 deg] interval).
     """
     if (assumeDegrees):
-        angles = numpy.radians(angles)
-    PDs = kappa / (numpy.exp(kappa) - 1) * numpy.exp(kappa * numpy.abs(numpy.cos(angles))) * numpy.sin(angles)
+        angles = np.radians(angles)
+    PDs = kappa / (np.exp(kappa) - 1) * np.exp(kappa * np.abs(np.cos(angles))) * np.sin(angles)
     if (assumeDegrees):
-        PDs *= numpy.pi / 180
+        PDs *= np.pi / 180
     return PDs
 
 
-plotAngles = numpy.linspace(0, 90, num = 90 + 1, endpoint = True)
+plotAngles = np.linspace(0, 90, num = 90 + 1, endpoint = True)
 
 
 # Initialise bins.
 # The number of bins matters! If we do many samples, we can permit ourselves smaller bins.
 numberOfBins = 30 # in 1
-binEdges     = numpy.linspace(0, 90, num = numberOfBins + 1, endpoint = True) # in deg;
+binEdges     = np.linspace(0, 90, num = numberOfBins + 1, endpoint = True) # in deg;
 binWidth     = binEdges[1] - binEdges[0] # in deg
 binCentres   = (binEdges[ : -1] + binEdges[1 : ]) * .5
 
 
 # Read LoTSS--BORG SDSS APADs from Excel.
-df = pandas.read_excel(pathExcelPADifferences)
+df = pd.read_excel(pathExcelPADifferences)
 PAsDeltaAbsData = df["angle_difference_r (deg)"].dropna()
 
 numberOfData     = len(PAsDeltaAbsData)
-counts, binEdges = numpy.histogram(PAsDeltaAbsData, bins = binEdges, density = False) # counts: in 1
+counts, binEdges = np.histogram(PAsDeltaAbsData, bins = binEdges, density = False) # counts: in 1
 
 pyplot.bar(binCentres, counts, width = binWidth)
 pyplot.show()
 
-kappaJs        = numpy.linspace(-8., 0., num = 40 + 1, endpoint = True) # in 1
-logLikelihoods = numpy.full_like(kappaJs, numpy.nan)
+kappaJs        = np.linspace(-8., 0., num = 40 + 1, endpoint = True) # in 1
+logLikelihoods = np.full_like(kappaJs, np.nan)
 
-xgrid = numpy.linspace(0, 90, 900 + 1, endpoint = True)
+xgrid = np.linspace(0, 90, 900 + 1, endpoint = True)
 for i, kappaJ in enumerate(kappaJs):
     # Monte Carlo simulate absolute PA difference RVs.
     inferrer.samplePAsDeltaAbs(kappaJ = kappaJ, alpha = 1.7, beta = 5.7, weightUniform = 3.6e-1, distributionF = "beta rectangular")#kappaF = kappaF,
@@ -423,11 +422,11 @@ for i, kappaJ in enumerate(kappaJs):
     #w, pdf, cdf = fit_bernstein_density_samples(inferrer.PAsDeltaAbs, n=4)
     #PDs = pdf(xgrid)
     #pdf(PAsDeltaAbsData)
-    #logLikelihoods[i] = numpy.sum(numpy.log(numpy.interp(PAsDeltaAbsData, xgrid, PDs)))
+    #logLikelihoods[i] = np.sum(np.log(np.interp(PAsDeltaAbsData, xgrid, PDs)))
 
     # Calculate histogram-based log-likelihood.
-    PDs, binEdges = numpy.histogram(inferrer.PAsDeltaAbs, bins = binEdges, density = True) # PDs: in 1 / deg
-    logLikelihoods[i] = numpy.sum(counts * numpy.log(PDs * 90)) / numberOfData # in 1
+    PDs, binEdges = np.histogram(inferrer.PAsDeltaAbs, bins = binEdges, density = True) # PDs: in 1 / deg
+    logLikelihoods[i] = np.sum(counts * np.log(PDs * 90)) / numberOfData # in 1
 
     # if (i < 4):
     #     p = pdf(xgrid)  # always >= 0
@@ -439,17 +438,17 @@ for i, kappaJ in enumerate(kappaJs):
     print(i, kappaJ, logLikelihoods[i])
 
 
-#kappaJs        = numpy.linspace(-10., 0., num = 50 + 1, endpoint = True) # in 1
+#kappaJs        = np.linspace(-10., 0., num = 50 + 1, endpoint = True) # in 1
 #kappaF         = 2.7 # in 1
 #inferrer.samplePAsDeltaAbs(kappaJ = kappaJ, kappaF = kappaF)
 
 
 if plotPDsPolarAngleRel:
     # Probability density relative to probability density of uniform distribution on the sphere.
-    angles = numpy.linspace(0, 90, num = 900 + 1, endpoint = True)
+    angles = np.linspace(0, 90, num = 900 + 1, endpoint = True)
     pyplot.figure(figsize = (6, 3))
     for kappaJ in [-4.5, -4.3, -4.1]:#[-4.8, -4.6, -4.4, -4.2, -4.0]:
-        pyplot.plot(angles, numpy.sqrt(-1 * kappaJ / numpy.pi) * 2 / erf(numpy.sqrt(-1 * kappaJ)) * numpy.exp(kappaJ * numpy.square(numpy.cos(numpy.radians(angles)))), c = "mediumseagreen")
+        pyplot.plot(angles, np.sqrt(-1 * kappaJ / np.pi) * 2 / erf(np.sqrt(-1 * kappaJ)) * np.exp(kappaJ * np.square(np.cos(np.radians(angles)))), c = "mediumseagreen")
     pyplot.xlabel(r"polar angle $a\ (\degree)$")
     pyplot.gca().set_yscale("log")
     pyplot.tight_layout()
@@ -463,18 +462,18 @@ y = logLikelihoods
 # POLYNOMIAL
 n = 5  # <-- set polynomial degree; it seems that 4 is too low (you still see 'ripples')
 # Fit polynomial (highest power first)
-p = numpy.poly1d(numpy.polyfit(x, y, deg=n))
+p = np.poly1d(np.polyfit(x, y, deg=n))
 # Max of polynomial on the x-range spanned by your data
 dp = p.deriv()                 # derivative polynomial
 crit = dp.r                    # stationary points (may be complex)
 # keep real critical points within [min(x), max(x)]
-xmin, xmax = numpy.min(x), numpy.max(x)
-crit_real = crit[numpy.isreal(crit)].real
+xmin, xmax = np.min(x), np.max(x)
+crit_real = crit[np.isreal(crit)].real
 crit_in = crit_real[(crit_real >= xmin) & (crit_real <= xmax)]
 # also consider endpoints (global max on interval can be at boundaries)
-candidates = numpy.concatenate([crit_in, [xmin, xmax]])
+candidates = np.concatenate([crit_in, [xmin, xmax]])
 vals = p(candidates)
-x_max = candidates[numpy.argmax(vals)]
+x_max = candidates[np.argmax(vals)]
 y_max = vals.max()
 print(crit, crit_real)
 print(x_max, y_max)
@@ -483,12 +482,12 @@ print("Best kappaJ (polynomial):", "{:.3f}".format(x_max))
 from scipy.optimize import curve_fit
 
 def logL_linear_exp(x, a, b, A, xt, w):
-    return a + b*x - A*numpy.exp((x - xt)/w)
+    return a + b*x - A*np.exp((x - xt)/w)
 p0 = [
-    0.0,#-1085.7,#numpy.mean(y),              # a
+    0.0,#-1085.7,#np.mean(y),              # a
     0.07,  # b (estimate slope on left), (y[1]-y[0])/(x[1]-x[0])
     0.2,                        # A
-    -3.3,#x[numpy.argmax(y)],         # xt near the knee / MLE
+    -3.3,#x[np.argmax(y)],         # xt near the knee / MLE
     1.2                         # w (controls sharpness)
 ]
 
@@ -512,10 +511,10 @@ logL_max = spl(x_mle)
 
 # curvature -> approx sigma:  logL ~ logLmax - (x-x0)^2/(2 sigma^2)
 #d2 = spl.derivative(2)(x_mle)
-#sigma = numpy.sqrt(-1.0/d2) if d2 < 0 else numpy.nan
+#sigma = np.sqrt(-1.0/d2) if d2 < 0 else np.nan
 
 a,b,A,xt,w = popt
-kappaMLELinExp = numpy.log(b * w / A) * w + xt
+kappaMLELinExp = np.log(b * w / A) * w + xt
 print("Best kappaJ (spline):", "{:.3f}".format(x_mle))
 print("Best kappaJ (parametric)", "{:.3f}".format(kappaMLELinExp))
 print("MLE x* =", x_mle)
@@ -524,7 +523,7 @@ print("logL(x*) =", logL_max)
 
 
 # Evaluate polynomial on the grid
-plotKappas = numpy.linspace(-10, 0, num = 1000 +1, endpoint = True)
+plotKappas = np.linspace(-10, 0, num = 1000 +1, endpoint = True)
 plotLLs    = p(plotKappas)
 plotLLsSpline = spl(plotKappas)
 plotLLsLinExp = logL_linear_exp(plotKappas, popt[0], popt[1], popt[2], popt[3], popt[4])
@@ -546,19 +545,17 @@ pyplot.subplots_adjust(left = .1, bottom = 0.15, right = .98, top = .98)
 pyplot.savefig(plotDirectory + "logLikelihood.pdf")
 pyplot.close()
 
-pyplot.plot(kappaJs, numpy.exp(242 * logLikelihoods))
+pyplot.plot(kappaJs, np.exp(242 * logLikelihoods))
 pyplot.show()
 
-import sys
-sys.exit()
 
 
-likelihoods = numpy.exp(logLikelihoods - numpy.amax(logLikelihoods))
+likelihoods = np.exp(logLikelihoods - np.amax(logLikelihoods))
 pyplot.plot(kappaJs, likelihoods)
 pyplot.scatter(kappaJs, likelihoods)
 pyplot.show()
 
-kappaJBest = kappaJs[numpy.argmax(logLikelihoods)]
+kappaJBest = kappaJs[np.argmax(logLikelihoods)]
 print("Best kappaJ (highest LL of array):", "{:.3f}".format(kappaJBest))
 #print("Best fit kappa_j:", kappaJBest)
 
@@ -571,7 +568,7 @@ pyplot.tight_layout()
 pyplot.show()
 
 print(PAsDeltaAbsData.shape)
-print("Integral over PDF:", numpy.sum(PDs) * binWidth)
+print("Integral over PDF:", np.sum(PDs) * binWidth)
 
 # Plot histogram with 6 equal-width bins
 pyplot.figure(figsize=(6, 4))
@@ -582,50 +579,48 @@ pyplot.title("Histogram of angle_difference_j")
 pyplot.tight_layout()
 pyplot.show()
 
-angles       = numpy.linspace(0, 90, num = 900 + 1, endpoint = True)
+angles       = np.linspace(0, 90, num = 900 + 1, endpoint = True)
 PDsJ         = inferrer.PDsWatsonPolarAngle(angles, x_max)
 PDsReference = inferrer.PDsWatsonPolarAngle(angles, 0)
 pyplot.plot(angles, PDsJ)
 pyplot.plot(angles, PDsReference)
-pyplot.xticks(numpy.linspace(0, 90, num = 9 + 1, endpoint = True))
+pyplot.xticks(np.linspace(0, 90, num = 9 + 1, endpoint = True))
 pyplot.xlabel("true angle between jet axis and filament axis (deg)")
 pyplot.ylabel("probability density")
 pyplot.title(r"$\kappa_\mathrm{j} = " + str(x_max) + "$")
 pyplot.show()
-#numpy.sqrt(-1 * kappaJ / numpy.pi) * 2 / erf(numpy.sqrt(-1 * kappaJ)) * numpy.exp(kappaJ * numpy.square(numpy.cos(numpy.radians(angles)))) * numpy.sin(numpy.radians(angles))
-#numpy.sin(numpy.radians(angles))
+#np.sqrt(-1 * kappaJ / np.pi) * 2 / erf(np.sqrt(-1 * kappaJ)) * np.exp(kappaJ * np.square(np.cos(np.radians(angles)))) * np.sin(np.radians(angles))
+#np.sin(np.radians(angles))
 
 
 
-import sys
-sys.exit()
-#print(numpy.amin(dotProducts), numpy.amax(dotProducts))
+#print(np.amin(dotProducts), np.amax(dotProducts))
 #print(anglesDirect)
 # print(type(anglesDirect))
 # print(anglesDirect.shape)
-#areSameVoxel = numpy.full(numberOfJetSystems, False)
-#areSameVoxel2 = numpy.equal(voxelIndicesDM, voxelIndicesAM)
+#areSameVoxel = np.full(numberOfJetSystems, False)
+#areSameVoxel2 = np.equal(voxelIndicesDM, voxelIndicesAM)
 # for i in range(numberOfJetSystems):
 #     if (voxelIndicesDM[i] == voxelIndicesAM[i]):
 #         areSameVoxel[i] = True
 #     print(voxelIndicesDM[i], voxelIndicesAM[i], areSameVoxel[i])
-# print(numpy.array_equal(areSameVoxel, areSameVoxel2), "?")
+# print(np.array_equal(areSameVoxel, areSameVoxel2), "?")
 # print(anglesDM[i], anglesDMAzimuth[i], anglesDMAltitude[i])
 # print(anglesAM[i], anglesAMAzimuth[i], anglesAMAltitude[i])
 # print("")
 
-#if (numpy.round(angle, 3) == 0.)
+#if (np.round(angle, 3) == 0.)
 # inBin = (anglesDelta > 5.) * (anglesDelta <= 10.)
 # for a,b in zip(voxelIndicesDM[inBin], anglesDM[inBin]):
 #     print(a,b)
 # print("This one's weird:", anglesDelta[127])
-# print(numpy.mean(anglesDelta), numpy.std(anglesDelta), numpy.median(anglesDelta))
+# print(np.mean(anglesDelta), np.std(anglesDelta), np.median(anglesDelta))
 # print(len(anglesDelta[~areSameVoxel]))
 
-RHS             = numpy.mean(numpy.square(inferrer.ZsJ))
+RHS             = np.mean(np.square(inferrer.ZsJ))
 print(inferrer.MLEKappa(RHS))
-kappaz = numpy.linspace(-20, 20, num = 4000 + 1, endpoint = True)
-pyplot.plot(kappaz, inferrer.MLEExpressionKappa(kappaz))
+kappaz = np.linspace(-20, 20, num = 4000 + 1, endpoint = True)
+pyplot.plot(kappaz, watson.MLEExpressionKappa(kappaz))
 pyplot.axhline(RHS)
 pyplot.show()
 
@@ -636,29 +631,29 @@ pyplot.show()
 # pyplot.grid(True)
 # pyplot.show()
 
-# kappas = numpy.linspace(10, 0, num = 1000, endpoint = False)[::-1]
+# kappas = np.linspace(10, 0, num = 1000, endpoint = False)[::-1]
 # print(kappas)
-# LHSs = 1 / numpy.sqrt(kappas * numpy.pi) * numpy.exp(kappas) / erfi(numpy.sqrt(kappas)) - 1 / (2 * kappas)
-# kappasNeg = numpy.linspace(-9, 0, num = 9000, endpoint = False)
-# LHSsNeg   = -1 * numpy.exp(kappasNeg) / (numpy.sqrt(-1 * kappasNeg * numpy.pi) * erf(numpy.sqrt(-1 * kappasNeg))) - 1 / (2 * kappasNeg)
+# LHSs = 1 / np.sqrt(kappas * np.pi) * np.exp(kappas) / erfi(np.sqrt(kappas)) - 1 / (2 * kappas)
+# kappasNeg = np.linspace(-9, 0, num = 9000, endpoint = False)
+# LHSsNeg   = -1 * np.exp(kappasNeg) / (np.sqrt(-1 * kappasNeg * np.pi) * erf(np.sqrt(-1 * kappasNeg))) - 1 / (2 * kappasNeg)
 # pyplot.plot(kappas, LHSs, c = "mediumseagreen")
 # pyplot.plot(kappasNeg, LHSsNeg, c = "mediumseagreen")
 # pyplot.plot(kappasNeg, 1 / 3. + 4 / 45. * kappasNeg, c = "mediumseagreen", alpha = .3)
 
-#print(numpy.amin(PAs), numpy.amax(PAs))
-# pyplot.hist(ZsM, bins = numpy.linspace(-1, 1, num = 40 + 1, endpoint = True))
+#print(np.amin(PAs), np.amax(PAs))
+# pyplot.hist(ZsM, bins = np.linspace(-1, 1, num = 40 + 1, endpoint = True))
 # pyplot.show()
 
-# pyplot.hist(numpy.degrees(numpy.arccos(numpy.abs(ZsM))), bins = numpy.linspace(0, 90, num = 18 + 1, endpoint = True))
-# pyplot.xticks(numpy.linspace(0, 90, num = 9 + 1, endpoint = True))
-# #pyplot.hist(numpy.degrees(numpy.arccos(numpy.abs(ZsM))), bins = numpy.linspace(0, 90, num = 6 + 1, endpoint = True))
-# #pyplot.xticks(numpy.linspace(0, 90, num = 6 + 1, endpoint = True))
+# pyplot.hist(np.degrees(np.arccos(np.abs(ZsM))), bins = np.linspace(0, 90, num = 18 + 1, endpoint = True))
+# pyplot.xticks(np.linspace(0, 90, num = 9 + 1, endpoint = True))
+# #pyplot.hist(np.degrees(np.arccos(np.abs(ZsM))), bins = np.linspace(0, 90, num = 6 + 1, endpoint = True))
+# #pyplot.xticks(np.linspace(0, 90, num = 6 + 1, endpoint = True))
 # pyplot.xlabel("filament angle error (deg)")
 # pyplot.title(r"$\kappa_\mathrm{m} = " + str(kappaM) + "$")
 # pyplot.show()
 
-# pyplot.hist(PAsDeltaAbs, bins = numpy.linspace(0, 90, num = 18 + 1, endpoint = True))
-# pyplot.xticks(numpy.linspace(0, 90, num = 9 + 1, endpoint = True))
+# pyplot.hist(PAsDeltaAbs, bins = np.linspace(0, 90, num = 18 + 1, endpoint = True))
+# pyplot.xticks(np.linspace(0, 90, num = 9 + 1, endpoint = True))
 # pyplot.xlabel(r"jet–filament PA difference $|\Delta\phi_\mathrm{jf}|$")
 # pyplot.title(r"$\kappa_\mathrm{j} = " + str(kappaJ) + r", \kappa_\mathrm{m} = " + str(kappaM) + "$")
 # pyplot.show()
@@ -676,7 +671,7 @@ pyplot.show()
 #         color=cmap(i),
 #         label=rf"$\kappa={kappa}$")
 #     if (kappa > 0):
-#         pyplot.scatter([numpy.degrees(numpy.arcsin(1 / numpy.sqrt(2 * kappa)))],[numpy.sqrt(2 / numpy.pi) / erfi(numpy.sqrt(kappa)) * numpy.exp(kappa - .5)])
+#         pyplot.scatter([np.degrees(np.arcsin(1 / np.sqrt(2 * kappa)))],[np.sqrt(2 / np.pi) / erfi(np.sqrt(kappa)) * np.exp(kappa - .5)])
 # #for kappa in [-6, -4, -2, 0, 2, 4, 6]:
 # #    pyplot.plot(angles, PDsWatsonPolarAngle(angles, kappa, assumeDegrees = True))
 # pyplot.show()
@@ -684,23 +679,23 @@ pyplot.show()
 print("MLE kappa:", MLEKappa(MLEExpressionData))
 
 print("getalleke:", MLEExpressionData)
-print("getalleke:", numpy.mean(numpy.square(dotProducts[anglesDelta > 0])))  # 0.6577638454896202
-print("getalleke:", numpy.mean(numpy.square(dotProducts[~areSameVoxel])))  # 0.6342351098670317
+print("getalleke:", np.mean(np.square(dotProducts[anglesDelta > 0])))  # 0.6577638454896202
+print("getalleke:", np.mean(np.square(dotProducts[~areSameVoxel])))  # 0.6342351098670317
 
 # print("quantity die wordt gemaximaliseerd:")
     # print("met de mean:")
-    # print(numpy.sum(numpy.square(XsAll[indexJetSystem].flatten() * XsMean[indexJetSystem] + YsAll[indexJetSystem].flatten() * YsMean[indexJetSystem] + ZsAll[indexJetSystem].flatten() * ZsMean[indexJetSystem])))
+    # print(np.sum(np.square(XsAll[indexJetSystem].flatten() * XsMean[indexJetSystem] + YsAll[indexJetSystem].flatten() * YsMean[indexJetSystem] + ZsAll[indexJetSystem].flatten() * ZsMean[indexJetSystem])))
     # print("met z-as:")
-    # print(numpy.sum(numpy.square(XsAll[indexJetSystem].flatten() * 0 + YsAll[indexJetSystem].flatten() * 0 + ZsAll[indexJetSystem].flatten() * 1)))
+    # print(np.sum(np.square(XsAll[indexJetSystem].flatten() * 0 + YsAll[indexJetSystem].flatten() * 0 + ZsAll[indexJetSystem].flatten() * 1)))
     # print("afstandjes")
     # print("met de mean:")
-    # distancesM = numpy.degrees(numpy.arccos(numpy.abs(XsAll[indexJetSystem].flatten() * XsMean[indexJetSystem] + YsAll[indexJetSystem].flatten() * YsMean[indexJetSystem] + ZsAll[indexJetSystem].flatten() * ZsMean[indexJetSystem])))
+    # distancesM = np.degrees(np.arccos(np.abs(XsAll[indexJetSystem].flatten() * XsMean[indexJetSystem] + YsAll[indexJetSystem].flatten() * YsMean[indexJetSystem] + ZsAll[indexJetSystem].flatten() * ZsMean[indexJetSystem])))
     # print(distancesM)
-    # print(numpy.mean(distancesM))
+    # print(np.mean(distancesM))
     # print("met z-as:")
-    # distancesZ = numpy.degrees(numpy.arccos(numpy.abs(XsAll[indexJetSystem].flatten() * 0 + YsAll[indexJetSystem].flatten() * 0 + ZsAll[indexJetSystem].flatten() * 1)))
+    # distancesZ = np.degrees(np.arccos(np.abs(XsAll[indexJetSystem].flatten() * 0 + YsAll[indexJetSystem].flatten() * 0 + ZsAll[indexJetSystem].flatten() * 1)))
     # print(distancesZ)
-    # print(numpy.mean(distancesZ))
+    # print(np.mean(distancesZ))
     #XsMean[indexJetSystem] = 0
     #YsMean[indexJetSystem] = 0
     #ZsMean[indexJetSystem] = 1
@@ -710,70 +705,70 @@ print("getalleke:", numpy.mean(numpy.square(dotProducts[~areSameVoxel])))  # 0.6
 #sys.exit()
 '''
 # Calculate, for each jet system, the mean vector.
-XsMean             = numpy.mean(XsAll, axis = (1, 2))
-YsMean             = numpy.mean(YsAll, axis = (1, 2))
-ZsMean             = numpy.mean(ZsAll, axis = (1, 2))
-lengthsMean        = numpy.sqrt(numpy.square(XsMean) + numpy.square(YsMean) + numpy.square(ZsMean))
+XsMean             = np.mean(XsAll, axis = (1, 2))
+YsMean             = np.mean(YsAll, axis = (1, 2))
+ZsMean             = np.mean(ZsAll, axis = (1, 2))
+lengthsMean        = np.sqrt(np.square(XsMean) + np.square(YsMean) + np.square(ZsMean))
 XsMean            /= lengthsMean
 YsMean            /= lengthsMean
 ZsMean            /= lengthsMean
 '''
-pyplot.hist(anglesMean.flatten(), bins = numpy.linspace(0, 90, num = 30 + 1, endpoint = True), density = True)
+pyplot.hist(anglesMean.flatten(), bins = np.linspace(0, 90, num = 30 + 1, endpoint = True), density = True)
 pyplot.title("HAAR PLOT")
 # pyplot.plot(plotAngles, inferrer.PDsWatsonPolarAngle(plotAngles, kappaMLE, assumeDegrees = True), c = "red")
-# for k in numpy.linspace(1, 10, num = 10, endpoint = True):
+# for k in np.linspace(1, 10, num = 10, endpoint = True):
 #     plotPDsVMFM = PDsVMFModifiedPolarAngle(plotAngles, k)
 #     pyplot.plot(plotAngles, plotPDsVMFM)
-#     print(numpy.trapezoid(plotPDsVMFM, plotAngles), "WOEFPOEP")
+#     print(np.trapezoid(plotPDsVMFM, plotAngles), "WOEFPOEP")
 pyplot.show()
 '''
 XsDiff  = XsAll - XsMean[ : , None, None]
 YsDiff  = YsAll - YsMean[ : , None, None]
 ZsDiff  = ZsAll - ZsMean[ : , None, None]
-lengths = numpy.sqrt(numpy.square(XsDiff) + numpy.square(YsDiff) + numpy.square(ZsDiff))
+lengths = np.sqrt(np.square(XsDiff) + np.square(YsDiff) + np.square(ZsDiff))
 XsDiff /= lengths
 YsDiff /= lengths
 ZsDiff /= lengths
 
-angless = numpy.degrees(numpy.arccos(numpy.abs(ZsDiff)))
-pyplot.hist(angless.flatten(), bins = numpy.linspace(0, 90, num = 9 + 1, endpoint = True), density = True)
+angless = np.degrees(np.arccos(np.abs(ZsDiff)))
+pyplot.hist(angless.flatten(), bins = np.linspace(0, 90, num = 9 + 1, endpoint = True), density = True)
 pyplot.title("whazzup")
 pyplot.show()
 '''
 # pyplot.imshow(anglesMean[:,:,0], aspect = "auto")
 # pyplot.show()
-#lengthsDMMean        = numpy.sqrt(numpy.square(XsDMMean) + numpy.square(YsDMMean) + numpy.square(ZsDMMean))
+#lengthsDMMean        = np.sqrt(np.square(XsDMMean) + np.square(YsDMMean) + np.square(ZsDMMean))
 #print(lengthsDMMean)
-#print(numpy.sum(numpy.isnan(XsDMAll)))
+#print(np.sum(np.isnan(XsDMAll)))
 
-print(numpy.mean(anglesMean, axis = (1,2)))
+print(np.mean(anglesMean, axis = (1,2)))
 
-#kappaMLE = inferrer.MLEKappa(numpy.mean(numpy.square(numpy.cos(numpy.radians(anglesMean.flatten()))))) # in 1
+#kappaMLE = inferrer.MLEKappa(np.mean(np.square(np.cos(np.radians(anglesMean.flatten()))))) # in 1
 #print("MLE", kappaMLE)
 # from scipy.special import erfi, erfinv
 # def erfiinv(x):
 #     # Coerce to a NumPy array with a numeric dtype SciPy supports
-#     x = numpy.asarray(x)
+#     x = np.asarray(x)
 #
 #     # If it's object (common with lists containing None/Decimal/SymPy), force complex128
 #     if x.dtype == object:
-#         x = x.astype(numpy.complex128)
+#         x = x.astype(np.complex128)
 #
 #     # If it's real, keep it real; if it's complex, ensure complex128
-#     if numpy.iscomplexobj(x):
-#         x = x.astype(numpy.complex128)
+#     if np.iscomplexobj(x):
+#         x = x.astype(np.complex128)
 #     else:
-#         x = x.astype(numpy.float64)
+#         x = x.astype(np.float64)
 #     return -1j * erfinv(1j * x)
 #
-# kappas = numpy.linspace(0.1, 5, num = 50, endpoint = True)
-# medians = numpy.arccos(1 / numpy.sqrt(kappas) * erfiinv(.5 * erfi(numpy.sqrt(kappas))))
+# kappas = np.linspace(0.1, 5, num = 50, endpoint = True)
+# medians = np.arccos(1 / np.sqrt(kappas) * erfiinv(.5 * erfi(np.sqrt(kappas))))
 # pyplot.plot(kappas, medians)
 # pyplot.show()
 
 
-# pyplot.hist(numpy.mean(anglesMeanDM, axis = 1), bins = numpy.linspace(0, 90, num = 9 + 1, endpoint = True))
-# pyplot.xticks(numpy.linspace(0, 90, num = 9 + 1, endpoint = True))
+# pyplot.hist(np.mean(anglesMeanDM, axis = 1), bins = np.linspace(0, 90, num = 9 + 1, endpoint = True))
+# pyplot.xticks(np.linspace(0, 90, num = 9 + 1, endpoint = True))
 # pyplot.xlabel("mean angular distance from indiv. filament vectors to mean filament vectors (deg)")
 # pyplot.ylabel("number of Mpc-scale jet systems")
 # pyplot.show()
@@ -794,50 +789,50 @@ print(numpy.mean(anglesMean, axis = (1,2)))
 #         pdf_deg(xdeg): callable on degrees
 #         cdf_deg(xdeg): callable on degrees (exact mixture CDF)
 #     """
-#     x = numpy.asarray(samples_deg, dtype=float)
-#     u = numpy.clip(x / 90.0, 1e-12, 1 - 1e-12)
+#     x = np.asarray(samples_deg, dtype=float)
+#     u = np.clip(x / 90.0, 1e-12, 1 - 1e-12)
 #
-#     k = numpy.arange(n + 1)
+#     k = np.arange(n + 1)
 #     a = k + 1.0
 #     b = (n - k) + 1.0
 #
 #     # log Beta pdf for each sample i and component k:
 #     # log f_{k}(u_i) = (a-1)log u + (b-1)log(1-u) - log B(a,b)
-#     log_pdf = ((a - 1)[None, :] * numpy.log(u)[:, None] +
-#                (b - 1)[None, :] * numpy.log1p(-u)[:, None] -
+#     log_pdf = ((a - 1)[None, :] * np.log(u)[:, None] +
+#                (b - 1)[None, :] * np.log1p(-u)[:, None] -
 #                betaln(a, b)[None, :])
 #
 #     def nll(z):
 #         # softmax to enforce weights on simplex
-#         z = z - numpy.max(z)
-#         w = numpy.exp(z)
+#         z = z - np.max(z)
+#         w = np.exp(z)
 #         w = w / w.sum()
 #
 #         # log p(u_i) = logsumexp_k( log w_k + log_pdf[i,k] )
-#         return -numpy.sum(logsumexp(numpy.log(w)[None, :] + log_pdf, axis=1))
+#         return -np.sum(logsumexp(np.log(w)[None, :] + log_pdf, axis=1))
 #
-#     z0 = numpy.zeros(n + 1)  # uniform weights initialisation
+#     z0 = np.zeros(n + 1)  # uniform weights initialisation
 #     res = minimize(nll, z0, method="L-BFGS-B")
-#     z = res.x - numpy.max(res.x)
-#     w = numpy.exp(z)
+#     z = res.x - np.max(res.x)
+#     w = np.exp(z)
 #     w = w / w.sum()
 #
 #     # Precompute for evaluation on grids
 #     from scipy.stats import beta as beta_dist
 #
 #     def pdf_deg(xdeg):
-#         xdeg = numpy.asarray(xdeg, dtype=float)
-#         uu = numpy.clip(xdeg / 90.0, 0.0, 1.0)
+#         xdeg = np.asarray(xdeg, dtype=float)
+#         uu = np.clip(xdeg / 90.0, 0.0, 1.0)
 #         # mixture pdf on [0,1]
-#         pdf_u = numpy.zeros_like(uu)
+#         pdf_u = np.zeros_like(uu)
 #         for kk in range(n + 1):
 #             pdf_u += w[kk] * beta_dist.pdf(uu, a[kk], b[kk])
 #         return pdf_u / 90.0  # scale back to degrees
 #
 #     def cdf_deg(xdeg):
-#         xdeg = numpy.asarray(xdeg, dtype=float)
-#         uu = numpy.clip(xdeg / 90.0, 0.0, 1.0)
-#         cdf_u = numpy.zeros_like(uu)
+#         xdeg = np.asarray(xdeg, dtype=float)
+#         uu = np.clip(xdeg / 90.0, 0.0, 1.0)
+#         cdf_u = np.zeros_like(uu)
 #         for kk in range(n + 1):
 #             cdf_u += w[kk] * beta_dist.cdf(uu, a[kk], b[kk])
 #         return cdf_u

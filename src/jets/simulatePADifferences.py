@@ -87,34 +87,3 @@ class PADifferencesInferrer:
         self.PAsDeltaAbs = numpy.abs(self.PAsJ - self.PAsF)
         self.PAsDeltaAbs = numpy.minimum(self.PAsDeltaAbs, 180 - self.PAsDeltaAbs)
         return self.PAsDeltaAbs
-
-
-    def PDsWatsonPolarAngle(self, angles, kappa, assumeDegrees = True):
-        if (assumeDegrees):
-            angles = numpy.radians(angles)
-        if   (kappa < 0):
-            PDs = numpy.sqrt(-1 * kappa / numpy.pi) * 2 / erf(numpy.sqrt(-1 * kappa)) * numpy.exp(kappa * numpy.square(numpy.cos(angles))) * numpy.sin(angles)
-        elif (kappa == 0):
-            PDs = numpy.sin(angles)
-        elif (kappa > 0):
-            PDs = numpy.sqrt(kappa / numpy.pi) * 2 / erfi(numpy.sqrt(kappa)) * numpy.exp(kappa * numpy.square(numpy.cos(angles))) * numpy.sin(angles)
-        if (assumeDegrees):
-            PDs *= numpy.pi / 180
-        return PDs
-
-
-    def MLEExpressionKappa(self, kappas):
-        MLEExpressions = numpy.full_like(kappas, numpy.nan)
-        kappasPositive = kappas[kappas > 0]
-        kappasNegative = kappas[kappas < 0]
-        MLEExpressions[kappas >  0] = numpy.exp(kappasPositive) / (numpy.sqrt(numpy.pi * kappasPositive) * erfi(numpy.sqrt(kappasPositive))) - 1. / (2 * kappasPositive)
-        MLEExpressions[kappas == 0] = 1 / 3.
-        MLEExpressions[kappas <  0] = -1 * numpy.exp(kappasNegative) / (numpy.sqrt(numpy.pi * -1 * kappasNegative) * erf(numpy.sqrt(-1 * kappasNegative))) - 1. / (2 * kappasNegative)
-        return MLEExpressions
-
-
-    def MLEKappa(self, MLEExpressionData, kappaHalfWidth = 10., kappaStepSize = 1e-2):
-        kappas              = numpy.linspace(-1 * kappaHalfWidth, kappaHalfWidth, num = int(numpy.ceil(2 * kappaHalfWidth / kappaStepSize)) + 1, endpoint = True)
-        MLEExpressionsKappa = self.MLEExpressionKappa(kappas)
-        kappaMLE            = numpy.interp(MLEExpressionData, MLEExpressionsKappa, kappas)
-        return kappaMLE
