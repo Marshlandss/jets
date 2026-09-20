@@ -1,3 +1,21 @@
+# Set the jet system samples to analyse. The key is the sample label, used in output file names.
+SAMPLES = {"Mpc" : {"nameCatalogue"   : "GGO_catalogue_2025_02_with3C236.fits",
+                    "directoryImages" : "images",
+                    "pixelShift"      : 0, # in pixels
+                    "namesColumn"     : {"rightAscension"   : "host_right_ascension_(deg)",
+                                         "declination"      : "host_declination_(deg)",
+                                         "redshift"         : "host_redshift_mean_(1)",
+                                         "areSpectroscopic" : "host_redshift_spectroscopic",
+                                         "lengthAngular"    : "outflow_length_angular_mean_(arcmin)"}},
+           "kpc" : {"nameCatalogue"   : "agn-v1.1.fits",
+                    "directoryImages" : "cleaned_fits_without_dups",
+                    "pixelShift"      : 1, # in pixels
+                    "namesColumn"     : {"rightAscension"   : "optRA",
+                                         "declination"      : "optDec",
+                                         "redshift"         : "z_best",
+                                         "areSpectroscopic" : "host_redshift_spectroscopic",
+                                         "lengthAngular"    : "outflow_length_angular_mean_(arcmin)"}}}
+
 # Set random seed.
 SEED = 0
 

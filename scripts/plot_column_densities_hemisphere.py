@@ -289,7 +289,7 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
 
 
 # Initialize settings.
-labelsSample = ("Mpc", "kpc")
+labelsSample = ("Mpc",)#"kpc"
 labelCube    = "mean"
 labelsMethod = ("d", "a")
 

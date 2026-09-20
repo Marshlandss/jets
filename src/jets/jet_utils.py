@@ -3,24 +3,31 @@ import os
 # Imports: third-party
 import pandas as pd
 
+
 def format_sheet(excel_location):
     """
+    Sort the catalogue at 'excel_location' by right ascension and widen each column to fit its widest cell.
+    Rewrites the file in place through the 'xlsxwriter' engine, so any formatting the file already carried is lost.
 
+    Parameters
+    ----------
+    excel_location : path to an Excel catalogue with a 'right_ascension (deg)' column
     """
     df = pd.read_excel(excel_location)
 
-    # Sorts Excel sheet by x index of central voxel and adjusts column size to accommodate data
-    df_updated = df.sort_values(by="right_ascension (deg)", ascending=True)
+    # Sort Excel sheet by x index of central voxel and adjusts column size to accommodate data
+    df_updated = df.sort_values(by = "right_ascension (deg)", ascending = True)
 
-    # Adjusts width of Excel columns based on the widest cell
-    with pd.ExcelWriter(excel_location, engine="xlsxwriter") as writer:
-        df_updated.to_excel(writer, sheet_name="Sheet1", index=False)
+    # Adjust width of Excel columns based on the widest cell
+    with pd.ExcelWriter(excel_location, engine = "xlsxwriter") as writer:
+        df_updated.to_excel(writer, sheet_name = "Sheet1", index = False)
 
         worksheet = writer.sheets["Sheet1"]
 
         for col_idx, col in enumerate(df_updated.columns):
             max_length = max(df_updated[col].astype(str).map(len).max(), len(col)) + 2
             worksheet.set_column(col_idx, col_idx, max_length)
+
 
 def check_adjustment_status(ra, dec, m_list, sa_list):
     """
@@ -41,6 +48,7 @@ def check_adjustment_status(ra, dec, m_list, sa_list):
                 return status
 
     return "a" # automatic
+
 
 def check_if_file_exists_in_correct_location(adjustment_status, a_loc, sa_loc, m_loc):
     """

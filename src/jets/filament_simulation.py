@@ -92,7 +92,7 @@ def cubeAverageDown(cube, numberOfVoxelsCoarse):
 
 def cubeColumnDensityAlongAxis(cube, cubeLength, axisIndex):
     """
-    Integrate a mass density cube (in g m^-3) along the axis with index 'axisIndex', giving the column density (in g m^-2) as a 2D map.
+    Integrate a mass density cube (in g/m^3) along the axis with index 'axisIndex', giving the column density (in g/m^2) as a 2D map.
     The cell size follows from 'cubeLength' (in Mpc; comoving) and the cube's shape.
     """
     mpc_to_m = u.Mpc.to(u.m) # in m; 3.0857e22

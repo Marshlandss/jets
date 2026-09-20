@@ -92,7 +92,7 @@ class FilamentOrientationFinder:
 
         Returns
         -------
-        columnDensities : array of shape (numberOfAltitudes, numberOfAzimuths); column density (in g m^-2), with
+        columnDensities : array of shape (numberOfAltitudes, numberOfAzimuths); column density (in g/m^2), with
                           columnDensities[i, j] corresponding to orientation ('altitudes[i]', 'azimuths[j]')
         """
         shapeExpected = (2 * self.voxelRadius + 1,) * 3
@@ -234,6 +234,5 @@ def loadVoxelIndicesList(pathExcel, method):
 
     Return a list of 1D NumPy arrays. Each array contains three indices.
     """
-    columnName = {"d" : "voxel_index_r (x,y,z)", "a" : "voxel_index_j (x,y,z)"}[method]
     dataFrame  = pd.read_excel(pathExcel)
-    return [np.array(ast.literal_eval(string)) for string in dataFrame[columnName]]
+    return [np.array(ast.literal_eval(string)) for string in dataFrame[f"voxel_index_{method} (x,y,z)"]]
