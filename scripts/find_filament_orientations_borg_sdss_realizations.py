@@ -8,7 +8,7 @@ from jets.config import FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP, BORG_NUMBER_OF
 from jets.filament_orientation import FilamentOrientationFinder, findFilamentOrientations, writeFilamentOrientations, loadVoxelIndicesList
 from jets.paths import DIR_INPUT, DIR_OUTPUT
 
-# Initialise settings.
+# Initialize settings.
 labelsSample = ("Mpc", "kpc")
 labelsMethod = ("d", "a") # "d": direct, "a": adjusted
 

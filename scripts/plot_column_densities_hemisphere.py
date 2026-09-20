@@ -20,7 +20,7 @@ matplotlib.rcParams["text.latex.preamble"] = r"\usepackage{gensymb}"
 
 def add_curved_label_chunks(ax, chunks, *, t_values,
     offset       = 0.08,
-    color        = "white",
+    colour       = "white",
     fontsize     = 11,
     path_effects = None):
     """
@@ -54,7 +54,7 @@ def add_curved_label_chunks(ax, chunks, *, t_values,
         x -= offset * nx
         y -= offset * ny
 
-        txt = ax.text(x, y, text, color=color, fontsize=fontsize, ha="center", va="center", rotation=angle, rotation_mode="anchor", clip_on=False, zorder=10)
+        txt = ax.text(x, y, text, color = colour, fontsize=fontsize, ha="center", va="center", rotation=angle, rotation_mode="anchor", clip_on=False, zorder=10)
 
         if path_effects is not None:
             txt.set_path_effects(path_effects)
@@ -95,7 +95,7 @@ def mollweide_forward(lon, lat):
     return x, y
 
 
-def edges_from_centers(x, periodic=False, period=None):
+def edgesFromCentres(x, periodic=False, period=None):
     x = np.asarray(x, dtype=float)
     if x.ndim != 1 or len(x) < 2:
         raise ValueError("Input must be a 1D array with at least 2 elements.")
@@ -157,13 +157,13 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
     Parameters
     ----------
     az_deg : 1D array
-        Azimuth centers in degrees, typically spanning 0..360.
+        Azimuth centres in degrees, typically spanning 0..360.
     alt_deg : 1D array
-        Altitude centers in degrees, typically spanning 0..90.
+        Altitude centres in degrees, typically spanning 0..90.
     values : 2D array
         Shape (len(alt_deg), len(az_deg)).
     central_az_deg : float
-        Azimuth shown at the center of the plot.
+        Azimuth shown at the centre of the plot.
     contours : sequence or None
         Optional contour levels in data units.
     """
@@ -180,17 +180,17 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
             az_deg = az_deg[:-1]
             values = values[:, :-1]
 
-    az_edges_deg  = edges_from_centers(az_deg, periodic=True, period=360.0)
-    alt_edges_deg = np.clip(edges_from_centers(alt_deg), 0.0, 90.0)
+    az_edges_deg  = edgesFromCentres(az_deg, periodic=True, period=360.0)
+    alt_edges_deg = np.clip(edgesFromCentres(alt_deg), 0.0, 90.0)
 
-    # Shift azimuth so chosen center sits at x = 0
+    # Shift azimuth so chosen centre sits at x = 0
     lon_edges_deg = (az_edges_deg - central_az_deg + 180.0) % 360.0 - 180.0
     lat_edges_deg = alt_edges_deg  # altitude becomes latitude in upper hemisphere
 
     Lon_e, Lat_e = np.meshgrid(np.deg2rad(lon_edges_deg), np.deg2rad(lat_edges_deg))
     X_e, Y_e = mollweide_forward(Lon_e, Lat_e)
 
-    # Centers for contours
+    # Centres for contours
     lon_cent_deg = (az_deg - central_az_deg + 180.0) % 360.0 - 180.0
     lat_cent_deg = alt_deg
     Lon_c, Lat_c = np.meshgrid(np.deg2rad(lon_cent_deg), np.deg2rad(lat_cent_deg))
@@ -229,7 +229,7 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
     for latd, offsetX in zip(guide_lats, offsetXs):
         lat_line = np.deg2rad(np.full_like(lon_line, latd))
         xg, yg = mollweide_forward(lon_line, lat_line)
-        ax.plot(xg, yg, color="0.75", lw=0.7, zorder=1, alpha = .06)
+        ax.plot(xg, yg, color = "0.75", lw=0.7, zorder=1, alpha = .06)
 
         # label near left edge
         xlab, ylab = mollweide_forward(np.array([-np.pi + 0.06]), np.array([np.deg2rad(latd)]))
@@ -241,7 +241,7 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
     for md in meridians:
         lon_line = np.deg2rad(np.full_like(lat_line, md))
         xg, yg   = mollweide_forward(lon_line, lat_line)
-        ax.plot(xg, yg, color="0.85", lw=0.6, zorder=1, alpha = .06)
+        ax.plot(xg, yg, color = "0.85", lw=0.6, zorder=1, alpha = .06)
 
     # Azimuth labels along equator
     label_meridians = np.arange(-180, 180 + 30, 30)
@@ -259,7 +259,7 @@ def plot_half_mollweide_compact(az_deg, alt_deg, values, *,
     add_curved_label_chunks(ax, chunks = ["altitude", r"$\theta\ (^\circ)$"],
         t_values     = [0.75 * np.pi, 0.695 * np.pi],
         offset       = 0.10,
-        color        = "white",
+        colour       = "white",
         fontsize     = 10,
         path_effects = [pe.withStroke(linewidth = 1.5, foreground = ".3")])
     ax.text(0.5, 0.18, r"azimuth $\varphi\ (^\circ)$",

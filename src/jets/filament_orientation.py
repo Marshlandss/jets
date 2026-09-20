@@ -15,7 +15,7 @@ from jets.sphere_utils import convertCartesianToSpherical, convertSphericalToCar
 class FilamentOrientationFinder:
     """
     Find the 3D orientation of the Cosmic Web filament that runs through a given voxel of a density cube.
-    Do so by maximising the column density along a line segment through that voxel over a grid of orientations.
+    Do so by maximizing the column density along a line segment through that voxel over a grid of orientations.
     Because a filament axis is undirected, only the upper hemisphere is sampled: azimuth in [0, 360) deg, altitude in [0, 90] deg.
     """
     def __init__(self, lambdaMax, # in 1
@@ -59,10 +59,10 @@ class FilamentOrientationFinder:
             self.lambdasCrossingY = ((2 * js[None, None, : ] - 1) / (2 * np.abs(ysFilament[ : , : , None]))).astype(np.float32)
             self.lambdasCrossingZ = ((2 * js[None, None, : ] - 1) / (2 * np.abs(zsFilament[ : , : , None]))).astype(np.float32)
 
-        # Initialise indices of the central voxel in a smaller 'cutout cube'.
+        # Initialize indices of the central voxel in a smaller 'cutout cube'.
         self.voxelIndicesCentre  = np.array([self.voxelRadius, self.voxelRadius, self.voxelRadius])
 
-        # Initialise constants for column density calculation.
+        # Initialize constants for column density calculation.
         self.metresPerMegaparsec = u.Mpc.to(u.m) # in 1
 
 
@@ -153,7 +153,7 @@ class FilamentOrientationFinder:
         """
         Return (axis, columnDensityMax): the unit vector of the best-fitting filament orientation,
         defined as the principal axis of all orientations whose column density lies within 'toleranceRelative' of the maximum, and that maximum.
-        On voxelised data the maximum is typically a flat plateau (all directions through the same voxels); 'findBest' returns
+        On voxelized data the maximum is typically a flat plateau (all directions through the same voxels); 'findBest' returns
         an arbitrary point on it, this method its solid-angle-weighted centre. Orientations are axial, so the mean is the
         principal eigenvector of the weighted scatter matrix, not the vector mean (which would cancel opposite lobes).
         """
@@ -181,7 +181,7 @@ class FilamentOrientationFinder:
 def findFilamentOrientations(FOF, densities, voxelIndicesList):
     """
     Find the filament orientation of every jet system whose voxel coordinates are listed in 'voxelIndicesList'.
-    Do so by maximising the Cosmic Web column density through its host over all orientations on the (altitude, azimuth) grid of 'FOF'.
+    Do so by maximizing the Cosmic Web column density through its host over all orientations on the (altitude, azimuth) grid of 'FOF'.
 
     Parameters
     ----------

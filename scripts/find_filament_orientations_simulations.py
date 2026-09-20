@@ -11,10 +11,10 @@ from jets.filament_simulation import cubeGenerateFilamentProfileBeta, cubeAverag
 from jets.paths import DIR_OUTPUT
 from jets.sphere_utils import axialSeparation, convertCartesianToSpherical
 
-# Initialise settings.
+# Initialize settings.
 numberOfVoxelsFine   = 205 # in 1; per side
 
-# Initialise filament orientation finding.
+# Initialize filament orientation finding.
 FOF                  = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)
 numberOfVoxelsCoarse = 2 * FOF.voxelRadius + 1 # in 1; per side
 RNG                  = np.random.default_rng(SEED)
