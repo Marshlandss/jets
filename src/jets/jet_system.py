@@ -139,8 +139,8 @@ class JetSystem:
         self.light_values_convolved_2d.append(convolve(self.light_values_2d[-1], gauss, boundary="wrap"))
         self.best_angle_index_list.append(np.argmax(self.light_values_convolved_2d[-1]))
 
-        self.best_angle                 = int(self.angles[self.best_angle_index_list[-1]] * 180 / np.pi)
-        self.max_light_sum              = np.amax(self.light_values_convolved_2d[-1])
+        self.best_angle    = round(np.degrees(self.angles[self.best_angle_index_list[-1]]), 2) # in deg
+        self.max_light_sum = np.amax(self.light_values_convolved_2d[-1])
 
         self.threshold_list.append(self.max_light_sum * self.percentage)
 
@@ -203,12 +203,11 @@ class JetSystem:
             "subtraction_used"              : self.get_subtraction_used(),
             "length_angular_means"          : self.length_angular_means[self._find_catalogue_match_index(self.right_ascension, self.declination)],
         }
+        df_new = pd.DataFrame([new_instance_data])
 
-        df_new = pd.DataFrame([new_instance_data]).astype(df_existing.dtypes.to_dict())
-
-        # Updates Excel sheet
-        df_updated = pd.concat([df_existing, df_new], ignore_index=True)
-        df_updated.to_excel(self.excel_file, index=False)
+        # Update Excel sheet.
+        df_updated = df_new if df_existing.empty else pd.concat([df_existing, df_new], ignore_index = True)
+        df_updated.to_excel(self.excel_file, index = False)
 
 
     # --- Helper ---
@@ -299,7 +298,7 @@ class JetSystem:
                         uncertainties.append(x_values[j] - self.best_angle)
         uncertainty = max(uncertainties)
 
-        return int(uncertainty)
+        return round(uncertainty, 2)
 
 
     def _adjust_radius(self, radius):
