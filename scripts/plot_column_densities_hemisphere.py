@@ -307,7 +307,7 @@ for labelSample in labelsSample:
     numberOfJetSystems = dataGeneral.shape[0] # in 1
 
     # Create figure directory if she doesn't exist yet.
-    directoryFigures = DIR_OUTPUT / f"column_densities_hemisphere_{labelSample}_{labelCube}"
+    directoryFigures = DIR_OUTPUT / f"plots_column_densities_hemisphere_{labelSample}_{labelCube}"
     directoryFigures.mkdir(parents = True, exist_ok = True)
 
     # Loop over the 'direct' and 'adjusted' host galaxy localization methods.
@@ -321,8 +321,8 @@ for labelSample in labelsSample:
             declination               = float(dataGeneral.loc[indexJetSystem, "declination (deg)"])
             axisBest, _               = FOF.findBestPlateau(dataCDs[indexJetSystem])
             azimuthBest, altitudeBest = convertCartesianToSpherical(*axisBest)
-            pathFigure                = directoryFigures / f"column_densities_hemisphere_{indexJetSystem:03d}_{labelMethod}.pdf"
-            print(f"Saving figure to '{pathFigure}'...")
+            pathFigure                = directoryFigures / f"plot_column_densities_hemisphere_{indexJetSystem:03d}_{labelMethod}.pdf"
+            print(f"Saving plot to '{pathFigure}'...")
 
             fig, ax = plot_half_mollweide_compact(azimuths, altitudes, dataCDs[indexJetSystem],
                 cmap           = cm.lipari,

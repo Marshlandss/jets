@@ -85,7 +85,7 @@ cbar.ax.yaxis.set_major_formatter(StrMethodFormatter('${x:.1f}$'))
 plt.subplots_adjust(left = 0.11, right = 0.91, top = 0.9, bottom = 0.15, wspace = 0.01)
 
 # Save figure.
-pathFigure = DIR_OUTPUT / "filament_voxelization_simulation.pdf"
+pathFigure = DIR_OUTPUT / "plot_filament_voxelization_simulation.pdf"
 plt.savefig(pathFigure, dpi = 1000)
-print(f"Saved figure to '{pathFigure}'.")
+print(f"Saved plot to '{pathFigure}'.")
 plt.close()

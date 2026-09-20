@@ -1,3 +1,11 @@
+"""
+Find the jet position angles of the jet systems in each sample of 'SAMPLES',
+by scanning a rotating line segment across each radio image and recording the orientation of highest mean specific intensity.
+
+Write one catalogue per sample, alongside a diagnostic plot per jet system sorted by adjustment status:
+automatic ('a'), semi-automatic ('sa'), or manual ('m').
+"""
+
 # Imports: standard library
 import os
 # Imports: third-party
@@ -38,20 +46,19 @@ for sampleLabel, sampleProperties in SAMPLES.items():
         areSpectroscopic        = data[namesColumn["areSpectroscopic"]]
 
 
-    # === Create Folders ===
-    # The following paths are for saving output.
-    path_excel     = DIR_OUTPUT / f"catalogue_jet_{sampleLabel}.xlsx"
-    save_plots_loc = DIR_OUTPUT / "jet_orientation_plots"
-    save_a_loc     = save_plots_loc / "a"
-    save_sa_loc    = save_plots_loc / "sa"
-    save_m_loc     = save_plots_loc / "m"
+    # Initialize output paths.
+    path_excel             = DIR_OUTPUT / f"catalogue_jet_{sampleLabel}.xlsx"
+    pathPlots              = DIR_OUTPUT / f"plots_jet_orientation_{sampleLabel}"
+    pathPlotsAutomatic     = pathPlots / "a"
+    pathPlotsSemiAutomatic = pathPlots / "sa"
+    pathPlotsManual        = pathPlots / "m"
 
-    # --- Creates folders if they do not exist ---
+    # Create folders if they do not exist.
     print()
-    for location in (save_a_loc, save_sa_loc, save_m_loc):
+    for location in (pathPlotsAutomatic, pathPlotsSemiAutomatic, pathPlotsManual):
         location.mkdir(parents = True, exist_ok = True)
 
-    # --- Create Excel sheet if it does not exist ---
+    # Create Excel sheet if it does not exist.
     if not os.path.exists(path_excel):
         columns = {
             "right_ascension (deg)"        : [],
@@ -68,8 +75,7 @@ for sampleLabel, sampleProperties in SAMPLES.items():
         df = pd.DataFrame(columns = columns)
         df.to_excel(path_excel, index = False)
 
-
-    # === Select cutouts ===
+    # Select cutouts.
     suffixes           = ("_sub_masked10.fits", "_sub.fits", ".fits")
     cutouts_per_system = {}
     # Keep only the most processed cutout of each jet system: masked > subtracted > unaltered.
@@ -81,7 +87,7 @@ for sampleLabel, sampleProperties in SAMPLES.items():
     filenames = [min(cutouts)[1] for cutouts in cutouts_per_system.values()]
 
 
-    # === Create plots and update Excel ===
+    # Create plots and update Excel.
     if OVERWRITE_FILES:
         print("!!! Overwriting data and files")
     else:
@@ -110,9 +116,9 @@ for sampleLabel, sampleProperties in SAMPLES.items():
         save_format         = SAVE_FORMAT
         name                = filename[:-5] + "_jet_orientation." + save_format
 
-        save_a              = save_a_loc  / name
-        save_sa             = save_sa_loc / name
-        save_m              = save_m_loc  / name
+        save_a              = pathPlotsAutomatic     / name
+        save_sa             = pathPlotsSemiAutomatic / name
+        save_m              = pathPlotsManual        / name
 
         adjustment_status   = check_adjustment_status(ra, dec, M_LIST, SA_LIST)
 

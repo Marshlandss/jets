@@ -81,6 +81,6 @@ for ax, data, label in [
 
 axBottom.set_xlabel(r"filament orientation error $\angle(\hat{f}, \hat{f}_\mathrm{m,0})$ ($^\circ$)")
 
-pathFigure = DIR_OUTPUT / "filament_voxelization_errors.pdf"
+pathFigure = DIR_OUTPUT / "plot_filament_voxelization_errors.pdf"
 fig.savefig(pathFigure)
-print(f"Saved figure to '{pathFigure}'.")
+print(f"Saved plot to '{pathFigure}'.")
