@@ -32,7 +32,7 @@ FILAMENT_LAMBDA_MAX = 2.5 # in BORG voxel side lengths; half-length of the line 
 # Set saving parameters.
 SAVING_PLOTS    = True
 # If True:  Replaces all files
-# If False: Only adds missing files 
+# If False: Only adds missing files
 #           OR if file is placed in the wrong folder, file will be removed and recreated in the correct folder
 # Set False if you have already generated plots and are sorting them manually (using the manual adjustment lists)
 OVERWRITE_FILES = False

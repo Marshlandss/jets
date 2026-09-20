@@ -9,11 +9,12 @@ from jets.filament_orientation import FilamentOrientationFinder, findFilamentOri
 from jets.paths import DIR_INPUT, DIR_OUTPUT
 
 # Initialize settings.
-methods       = ["d", "a"] # "d": direct, "a": adjusted
+labelSample  = "Mpc"
+labelsMethod = ("d", "a") # "d": direct, "a": adjusted
 
 # Initialize paths.
 pathDensities = DIR_INPUT  / "reconstructions" / "borg_sdss_density.npz"
-pathExcel     = DIR_OUTPUT / "Mpc_filament_pa_exact_1.xlsx"
+pathExcel     = DIR_OUTPUT / f"catalogue_filament_{labelSample}_mean.xlsx"
 
 # Initialize filament orientation finding.
 FOF           = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)
@@ -22,12 +23,13 @@ FOF           = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_ST
 densitiesMean = np.load(pathDensities)["mean"] + 1 # in today's mean matter density
 print(f"Loaded density cube of shape {densitiesMean.shape}; mean {np.mean(densitiesMean):.3f}, range [{np.amin(densitiesMean):.3f}, {np.amax(densitiesMean):.3f}].")
 
-for method in methods:
-    print(f"Finding filament orientations for method '{method}'...")
+for labelMethod in labelsMethod:
+    print(f"Finding filament orientations for method '{labelMethod}'...")
     # Load all host galaxy voxel indices.
-    voxelIndicesList = loadVoxelIndicesList(pathExcel, method)
+    voxelIndicesList = loadVoxelIndicesList(pathExcel, labelMethod)
     # Find all column densities and best orientations.
     columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest = findFilamentOrientations(FOF, densitiesMean, voxelIndicesList)
-
-    np.save(DIR_OUTPUT / f"Mpc_column_densities_all_{method}.npy", columnDensitiesAll)
-    writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDensitiesBest, method)
+    # Save all column densities.
+    np.save(DIR_OUTPUT / f"column_densities_{labelSample}_mean_{labelMethod}.npy", columnDensitiesAll.astype(np.float32))
+    # Save best orientations.
+    writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDensitiesBest, labelMethod)

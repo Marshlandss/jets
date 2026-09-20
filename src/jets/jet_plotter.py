@@ -16,7 +16,7 @@ class JetPlotter:
         self.save_m = save_m
         self.save_format = save_format
         self.axis_font_size = axis_font_size
-                
+
         self.save_plots()
 
 

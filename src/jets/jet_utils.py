@@ -41,7 +41,7 @@ def check_adjustment_status(ra, dec, m_list, sa_list):
                 return status
 
     return "a" # automatic
-            
+
 def check_if_file_exists_in_correct_location(adjustment_status, a_loc, sa_loc, m_loc):
     """
     Identifies if the current jet system has already been saved in to one of the folders.
