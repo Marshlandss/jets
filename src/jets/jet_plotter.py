@@ -65,7 +65,7 @@ class JetPlotter:
 
                         inset_ax = inset_axes(overlay_axis, width = "30%", height = "30%", loc = "upper right", borderpad = 0.2 )
 
-                        center_x, center_y = (flipped_img.shape[1]-1) / 2, (flipped_img.shape[0]-1) / 2
+                        centreX, centreY = (flipped_img.shape[1]-1) / 2, (flipped_img.shape[0]-1) / 2
 
                         inset_ax.imshow(flipped_img, norm=object_norm, cmap = "inferno")
 
@@ -78,7 +78,7 @@ class JetPlotter:
                         inset_ax.set_xticks([])
                         inset_ax.set_yticks([])
 
-                        circle = patches.Circle((center_x, center_y), self.jet.image.shape[0]*.01, facecolor="red", linewidth = 1, edgecolor="orange", fill=True, )
+                        circle = patches.Circle((centreX, centreY), self.jet.image.shape[0]*.01, facecolor="red", linewidth = 1, edgecolor="orange", fill=True, )
                         inset_ax.add_patch(circle)
 
                     if i == len(self.jet.light_values_2d) - 1:
@@ -221,7 +221,7 @@ class JetPlotter:
         return pixel_size
 
 
-    def format_ticks(self, image, pixel_size_arcmin, center_angle, ax, id, shift_value_dec, dec):
+    def format_ticks(self, image, pixel_size_arcmin, centreAngle, ax, id, shift_value_dec, dec):
         ticks = np.linspace(0, image.shape[0], 5, endpoint = True)
         ticks_converted = ticks * pixel_size_arcmin
 
@@ -233,12 +233,12 @@ class JetPlotter:
         tick_labels = []
 
         if id == 0:
-            ticks_converted = [f"{float(center_angle + shift):.2f}", f"{float(center_angle):.2f}", f"{float(center_angle - shift):.2f}"]
+            ticks_converted = [f"{float(centreAngle + shift):.2f}", f"{float(centreAngle):.2f}", f"{float(centreAngle - shift):.2f}"]
             ax.set_xticks(ticks)
             tick_labels = ax.set_xticklabels(ticks_converted)
 
         else:
-            ticks_converted = [f"{float(center_angle - shift):.2f}", f"{float(center_angle):.2f}", f"{float(center_angle + shift):.2f}"]
+            ticks_converted = [f"{float(centreAngle - shift):.2f}", f"{float(centreAngle):.2f}", f"{float(centreAngle + shift):.2f}"]
             ax.set_yticks(ticks)
             tick_labels = ax.set_yticklabels(ticks_converted)
 
@@ -248,4 +248,4 @@ class JetPlotter:
 
     def add_text_to_ax(self, ax, text):
         ax.text(self.jet.image.shape[0] * 0.05, self.jet.image.shape[1] * 0.88, text,
-        fontsize = self.axis_font_size, color = "white", bbox = dict(facecolor = "gray", edgecolor = "none", boxstyle = "round,pad=0.3", alpha = 0.5))
+        fontsize = self.axis_font_size, color = "white", bbox = dict(facecolor = "grey", edgecolor = "none", boxstyle = "round,pad=0.3", alpha = 0.5))

@@ -255,8 +255,8 @@ class JetSystem:
 
     def _find_uncertainty(self, threshold):
         """
-        Finds the distance from self.best_angle to the furthest peak above the threshold provided. Note: this graph's
-        behavior is cyclic, where 0 degrees and 180 degrees are the same.
+        Finds the distance from self.best_angle to the furthest peak above the threshold provided.
+        Note: this graph's behaviour is cyclic, where 0 degrees and 180 degrees are the same.
         """
         # Index of each peak
         maxima_indices      = self.find_peaks(self.light_values_convolved_2d[-1])

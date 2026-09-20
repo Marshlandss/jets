@@ -3,7 +3,7 @@ SEED = 0
 
 # Set jet orientation search parameters.
 JET_ANGLE_STEP        = 1.  # in deg; angular resolution of the jet orientation search
-BEST_ANGLE_THRESHOLD  = .85
+BEST_ANGLE_THRESHOLD  = .85 # in 1
 PIXEL_SHIFT           = 1   # shifts plot by indicated number of pixels to the top right; Martijn: 0, Martin: 1
 NAN_PERCENTAGE_CUTOFF = 43. # in %
 
@@ -14,8 +14,8 @@ BORG_BOX_SIZE_MPC_H          = 750.                                             
 BORG_NUMBER_OF_VOXELS        = 256                                                      # in 1; per axis
 BORG_VOXEL_SIZE_MPC          = BORG_BOX_SIZE_MPC_H / (BORG_NUMBER_OF_VOXELS * LITTLE_H) # in Mpc (≈ 4.17); comoving
 BORG_NUMBER_OF_REALIZATIONS  = 41                                                       # in 1
-BORG_INDEX_REALIZATION_START = 2000                                                     # index of the loop's first realization
-BORG_INDEX_REALIZATION_STEP  = 250                                                      # index spacing between consecutive realizations
+BORG_INDEX_REALIZATION_START = 2000                                                     # in 1; index of the loop's first realization
+BORG_INDEX_REALIZATION_STEP  = 250                                                      # in 1; index spacing between consecutive realizations
 
 # Set voxelization error simulation parameters.
 FILAMENT_NUMBER_OF_SIMULATIONS = int(1e4) # in 1

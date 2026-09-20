@@ -19,7 +19,7 @@ def cubeGenerateFilamentProfileBeta(
 
     The cube spans 'numberOfVoxelsCoarse' BORG voxels per side at 'numberOfVoxelsFine' fine cells per side.
     The filament axis has a random (isotropic) orientation and passes through a random point within half a BORG voxel of the cube centre,
-    so that 'cubeAverageDown' samples the voxelisation error at a random phase.
+    so that 'cubeAverageDown' samples the voxelization error at a random phase.
 
     Parameters
     ----------
@@ -27,9 +27,9 @@ def cubeGenerateFilamentProfileBeta(
     numberOfVoxelsCoarse : int; coarse cells per side
     RNG                  : numpy.random.Generator
     beta                 : float; beta-profile exponent (in 1)
-    densityCentral       : float; central mass density (in g m^-3)
+    densityCentral       : float; central mass density (in g/m^3)
     radiusCore           : float; core radius of the beta profile (in Mpc, comoving)
-    axis                 : array of shape (3,) or None; direction of the filament axis, normalised internally.
+    axis                 : array of shape (3,) or None; direction of the filament axis, normalized internally.
                            If None (default), an isotropically random direction is drawn from 'RNG'.
                            Supply a fixed direction to test the pipeline.
     offset               : array of shape (3,) or None; point on the filament axis
@@ -38,7 +38,7 @@ def cubeGenerateFilamentProfileBeta(
 
     Returns
     -------
-    cube   : array of shape (numberOfVoxelsFine, numberOfVoxelsFine, numberOfVoxelsFine), indexed [ix, iy, iz]; mass density (in g m^-3)
+    cube   : array of shape (numberOfVoxelsFine, numberOfVoxelsFine, numberOfVoxelsFine), indexed [ix, iy, iz]; mass density (in g/m^3)
     axis   : array of shape (3,); unit vector along the filament
     offset : array of shape (3,); point on the filament axis (in Mpc, comoving)
     """

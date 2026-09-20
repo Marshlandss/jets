@@ -146,8 +146,7 @@ for filename in filenames:
             # File save locations
             path_excel,
             # Save status
-            PIXEL_SHIFT
-        )
+            PIXEL_SHIFT)
 
         if SAVING_PLOTS:
             print("\n> Creating and saving plot...")
