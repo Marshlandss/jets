@@ -8,9 +8,6 @@ Those angles form the error distribution that the inference of the jet Watson co
 The reference axis is the axis that the inference actually uses, rather than the realizations' own principal axis,
 because the quantity of interest is how far the true axis may be from the axis used in the APAD data.
 """
-
-# Imports: standard library
-import ast
 # Imports: third-party
 import numpy as np
 # Imports: first-party
@@ -21,13 +18,25 @@ from jets.paths import DIR_OUTPUT
 # Initialize settings.
 labelSample       = "Mpc"
 labelsMethod      = ("d", "a") # "d": direct method, "a": adjusted method
-pathCatalogueMean = DIR_OUTPUT / f"catalogue_filament_{labelSample}_mean.xlsx"
+pathCatalogueMean = DIR_OUTPUT / "catalogues" / f"catalogue_filament_{labelSample}_mean.xlsx"
 pathErrors        = DIR_OUTPUT / f"filament_orientation_errors_localization_posterior_{labelSample}.npy"
 
 # Load the axes found in the posterior mean density cube; shape (numberOfJetSystems, numberOfMethods, 3).
 axesMean           = np.stack([loadFilamentAxes(pathCatalogueMean, labelMethod) for labelMethod in labelsMethod], axis = 1)
 numberOfJetSystems = axesMean.shape[0] # in 1
 
+# Load the axes found in the posterior realizations; shape (numberOfJetSystems, numberOfRealizations, numberOfMethods, 3).
+axesRealizations = np.full((numberOfJetSystems, BORG_NUMBER_OF_REALIZATIONS, len(labelsMethod), 3), np.nan)
+for i in range(BORG_NUMBER_OF_REALIZATIONS):
+    indexRealization         = BORG_INDEX_REALIZATION_START + i * BORG_INDEX_REALIZATION_STEP
+    pathCatalogueRealization = DIR_OUTPUT / "catalogues" / f"catalogue_filament_{labelSample}_{indexRealization}.xlsx"
+    print(f"Loading '{pathCatalogueRealization.name}' ({i + 1} of {BORG_NUMBER_OF_REALIZATIONS})...")
+    for j, labelMethod in enumerate(labelsMethod):
+        axesRealizations[ : , i, j] = loadFilamentAxes(pathCatalogueRealization, labelMethod)
+
+print(axesMean.shape)
+import sys
+sys.exit()
 
 directoryExcelSheets = "/Users/martijnoei/Library/CloudStorage/Dropbox/Martijn/Caltech/Caltech Connection/ten_excels_1.26.26_kpc/"
 numberOfJetSystems   = 777#242

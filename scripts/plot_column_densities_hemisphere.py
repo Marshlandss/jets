@@ -303,7 +303,7 @@ FOF = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)
 
 for labelSample in labelsSample:
     # Load pandas DataFrame with general data.
-    dataGeneral        = pd.read_excel(DIR_OUTPUT / f"catalogue_filament_{labelSample}_{labelCube}.xlsx") # Shape: (242, ?)
+    dataGeneral        = pd.read_excel(DIR_OUTPUT / "catalogues" / f"catalogue_filament_{labelSample}_{labelCube}.xlsx") # Shape: (242, ?)
     numberOfJetSystems = dataGeneral.shape[0] # in 1
 
     # Create figure directory if she doesn't exist yet.

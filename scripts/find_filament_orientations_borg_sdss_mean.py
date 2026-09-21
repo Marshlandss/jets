@@ -14,7 +14,7 @@ labelsMethod = ("d", "a") # "d": direct, "a": adjusted
 
 # Initialize paths.
 pathDensities = DIR_INPUT  / "reconstructions" / "borg_sdss_density.npz"
-pathExcel     = DIR_OUTPUT / f"catalogue_filament_{labelSample}_mean.xlsx"
+pathExcel     = DIR_OUTPUT / "catalogues" / f"catalogue_filament_{labelSample}_mean.xlsx"
 
 # Initialize filament orientation finding.
 FOF           = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)

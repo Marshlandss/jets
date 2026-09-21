@@ -19,7 +19,7 @@ for labelSample in labelsSample:
     for i in range(BORG_NUMBER_OF_REALIZATIONS):
         indexRealization = BORG_INDEX_REALIZATION_START + i * BORG_INDEX_REALIZATION_STEP
         pathDensities    = DIR_INPUT  / "reconstructions" / f"final_density_{indexRealization}.h5"
-        pathExcel        = DIR_OUTPUT / f"catalogue_filament_{labelSample}_{indexRealization}.xlsx"
+        pathExcel        = DIR_OUTPUT / "catalogues" / f"catalogue_filament_{labelSample}_{indexRealization}.xlsx"
         print(f"Working on realization {indexRealization} ({i + 1} of {BORG_NUMBER_OF_REALIZATIONS})...")
 
         # Load the BORG SDSS realization.
