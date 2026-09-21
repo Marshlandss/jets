@@ -32,3 +32,4 @@ for labelSample in labelsSample:
             voxelIndicesList = loadVoxelIndicesList(pathExcel, labelMethod)
             _, azimuthsBest, altitudesBest, columnDensitiesBest = findFilamentOrientations(FOF, densitiesRealization, voxelIndicesList)
             writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDensitiesBest, labelMethod)
+        print(f"Saved filament orientations to '{pathExcel}'.")

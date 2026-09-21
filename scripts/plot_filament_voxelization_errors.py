@@ -39,7 +39,7 @@ colour                 = "mediumseagreen"
 
 # Initialize random number generator and voxelization-induced error data.
 rng                  = np.random.default_rng(SEED)
-errorsAngularDegrees = np.load(DIR_OUTPUT / f"filament_voxelization_errors_{FILAMENT_NUMBER_OF_SIMULATIONS}.npy") # in deg
+errorsAngularDegrees = np.load(DIR_OUTPUT / f"filament_orientation_errors_voxelization_{FILAMENT_NUMBER_OF_SIMULATIONS}.npy") # in deg
 errorsAngularRadians = np.radians(errorsAngularDegrees) # in rad
 
 
@@ -81,6 +81,6 @@ for ax, data, label in [
 
 axBottom.set_xlabel(r"filament orientation error $\angle(\hat{f}, \hat{f}_\mathrm{m,0})$ ($^\circ$)")
 
-pathFigure = DIR_OUTPUT / "plot_filament_voxelization_errors.pdf"
+pathFigure = DIR_OUTPUT / "plot_filament_orientation_errors_voxelization.pdf"
 fig.savefig(pathFigure)
 print(f"Saved plot to '{pathFigure}'.")

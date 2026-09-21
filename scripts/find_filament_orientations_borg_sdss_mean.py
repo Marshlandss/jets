@@ -30,6 +30,9 @@ for labelMethod in labelsMethod:
     # Find all column densities and best orientations.
     columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest = findFilamentOrientations(FOF, densitiesMean, voxelIndicesList)
     # Save all column densities.
-    np.save(DIR_OUTPUT / f"column_densities_{labelSample}_mean_{labelMethod}.npy", columnDensitiesAll.astype(np.float32))
+    pathColumnDensities = DIR_OUTPUT / f"column_densities_{labelSample}_mean_{labelMethod}.npy"
+    np.save(pathColumnDensities, columnDensitiesAll.astype(np.float32))
+    print(f"Saved column densities to '{pathColumnDensities}'.")
     # Save best orientations.
     writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDensitiesBest, labelMethod)
+    print(f"Saved filament orientations (method '{labelMethod}') to '{pathExcel}'.")

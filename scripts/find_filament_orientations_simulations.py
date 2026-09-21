@@ -13,6 +13,7 @@ from jets.sphere_utils import axialSeparation, convertCartesianToSpherical
 
 # Initialize settings.
 numberOfVoxelsFine   = 205 # in 1; per side
+pathErrors           = DIR_OUTPUT / f"filament_orientation_errors_voxelization_{FILAMENT_NUMBER_OF_SIMULATIONS}.npy"
 
 # Initialize filament orientation finding.
 FOF                  = FilamentOrientationFinder(FILAMENT_LAMBDA_MAX, FILAMENT_ANGLE_STEP)
@@ -43,5 +44,6 @@ for i in range(FILAMENT_NUMBER_OF_SIMULATIONS):
     if (i + 1) % 10 == 0:
         print(f"Simulation {i + 1} of {FILAMENT_NUMBER_OF_SIMULATIONS}: error {errorsAngular[i]:.1f} deg")
 
-# Store angular errors.
-np.save(DIR_OUTPUT / f"filament_voxelization_errors_{FILAMENT_NUMBER_OF_SIMULATIONS}.npy", errorsAngular)
+# Save angular errors.
+np.save(pathErrors, errorsAngular)
+print(f"Saved filament orientation errors to '{pathErrors}'.")

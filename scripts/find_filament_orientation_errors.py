@@ -1,34 +1,33 @@
+"""
+Measure the distribution of the filament orientation error: BORG SDSS statistical error and host galaxy localization error taken together.
+
+For each jet system, the 'measured filament axis' is the one found in the BORG SDSS posterior mean density cube with one of the host galaxy localization methods.
+The plausible true axes are those found in the posterior realizations, with both localization methods.
+This script calculates and saves the angles between the latter and the former.
+Those angles form the error distribution that the inference of the jet Watson concentration parameter κ marginalizes over.
+The reference axis is the axis that the inference actually uses, rather than the realizations' own principal axis,
+because the quantity of interest is how far the true axis may be from the axis used in the APAD data.
+"""
+
 # Imports: standard library
 import ast
 # Imports: third-party
 import numpy as np
-import pandas as pd
+# Imports: first-party
+from jets.config import BORG_INDEX_REALIZATION_START, BORG_INDEX_REALIZATION_STEP, BORG_NUMBER_OF_REALIZATIONS
+from jets.filament_orientation import loadFilamentAxes, loadVoxelIndicesList
+from jets.paths import DIR_OUTPUT
 
+# Initialize settings.
+labelSample       = "Mpc"
+labelsMethod      = ("d", "a") # "d": direct method, "a": adjusted method
+pathCatalogueMean = DIR_OUTPUT / f"catalogue_filament_{labelSample}_mean.xlsx"
+pathErrors        = DIR_OUTPUT / f"filament_orientation_errors_localization_posterior_{labelSample}.npy"
 
-def loadFilamentVectors(pathExcel, method = "r", returnVoxelIndices = False):
-    """
-    """
-    dataFrame          = pd.read_excel(pathExcel)
-    angles             = dataFrame["best_angle_" + method + " (az,alt)(deg)"].apply(ast.literal_eval).to_numpy()
-    if returnVoxelIndices:
-        voxelIndices = dataFrame["voxel_index_" + method + " (x,y,z)"].apply(ast.literal_eval).to_numpy()
+# Load the axes found in the posterior mean density cube; shape (numberOfJetSystems, numberOfMethods, 3).
+axesMean           = np.stack([loadFilamentAxes(pathCatalogueMean, labelMethod) for labelMethod in labelsMethod], axis = 1)
+numberOfJetSystems = axesMean.shape[0] # in 1
 
-    numberOfJetSystems = angles.shape[0] # in 1
-    anglesAzimuth      = np.full(numberOfJetSystems, np.nan) # in deg
-    anglesAltitude     = np.full(numberOfJetSystems, np.nan) # in deg
-    for i in range(numberOfJetSystems):
-        anglesAzimuth[i]  = angles[i][0]
-        anglesAltitude[i] = angles[i][1]
-
-    # Calculate Cartesian unit vectors.
-    Xs = np.cos(np.radians(anglesAltitude)) * np.cos(np.radians(anglesAzimuth)) # in 1
-    Ys = np.cos(np.radians(anglesAltitude)) * np.sin(np.radians(anglesAzimuth)) # in 1
-    Zs = np.sin(np.radians(anglesAltitude))                                           # in 1
-
-    if returnVoxelIndices:
-        return Xs, Ys, Zs, voxelIndices
-    else:
-        return Xs, Ys, Zs
 
 directoryExcelSheets = "/Users/martijnoei/Library/CloudStorage/Dropbox/Martijn/Caltech/Caltech Connection/ten_excels_1.26.26_kpc/"
 numberOfJetSystems   = 777#242
