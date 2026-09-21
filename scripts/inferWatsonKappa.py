@@ -9,7 +9,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import numpy as np
 import pandas as pd
 # Imports: first-party
-from jets.simulatePADifferences import PADifferencesInferrer
+from jets.apad import PADifferencesInferrer
 from jets import watson
 
 matplotlib.rcParams["text.usetex"] = True
@@ -50,10 +50,6 @@ print(np.amin(azimuthsPA), np.amax(azimuthsPA))
 for alt, az in zip(altitudesPA, azimuthsPA):
     print(alt,az)
 
-
-# --- Your arrays (must match number of Excel rows) ---
-# altitudesPA = ...
-# azimuthsPA  = ...
 
 # Path to the Excel file
 excel_path = "/Users/martijnoei/Library/CloudStorage/Dropbox/Martijn/Caltech/Caltech Connection/ten_excels_1.26.26_kpc/kpc_filament_pa_principal_axis.xlsx"   # change if needed
@@ -243,24 +239,6 @@ plotLLsLinExp = logL_linear_exp(plotKappas, popt[0], popt[1], popt[2], popt[3], 
 #pyplot.plot(plotKappas, plotLLs)
 #pyplot.plot(plotKappas, plotLLsSpline, c = "red")
 
-pyplot.figure(figsize = (6, 3))
-pyplot.scatter(kappaJs, logLikelihoods * 1e2, lw = 0, c = "mediumseagreen", alpha = .3)
-pyplot.plot(plotKappas, plotLLsLinExp * 1e2, c = "mediumseagreen")
-pyplot.plot([kappaMLELinExp, kappaMLELinExp], [0, (a + b * (kappaMLELinExp - w)) * 1e2], c = "black", alpha = .2, ls = "-.")
-pyplot.scatter([kappaMLELinExp],[(a + b * (kappaMLELinExp - w)) * 1e2], c = "mediumseagreen", marker = "*", zorder = 5)
-pyplot.text(-9.8, .05, r"$\mathcal{L}_\mathrm{fit}(\kappa_\mathrm{j}) = a_1 + a_2\kappa_\mathrm{j} -a_3\exp{\frac{\kappa_\mathrm{j}-a_4}{a_5}}$", ha = "left", c = "gray")
-pyplot.xlim(-10, 0)
-pyplot.ylim(0, 1.2)
-pyplot.xlabel(r"Watson distribution concentration $\kappa_\mathrm{j}\ (1)$")
-pyplot.ylabel(r"average log-likelihood $\tilde{\mathcal{L}}\ (10^{-2})$")
-pyplot.subplots_adjust(left = .1, bottom = 0.15, right = .98, top = .98)
-pyplot.savefig(plotDirectory + "logLikelihood.pdf")
-pyplot.close()
-
-pyplot.plot(kappaJs, np.exp(242 * logLikelihoods))
-pyplot.show()
-
-
 
 likelihoods = np.exp(logLikelihoods - np.amax(logLikelihoods))
 pyplot.plot(kappaJs, likelihoods)
@@ -413,16 +391,6 @@ print("getalleke:", np.mean(np.square(dotProducts[~areSameVoxel])))  # 0.6342351
     #ZsMean[indexJetSystem] = 1
 
 
-'''
-# Calculate, for each jet system, the mean vector.
-XsMean             = np.mean(XsAll, axis = (1, 2))
-YsMean             = np.mean(YsAll, axis = (1, 2))
-ZsMean             = np.mean(ZsAll, axis = (1, 2))
-lengthsMean        = np.sqrt(np.square(XsMean) + np.square(YsMean) + np.square(ZsMean))
-XsMean            /= lengthsMean
-YsMean            /= lengthsMean
-ZsMean            /= lengthsMean
-'''
 pyplot.hist(anglesMean.flatten(), bins = np.linspace(0, 90, num = 30 + 1, endpoint = True), density = True)
 pyplot.title("HAAR PLOT")
 # pyplot.plot(plotAngles, inferrer.PDsWatsonPolarAngle(plotAngles, kappaMLE, assumeDegrees = True), c = "red")
@@ -431,20 +399,7 @@ pyplot.title("HAAR PLOT")
 #     pyplot.plot(plotAngles, plotPDsVMFM)
 #     print(np.trapezoid(plotPDsVMFM, plotAngles), "WOEFPOEP")
 pyplot.show()
-'''
-XsDiff  = XsAll - XsMean[ : , None, None]
-YsDiff  = YsAll - YsMean[ : , None, None]
-ZsDiff  = ZsAll - ZsMean[ : , None, None]
-lengths = np.sqrt(np.square(XsDiff) + np.square(YsDiff) + np.square(ZsDiff))
-XsDiff /= lengths
-YsDiff /= lengths
-ZsDiff /= lengths
 
-angless = np.degrees(np.arccos(np.abs(ZsDiff)))
-pyplot.hist(angless.flatten(), bins = np.linspace(0, 90, num = 9 + 1, endpoint = True), density = True)
-pyplot.title("whazzup")
-pyplot.show()
-'''
 # pyplot.imshow(anglesMean[:,:,0], aspect = "auto")
 # pyplot.show()
 #lengthsDMMean        = np.sqrt(np.square(XsDMMean) + np.square(YsDMMean) + np.square(ZsDMMean))

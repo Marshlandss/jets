@@ -212,7 +212,7 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
         timeLeft    = timeElapsed / numberDone * (numberOfJetSystems - numberDone) # in s
         line        = (f"    Jet system {numberDone} of {numberOfJetSystems} ({100 * numberDone / numberOfJetSystems:.0f}%): "
                        f"{timeElapsed:.0f} s elapsed, {timeLeft:.0f} s left")
-        print("\r" + line.ljust(lengthLine), end="\n" if numberDone == numberOfJetSystems else "", flush=True)
+        print("\r" + line.ljust(lengthLine), end = "\n" if numberDone == numberOfJetSystems else "", flush = True)
         lengthLine = len(line)
 
     return columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest
