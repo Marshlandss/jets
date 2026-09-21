@@ -72,3 +72,93 @@ def axialSeparation(azimuths1, altitudes1, azimuths2, altitudes2):
     distances1 = distanceOnSphere(azimuths1, altitudes1, azimuths2,         altitudes2)
     distances2 = distanceOnSphere(azimuths1, altitudes1, azimuths2 + 180., -altitudes2)
     return np.minimum(distances1, distances2)
+
+
+def axisPrincipal(vectors, weights = None):
+    """
+    Calculate the principal axis of a set of undirected axes: the eigenvector of the (weighted) scatter matrix with the
+    largest eigenvalue. Axes are undirected, so this is the right notion of a mean; the vector mean would cancel
+    antipodal pairs. The returned axis points into the upper hemisphere, matching the (azimuth, altitude) convention.
+
+    Parameters
+    ----------
+    vectors : array of shape (n, 3); Cartesian unit vectors. Lengths are not normalized here, so a vector that is not
+              of unit length acts as if it carried an extra weight.
+    weights : array of shape (n,) or None; non-negative weights, e.g. the solid angle each orientation represents.
+              None gives every axis equal weight.
+
+    Returns
+    -------
+    axis        : array of shape (3,); unit vector with a non-negative z-component
+    eigenvalues : array of shape (3,); scatter matrix eigenvalues in ascending order. Their ratios measure how
+                  elongated the set of axes is; the eigenvalues themselves scale with 'weights'.
+    """
+    if weights is None:
+        scatter = vectors.T @ vectors
+    else:
+        scatter = (vectors * weights[ : , None]).T @ vectors
+    eigenvalues, eigenvectors = np.linalg.eigh(scatter) # ascending; eigenvectors are normalized: https://numpy.org/doc/stable/reference/generated/numpy.linalg.eigh.html
+    axis                      = eigenvectors[ : , -1]
+
+    # Make sure 'axis' is a vector pointing in the upper hemisphere.
+    if axis[2] < 0:
+        axis = -axis
+
+    return axis, eigenvalues
+
+'''
+def axisPrincipal(Xs, Ys, Zs, w = None, normalize = True):
+    """
+    Compute the mean axis (±m) from axis data on S^2 given as components.
+
+    Parameters
+    ----------
+    Xs, Ys, Zs : array_like, shape (N,)
+        Components of the vectors.
+    w : array_like, shape (N,), optional
+        Non-negative weights. If None, all weights are 1.
+    normalize : bool, default True
+        If True, normalize each (X,Y,Z) to unit length before processing.
+
+    Returns
+    -------
+    m : ndarray, shape (3,)
+        Unit vector representing the mean axis (sign arbitrary).
+    evals : ndarray, shape (3,)
+        Eigenvalues of the scatter matrix (ascending order).
+    """
+
+    Xs = np.asarray(Xs, float)
+    Ys = np.asarray(Ys, float)
+    Zs = np.asarray(Zs, float)
+
+    # Stack into (N, 3)
+    X = np.column_stack((Xs, Ys, Zs))
+
+    if normalize:
+        norms = np.linalg.norm(X, axis=1)
+        if np.any(norms == 0):
+            raise ValueError("Zero-length vector encountered.")
+        X = X / norms[:, None]
+
+    N = X.shape[0]
+
+    if w is None:
+        w = np.ones(N)
+    else:
+        w = np.asarray(w, float)
+        if np.any(w < 0):
+            raise ValueError("Weights must be non-negative.")
+
+    # Scatter / second-moment matrix
+    M = (X.T * w) @ X / w.sum()
+
+    # Eigen-decomposition (symmetric -> eigh)
+    evals, evecs = np.linalg.eigh(M)
+
+    # Top eigenvector = mean axis
+    m = evecs[:, np.argmax(evals)]
+    m /= np.linalg.norm(m)
+
+    return m, evals
+'''
