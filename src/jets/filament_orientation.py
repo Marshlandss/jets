@@ -3,6 +3,7 @@ Martijn Simon Soen Liong Oei, September 12026 H.E.
 """
 # Imports: standard library
 import ast
+import time
 # Imports: third-party
 from astropy import units as u
 import numpy as np
@@ -195,6 +196,7 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
     azimuthsBest        = np.full(numberOfJetSystems, np.nan) # in deg
     altitudesBest       = np.full(numberOfJetSystems, np.nan) # in deg
     columnDensitiesBest = np.full(numberOfJetSystems, np.nan) # in g/m^2
+    timeStart           = time.perf_counter()                 # in s
     for indexJetSystem, voxelIndices in enumerate(voxelIndicesList):
         columnDensitiesAll [indexJetSystem] = FOF.columnDensities(FOF.cutout(densities, voxelIndices))
         axisBest, columnDensityBest         = FOF.findBestPlateau(columnDensitiesAll[indexJetSystem])
@@ -202,6 +204,14 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
         azimuthsBest       [indexJetSystem] = azimuthBest
         altitudesBest      [indexJetSystem] = altitudeBest
         columnDensitiesBest[indexJetSystem] = columnDensityBest
+
+        # Report progress on a single, self-overwriting line.
+        numberDone  = indexJetSystem + 1  # in 1
+        timeElapsed = time.perf_counter() - timeStart # in s
+        timeLeft    = timeElapsed / numberDone * (numberOfJetSystems - numberDone) # in s
+        print(f"\r    Jet system {numberDone:{len(str(numberOfJetSystems))}d} of {numberOfJetSystems} "
+              f"({100 * numberDone / numberOfJetSystems:3.0f}%): {timeElapsed:6.0f} s elapsed, {timeLeft:6.0f} s left.",
+              end = "\n" if numberDone == numberOfJetSystems else "", flush = True)
 
     return columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest
 
