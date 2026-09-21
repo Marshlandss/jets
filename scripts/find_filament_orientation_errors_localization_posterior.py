@@ -45,28 +45,13 @@ np.save(pathErrors, errorsAngular)
 print(f"Saved filament orientation errors to '{pathErrors}'.")
 
 
-# Check the two localization methods against each other where they identify the same host galaxy voxel: there the
-# column density maps are identical, so the axes must be too.
+# Collect statistics on how methodological variation in host galaxy localization affects BORG SDSS mean cube filament axes.
+# How often do the two methods select the same host galaxy voxel?
+# What is the distribution of the angle between the axes that they lead to?
 voxelIndices  = np.stack([np.array(loadVoxelIndicesList(pathCatalogueMean, labelMethod)) for labelMethod in labelsMethod], axis = 1)
 areSameVoxel  = np.all(voxelIndices[ : , 0] == voxelIndices[ : , 1], axis = 1)
 anglesMethods = np.degrees(np.arccos(np.clip(np.abs(np.einsum("si,si->s", axesMean[ : , 0], axesMean[ : , 1])), 0, 1))) # in deg
-if (np.max(anglesMethods[areSameVoxel], initial = 0) > 1e-3):
-    print(f"WARNING: {np.sum(anglesMethods[areSameVoxel] > 1e-3)} jet systems share a host galaxy voxel but have "
-          f"different filament axes, by up to {np.max(anglesMethods[areSameVoxel]):.4f} deg.")
-
-# Report the localization offset on the measurement itself.
 print(f"\nHost galaxy localization, mean cube: the two methods share a voxel for {np.sum(areSameVoxel)} of "
       f"{numberOfJetSystems} jet systems; their axes differ by {np.median(anglesMethods):.2f} deg (median), "
       f"{np.percentile(anglesMethods, 10):.2f} deg (10th percentile), "
       f"{np.percentile(anglesMethods, 90):.2f} deg (90th percentile).")
-
-print(axesMean.shape)
-print(axesRealizations.shape)
-
-'''
-#plt.hist(anglesDelta[~areSameVoxel], bins = np.linspace(0, 90, num = 6 + 1, endpoint = True))
-pyplot.hist(anglesDelta[anglesDelta > angleDeltaThreshold], bins = np.linspace(0, 90, num = 18 + 1, endpoint = True))
-pyplot.xticks(np.linspace(0, 90, num = 6 + 1, endpoint = True))
-pyplot.title(r"$\kappa_\mathrm{f} = " + "{:.2f}".format(MLEKappa) + "$")
-pyplot.show()
-'''
