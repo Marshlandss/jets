@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY, FILAMENT_TOLERANCE_REL
-from jets.sphere_utils import convertCartesianToSpherical, convertSphericalToCartesian
+from jets.sphere_utils import convertCartesianToSpherical, convertSphericalToCartesian, axisPrincipal
 
 
 class FilamentOrientationFinder:
@@ -164,18 +164,10 @@ class FilamentOrientationFinder:
         xs, ys, zs                      = convertSphericalToCartesian(self.azimuths[indicesAzimuth], self.altitudes[indicesAltitude])
         vectors                         = np.stack([xs, ys, zs], axis = 1)  # shape (n, 3)
 
-        # Calculate principal axis.
-        weights                         = self.weightsSolidAngle[indicesAltitude]
-        scatter                         = (vectors * weights[:, None]).T @ vectors
-        eigenvalues, eigenvectors       = np.linalg.eigh(scatter)  # ascending
-        axis                            = eigenvectors[ : , -1]
-
-        # Make sure 'axis' is a vector pointing in the upper hemisphere.
-        if axis[2] < 0:
-            axis = -axis
+        # Calculate the principal axis, weighting each orientation by the solid angle it represents.
+        axis, _                         = axisPrincipal(vectors, self.weightsSolidAngle[indicesAltitude])
 
         return axis, columnDensityMax
-
 
 
 def findFilamentOrientations(FOF, densities, voxelIndicesList):
@@ -221,7 +213,7 @@ def writeFilamentOrientations(pathExcel, azimuthsBest, altitudesBest, columnDens
     """
     xs, ys, zs = convertSphericalToCartesian(azimuthsBest, altitudesBest)
     dataFrame  = pd.read_excel(pathExcel)
-    dataFrame[f"best_angle_{method} (az,alt)(deg)"]     = [f"[{az:.1f}, {alt:.1f}]" for az, alt in zip(azimuthsBest, altitudesBest)]
+    dataFrame[f"best_angle_{method} (az,alt)(deg)"]     = [f"[{az:.3f}, {alt:.3f}]" for az, alt in zip(azimuthsBest, altitudesBest)]
     dataFrame[f"cartesian_best_angle_{method} (x,y,z)"] = [f"[{x:.5f}, {y:.5f}, {z:.5f}]" for x, y, z in zip(xs, ys, zs)]
     dataFrame[f"column_density_{method} (g/m^2)"]       = np.round(columnDensitiesBest, 3)
     dataFrame.to_excel(pathExcel, index = False)
@@ -236,3 +228,19 @@ def loadVoxelIndicesList(pathExcel, method):
     """
     dataFrame  = pd.read_excel(pathExcel)
     return [np.array(ast.literal_eval(string)) for string in dataFrame[f"voxel_index_{method} (x,y,z)"]]
+
+
+def loadFilamentAxes(pathExcel, method):
+    """
+    Load the best-fitting filament axes from the catalogue at 'pathExcel'.
+    'method' is "d" (direct) or "a" (adjusted).
+    The axes are rebuilt from the stored azimuths and altitudes rather than read from the stored Cartesian components,
+    so that they are of unit length to machine precision. Axes are undirected, so the sign is arbitrary.
+
+    Returns
+    -------
+    array of shape (numberOfJetSystems, 3); Cartesian unit vectors
+    """
+    dataFrame = pd.read_excel(pathExcel)
+    angles    = np.array([ast.literal_eval(string) for string in dataFrame[f"best_angle_{method} (az,alt)(deg)"]])
+    return np.stack(convertSphericalToCartesian(angles[ : , 0], angles[ : , 1]), axis = 1)
