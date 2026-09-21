@@ -4,7 +4,8 @@ Conventions for the `jets` repository (github.com/Marshlandss/jets). Read this b
 
 ## What this repository is
 
-A Python package (`src/jets/`) and scripts (`scripts/`) for measuring the orientations of Mpc-scale AGN jets and of the Cosmic Web filaments around their hosts, and the alignment between the two. The package holds computation; the scripts hold I/O and orchestration. A script loads, calls into the package, saves. A package function does not print progress, read files it was not handed, or know about directories.
+A Python package (`src/jets/`) and scripts (`scripts/`) for measuring the orientations of Mpc-scale AGN jets and of the Cosmic Web filaments around their hosts, and the alignment between the two. The package holds computation; the scripts hold I/O and orchestration. A script loads, calls into the package, saves.
+A package function does not print (except for progress reporting in long-running loops), read files it was not handed, or know about directories.
 
 ## Language and spelling
 

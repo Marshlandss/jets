@@ -197,6 +197,7 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
     altitudesBest       = np.full(numberOfJetSystems, np.nan) # in deg
     columnDensitiesBest = np.full(numberOfJetSystems, np.nan) # in g/m^2
     timeStart           = time.perf_counter()                 # in s
+    lengthLine          = 0                                   # in 1; length of the previous progress line
     for indexJetSystem, voxelIndices in enumerate(voxelIndicesList):
         columnDensitiesAll [indexJetSystem] = FOF.columnDensities(FOF.cutout(densities, voxelIndices))
         axisBest, columnDensityBest         = FOF.findBestPlateau(columnDensitiesAll[indexJetSystem])
@@ -209,9 +210,10 @@ def findFilamentOrientations(FOF, densities, voxelIndicesList):
         numberDone  = indexJetSystem + 1  # in 1
         timeElapsed = time.perf_counter() - timeStart # in s
         timeLeft    = timeElapsed / numberDone * (numberOfJetSystems - numberDone) # in s
-        print(f"\r    Jet system {numberDone:{len(str(numberOfJetSystems))}d} of {numberOfJetSystems} "
-              f"({100 * numberDone / numberOfJetSystems:3.0f}%): {timeElapsed:6.0f} s elapsed, {timeLeft:6.0f} s left.",
-              end = "\n" if numberDone == numberOfJetSystems else "", flush = True)
+        line        = (f"    Jet system {numberDone} of {numberOfJetSystems} ({100 * numberDone / numberOfJetSystems:.0f}%): "
+                       f"{timeElapsed:.0f} s elapsed, {timeLeft:.0f} s left")
+        print("\r" + line.ljust(lengthLine), end="\n" if numberDone == numberOfJetSystems else "", flush=True)
+        lengthLine = len(line)
 
     return columnDensitiesAll, azimuthsBest, altitudesBest, columnDensitiesBest
 
