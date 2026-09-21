@@ -82,9 +82,9 @@ def defineJetSystemNames(rightAscensions, declinations):
     """
     Designate jet systems by their host galaxy coordinates, in the format 'JHHMMSS+DDMMSS', rounded to whole seconds.
 
-    Host galaxy coordinates affect the inferred jet orientation, so a change in them should show in the designation:
-    A change of an arcsecond or more in declination always does. A second of time in right ascension, however, spans
-    15" on the sky at declination 0 deg (and 15" * cos(declination) in general), so smaller right ascension changes may not.
+    Host galaxy coordinates affect the inferred jet orientation, so a change in them should show in the designation.
+    A change of an arcsecond or more in declination always does. A second of time in right ascension, however,
+    spans 15" on the sky at declination 0 deg (and 15" * cos(declination) in general), so small right ascension changes may not.
 
     Parameters
     ----------

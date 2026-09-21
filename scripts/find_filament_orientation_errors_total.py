@@ -25,7 +25,7 @@ from jets.sphere_utils import composeAngularErrors
 labelSample           = "Mpc"
 labelsMethod          = ("d", "a")                                            # "d": direct method, "a": adjusted method; of the reference axis
 systematicsAdditional = ("galaxy bias", "gravity model", "other systematics") # composed in this order after B1
-labelsBudget          = {0 : "B1", 2 : "B2", 3 : "B3"}                        # number of assumed components composed -> budget label
+labelsBudget          = {0 : "B1", 2 : "B2", 3 : "B3"}                        # number of additional systematics composed -> budget label
 numberOfSamples       = int(1e6)                                              # in 1; per budget
 
 # Load the error components.

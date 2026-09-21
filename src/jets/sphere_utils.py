@@ -117,12 +117,13 @@ def composeAngularErrors(alpha, beta, RNG):
     P1 = axis after the first error  (alpha = arc I-P1)
     P2 = axis after the second error (beta  = arc P1-P2)
     The total error gamma = arc I-P2. In the spherical triangle I-P1-P2, the angle at P1 between arcs I-P1 and P1-P2 is phi, so
-
     cos(gamma) = cos(alpha) cos(beta) + sin(alpha) sin(beta) cos(phi).
+
+    Returns: the angle between directed vectors, in [0, pi]; for axes, fold it with min(gamma, pi - gamma) after the last composition.
     """
     # Assuming the direction of the second error is isotropic, phi ~ Uniform(0, 2 pi).
-    phi      = RNG.uniform(0, 2 * np.pi, size = len(alpha))
+    phi      = RNG.uniform(0, 2 * np.pi, size = len(alpha)) # in rad
     # Apply spherical law of cosines.
-    cosGamma = np.cos(alpha) * np.cos(beta) + np.sin(alpha) * np.sin(beta) * np.cos(phi)
-    # The result is the angle between directed vectors, in [0, pi]; for axes, fold it with min(gamma, pi - gamma) after the last composition.
-    return np.arccos(np.clip(cosGamma, -1, 1))
+    cosGamma = np.cos(alpha) * np.cos(beta) + np.sin(alpha) * np.sin(beta) * np.cos(phi) # in 1
+    # Return composite angular error.
+    return np.arccos(np.clip(cosGamma, -1, 1)) # in rad
