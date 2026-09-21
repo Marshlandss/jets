@@ -17,16 +17,7 @@ import numpy as np
 # Imports: first-party
 from jets.config import SEED, FILAMENT_NUMBER_OF_SIMULATIONS
 from jets.paths import DIR_OUTPUT
-
-def composeAngularErrors(alpha, beta, rng):
-    """
-    Spherical law of cosines: total angular displacement gamma (rad) after two
-    successive displacements alpha and beta (rad) with an isotropic relative
-    azimuth phi.
-    """
-    phi      = rng.uniform(0, 2 * np.pi, size = len(alpha))
-    cosGamma = np.cos(alpha) * np.cos(beta) + np.sin(alpha) * np.sin(beta) * np.cos(phi)
-    return np.arccos(np.clip(cosGamma, -1, 1))
+from jets.sphere_utils import composeAngularErrors
 
 
 # Initialize settings.
@@ -38,17 +29,17 @@ numberOfBins           = 30
 colour                 = "mediumseagreen"
 
 # Initialize random number generator and voxelization-induced error data.
-rng                  = np.random.default_rng(SEED)
+RNG                  = np.random.default_rng(SEED)
 errorsAngularDegrees = np.load(DIR_OUTPUT / f"filament_orientation_errors_voxelization_{FILAMENT_NUMBER_OF_SIMULATIONS}.npy") # in deg
 errorsAngularRadians = np.radians(errorsAngularDegrees) # in rad
 
 
 # Bootstrap the voxelization errors; every additional systematic is assumed to be an independent draw from the same distribution.
 # For 'numberOfSystematics = 2', non-voxelization systematics are assumed comparable to voxelization systematics.
-gamma                   = rng.choice(errorsAngularRadians, size = numberOfSamples, replace = True)
+gamma                   = RNG.choice(errorsAngularRadians, size = numberOfSamples, replace = True)
 for _ in range(numberOfSystematics - 1):
-    beta  = rng.choice(errorsAngularRadians, size = numberOfSamples, replace = True)
-    gamma = composeAngularErrors(gamma, beta, rng)
+    beta  = RNG.choice(errorsAngularRadians, size = numberOfSamples, replace = True)
+    gamma = composeAngularErrors(gamma, beta, RNG)
 errorsAngularDegreesAll = np.degrees(gamma)
 
 print("voxelization only: median = %5.2f deg, mean = %5.2f deg, N = %d"

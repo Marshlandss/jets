@@ -105,3 +105,13 @@ def axisPrincipal(vectors, weights = None):
         axis = -axis
 
     return axis, eigenvalues
+
+
+def composeAngularErrors(alpha, beta, RNG):
+    """
+    Spherical law of cosines: total angular displacement gamma (in radians)
+    after two successive displacements alpha and beta (in radians) with an isotropic relative azimuth phi.
+    """
+    phi      = RNG.uniform(0, 2 * np.pi, size = len(alpha))
+    cosGamma = np.cos(alpha) * np.cos(beta) + np.sin(alpha) * np.sin(beta) * np.cos(phi)
+    return np.arccos(np.clip(cosGamma, -1, 1))
