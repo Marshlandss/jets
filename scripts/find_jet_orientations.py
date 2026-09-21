@@ -47,7 +47,7 @@ for sampleLabel, sampleProperties in SAMPLES.items():
 
 
     # Initialize output paths.
-    path_excel             = DIR_OUTPUT / f"catalogue_jet_{sampleLabel}.xlsx"
+    pathExcel              = DIR_OUTPUT / "catalogues" / f"catalogue_jet_{sampleLabel}.xlsx"
     pathPlots              = DIR_OUTPUT / f"plots_jet_orientation_{sampleLabel}"
     pathPlotsAutomatic     = pathPlots / "a"
     pathPlotsSemiAutomatic = pathPlots / "sa"
@@ -59,7 +59,7 @@ for sampleLabel, sampleProperties in SAMPLES.items():
         location.mkdir(parents = True, exist_ok = True)
 
     # Create Excel sheet if it does not exist.
-    if not os.path.exists(path_excel):
+    if not os.path.exists(pathExcel):
         columns = {
             "right_ascension (deg)"        : [],
             "declination (deg)"            : [],
@@ -73,7 +73,7 @@ for sampleLabel, sampleProperties in SAMPLES.items():
             "redshift"                     : []}
         # Sets Excel sheet columns
         df = pd.DataFrame(columns = columns)
-        df.to_excel(path_excel, index = False)
+        df.to_excel(pathExcel, index = False)
 
     # Select cutouts.
     suffixes           = ("_sub_masked10.fits", "_sub.fits", ".fits")
@@ -132,7 +132,7 @@ for sampleLabel, sampleProperties in SAMPLES.items():
                 # Thresholds and Parameters
                 BEST_ANGLE_THRESHOLD, NAN_PERCENTAGE_CUTOFF,
                 # File save locations
-                path_excel,
+                pathExcel,
                 # Save status
                 sampleProperties["pixelShift"])
 
@@ -142,4 +142,4 @@ for sampleLabel, sampleProperties in SAMPLES.items():
 
         print("-" * 60)
 
-    format_sheet(path_excel)
+    format_sheet(pathExcel)
