@@ -13,8 +13,8 @@ Positive kappa concentrates the distribution around the mean axis mu (polar clus
 around the equator (girdle clustering); kappa = 0 is the uniform distribution on the sphere.
 """
 # Imports: third-party
+from scipy.special import erf, erfinv, erfi
 import numpy as np
-from scipy.special import erf, erfi
 
 
 def PDsPolarAngle(angles, kappa, assumeDegrees = True):
@@ -104,3 +104,33 @@ def MLEKappa(MLEExpressionData, kappaHalfWidth = 10., kappaStepSize = 1e-2):
     MLEExpressionsKappa = MLEExpressionKappa(kappas)
     kappaMLE            = np.interp(MLEExpressionData, MLEExpressionsKappa, kappas)
     return kappaMLE
+
+
+def sampleZsWatson(kappa,
+                   numberOfSamples,   # in 1
+                   xStepGrid = 1e-3): # Achieve a resolution of at least 'xStepGrid'.
+    """
+    """
+    FZs = np.random.uniform(0, 1, numberOfSamples)
+    if   (kappa < 0):
+        Zs = erfinv((2 * FZs - 1) * erf(np.sqrt(-kappa))) / np.sqrt(-kappa)
+    elif (kappa == 0):
+        Zs = 2 * FZs - 1
+    elif (kappa > 0):
+        if (kappa == np.inf):
+            # This case represents full polar alignment. 'Zs' is populated with floats -1. and +1.; they occur with equal probability.
+            Zs = np.round(np.random.rand(numberOfSamples)) * 2 - 1 # Create numbers 0. and 1. through rounding, then 0. and 2., then -1. and +1.
+        else:
+            # Calculate inverse imaginary error function arguments (IIEFAs).
+            IIEFAs    = (2 * FZs - 1) * erfi(np.sqrt(kappa))
+            # Initialise a suitable imaginary error function (restricted) domain and, equivalently, a suitable inverse imaginary error function (restricted) codomain.
+            xMin      = -1 * np.sqrt(kappa) # Since 2 * FZs - 1 is at least -1, note that erfiinv(-1 * erfi(np.sqrt(kappa))) = erfiinv(erfi(-1 * np.sqrt(kappa))) = -1 * np.sqrt(kappa).
+            xMax      = +1 * np.sqrt(kappa) # Since 2 * FZs - 1 is at most  +1, note that erfiinv(+1 * erfi(np.sqrt(kappa))) =                                         +1 * np.sqrt(kappa).
+            xs        = np.linspace(xMin, xMax, num = int(np.ceil((xMax - xMin) / xStepGrid)) + 1, endpoint = True)
+            # Calculate imaginary error function values.
+            IEFs      = erfi(xs)
+            # Calculate inverse imaginary error function values.
+            IIEFs     = np.interp(IIEFAs, IEFs, xs)
+            # Calculate Zs.
+            Zs        = IIEFs / np.sqrt(kappa)
+    return Zs
