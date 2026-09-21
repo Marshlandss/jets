@@ -109,9 +109,19 @@ def axisPrincipal(vectors, weights = None):
 
 def composeAngularErrors(alpha, beta, RNG):
     """
-    Spherical law of cosines: total angular displacement gamma (in radians)
-    after two successive displacements alpha and beta (in radians) with an isotropic relative azimuth phi.
+    Compose two successive angular errors on the unit sphere via the spherical law of cosines, assuming the errors have an isotropic relative azimuth phi.
+    We call the two successive displacements 'alpha' and 'beta', and the total angular displacement 'gamma'. All are in radians.
+
+    Geometry (unit sphere S^2):
+    I  = initial axis
+    P1 = axis after the first error  (alpha = arc I-P1)
+    P2 = axis after the second error (beta  = arc P1-P2)
+    The total error gamma = arc I-P2. In the spherical triangle I-P1-P2, the angle at P1 between arcs I-P1 and P1-P2 is phi, so
+
+    cos(gamma) = cos(alpha) cos(beta) + sin(alpha) sin(beta) cos(phi).
     """
+    # Assuming the direction of the second error is isotropic, phi ~ Uniform(0, 2 pi).
     phi      = RNG.uniform(0, 2 * np.pi, size = len(alpha))
+    # Apply spherical law of cosines.
     cosGamma = np.cos(alpha) * np.cos(beta) + np.sin(alpha) * np.sin(beta) * np.cos(phi)
     return np.arccos(np.clip(cosGamma, -1, 1))

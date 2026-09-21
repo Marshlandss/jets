@@ -1,15 +1,5 @@
 """
-Combine voxelization-induced filament orientation errors with other, unmodelled systematic errors of comparable magnitude via the spherical law of cosines.
-
-Geometry (unit sphere S^2):
-    T  = true filament axis
-    P1 = axis after voxelization error  (arc T-P1  = alpha)
-    P2 = axis after an additional error (arc P1-P2 = beta)
-The total error gamma is the arc T-P2. In the spherical triangle T-P1-P2, the angle at P1 between arcs P1-T and P1-P2 is phi, so
-
-    cos(gamma) = cos(alpha) cos(beta) + sin(alpha) sin(beta) cos(phi).
-
-Assuming the direction of the second error is isotropic, phi ~ Uniform(0, 2 pi).
+Visualize all filament orientation error distributions.
 """
 # Imports: third-party
 import matplotlib.pyplot as plt
@@ -72,6 +62,6 @@ for ax, data, label in [
 
 axBottom.set_xlabel(r"filament orientation error $\angle(\hat{f}, \hat{f}_\mathrm{m,0})$ ($^\circ$)")
 
-pathFigure = DIR_OUTPUT / "plot_filament_orientation_errors_voxelization.pdf"
+pathFigure = DIR_OUTPUT / "plot_filament_orientation_errors.pdf"
 fig.savefig(pathFigure)
 print(f"Saved plot to '{pathFigure}'.")
