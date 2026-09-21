@@ -88,3 +88,14 @@ plt.subplots_adjust(left = .1, bottom = 0.14, right = .98, top = .98)
 plt.savefig(pathFigureMLEKappa)
 plt.close()
 print(f"Saved plot to '{pathFigureMLEKappa}'.")
+
+
+# Probability density relative to probability density of uniform distribution on the sphere.
+angles = np.linspace(0, 90, num = 900 + 1, endpoint = True)
+plt.figure(figsize = (6, 3))
+for kappaJ in [-4.5, -4.3, -4.1]:#[-4.8, -4.6, -4.4, -4.2, -4.0]:
+    plt.plot(angles, np.sqrt(-1 * kappaJ / np.pi) * 2 / erf(np.sqrt(-1 * kappaJ)) * np.exp(kappaJ * np.square(np.cos(np.radians(angles)))), c = "mediumseagreen")
+plt.xlabel(r"polar angle $a\ (\degree)$")
+plt.gca().set_yscale("log")
+plt.tight_layout()
+plt.show()

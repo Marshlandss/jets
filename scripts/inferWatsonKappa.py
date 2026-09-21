@@ -26,94 +26,9 @@ pathExcel              = "/Users/martijnoei/Downloads/Mpc_filament_pa.xlsx"
 pathExcelPADifferences = "/Users/martijnoei/Downloads/Mpc_pa_diff-2.xlsx"
 plotDirectory          = "/Users/martijnoei/Library/CloudStorage/Dropbox/Martijn/PhD/Ardor Telae/figures/GRGs/"
 inferKappaF            = False
-plotOrientationsSphere = False
-plotPDsPolarAngleRel   = False
+
 
 inferrer               = PADifferencesInferrer(numberOfSamples)
-
-
-def loadFilamentVectors(pathExcel, method = "r", returnVoxelIndices = False):
-    """
-    """
-    dataFrame          = pd.read_excel(pathExcel)
-    angles             = dataFrame["best_angle_" + method + " (az,alt)(deg)"].apply(ast.literal_eval).to_numpy()
-    if returnVoxelIndices:
-        voxelIndices = dataFrame["voxel_index_" + method + " (x,y,z)"].apply(ast.literal_eval).to_numpy()
-
-    numberOfJetSystems = angles.shape[0] # in 1
-    anglesAzimuth      = np.full(numberOfJetSystems, np.nan) # in deg
-    anglesAltitude     = np.full(numberOfJetSystems, np.nan) # in deg
-    for i in range(numberOfJetSystems):
-        anglesAzimuth[i]  = angles[i][0]
-        anglesAltitude[i] = angles[i][1]
-
-    # Calculate Cartesian unit vectors.
-    Xs = np.cos(np.radians(anglesAltitude)) * np.cos(np.radians(anglesAzimuth)) # in 1
-    Ys = np.cos(np.radians(anglesAltitude)) * np.sin(np.radians(anglesAzimuth)) # in 1
-    Zs = np.sin(np.radians(anglesAltitude))                                           # in 1
-
-    if returnVoxelIndices:
-        return Xs, Ys, Zs, voxelIndices
-    else:
-        return Xs, Ys, Zs
-
-
-def mean_axis_from_components(Xs, Ys, Zs, w=None, normalize=True):
-    """
-    Compute the mean axis (±m) from axis data on S^2 given as components.
-
-    Parameters
-    ----------
-    Xs, Ys, Zs : array_like, shape (N,)
-        Components of the vectors.
-    w : array_like, shape (N,), optional
-        Non-negative weights. If None, all weights are 1.
-    normalize : bool, default True
-        If True, normalize each (X,Y,Z) to unit length before processing.
-
-    Returns
-    -------
-    m : ndarray, shape (3,)
-        Unit vector representing the mean axis (sign arbitrary).
-    evals : ndarray, shape (3,)
-        Eigenvalues of the scatter matrix (ascending order).
-    """
-
-    Xs = np.asarray(Xs, float)
-    Ys = np.asarray(Ys, float)
-    Zs = np.asarray(Zs, float)
-
-    # Stack into (N, 3)
-    X = np.column_stack((Xs, Ys, Zs))
-    print(X.shape)
-
-    if normalize:
-        norms = np.linalg.norm(X, axis=1)
-        if np.any(norms == 0):
-            raise ValueError("Zero-length vector encountered.")
-        X = X / norms[:, None]
-
-    N = X.shape[0]
-
-    if w is None:
-        w = np.ones(N)
-    else:
-        w = np.asarray(w, float)
-        if np.any(w < 0):
-            raise ValueError("Weights must be non-negative.")
-
-    # Scatter / second-moment matrix
-    M = (X.T * w) @ X / w.sum()
-
-    # Eigen-decomposition (symmetric -> eigh)
-    evals, evecs = np.linalg.eigh(M)
-
-    # Top eigenvector = mean axis
-    m = evecs[:, np.argmax(evals)]
-    m /= np.linalg.norm(m)
-
-    return m, evals
-
 
 if (inferKappaF):
     # Load azimuths and altitudes for both the direct method (DM) and the adjusted method (AM).
@@ -232,8 +147,6 @@ for alt, az in zip(altitudesPA, azimuthsPA):
     print(alt,az)
 
 
-import pandas as pd
-
 # --- Your arrays (must match number of Excel rows) ---
 # altitudesPA = ...
 # azimuthsPA  = ...
@@ -282,98 +195,6 @@ for i in range(numberOfJetSystems):
     print(i, "{:.2f}".format(np.mean(anglesPA[i, : , : ])), "deg")
 
 
-if plotOrientationsSphere:
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-    def toPix(coordinatePhysical):
-        return .5 * (numberOfPixels - 1) * (coordinatePhysical + 1)
-
-    with matplotlib.rc_context():
-        import ultraplot
-        colourMapObject = ultraplot.colormaps["browns6_r"]#"yellows3_r"]
-
-    # Generate grid of positive-z coordinates.
-    numberOfPixels = 1000 + 1 # number of pixels per side
-    gridXs         = np.linspace(-1, +1, num = numberOfPixels, endpoint = True)
-    gridYs         = np.linspace(-1, +1, num = numberOfPixels, endpoint = True)
-    gridZs         = np.sqrt(1 - np.square(gridXs)[None, : ] - np.square(gridYs)[: , None])
-
-    # Loop over jet systems, plot a sphere for each.
-    for indexJetSystem in range(numberOfJetSystems):
-        pyplot.figure(figsize = (5, 4))
-        im = pyplot.imshow(gridZs, cmap = colourMapObject, origin = "lower")
-        pyplot.plot(toPix(np.array([XsPA[indexJetSystem], -1 * XsPA[indexJetSystem]])), toPix(np.array([YsPA[indexJetSystem], -1 * YsPA[indexJetSystem]])), c = "lavender", ls = "--")
-        for indexRealisation in range(numberOfExcelSheets):
-            for indexMethod in range(2):
-                XStart              = XsAll[indexJetSystem, indexRealisation, indexMethod]
-                YStart              = YsAll[indexJetSystem, indexRealisation, indexMethod]
-                ZStart              = np.sqrt(1 - (XStart ** 2 + YStart ** 2)) # Note that this implicitly relies on us only exploring filament orientations in the upper (z > 0) hemisphere. #ZsAll[indexJetSystem, indexRealisation, 0]
-                XEnd                = XsPA[indexJetSystem]
-                YEnd                = YsPA[indexJetSystem]
-                ZEnd                = np.sqrt(1 - (XEnd ** 2 + YEnd ** 2)) # Note that we assume that the z-component of the mean axis is positive. #ZsPA[indexJetSystem]
-
-                dotProduct          = XStart * XEnd + YStart * YEnd + ZStart * ZEnd
-                greatCircleDistance = np.arccos(dotProduct) # in rad
-                if (greatCircleDistance > np.pi / 2):
-                    XEnd *= -1
-                    YEnd *= -1
-                    ZEnd *= -1
-                    dotProduct *= -1
-                    greatCircleDistance = np.pi - greatCircleDistance
-                    #continue
-                ts = np.linspace(0, 1, num = 100 + 1, endpoint=True)
-                angles              = ts * greatCircleDistance
-                XStartPerp          = XEnd - dotProduct * XStart
-                YStartPerp          = YEnd - dotProduct * YStart
-                ZStartPerp          = ZEnd - dotProduct * ZStart
-                length              = np.sqrt(np.square(XStartPerp) + np.square(YStartPerp) + np.square(ZStartPerp))
-                XStartPerp         /= length
-                YStartPerp         /= length
-                ZStartPerp         /= length
-                XsGeodesic          = np.cos(angles) * XStart + np.sin(angles) * XStartPerp
-                YsGeodesic          = np.cos(angles) * YStart + np.sin(angles) * YStartPerp
-                ZsGeodesic          = np.cos(angles) * ZStart + np.sin(angles) * ZStartPerp
-
-                areVisible = (ZsGeodesic > 0)
-                pyplot.plot(toPix(np.array([0, XStart])), toPix(np.array([0, YStart])), color = "gray", ls = "-", alpha = .08)
-                pyplot.plot(toPix(XsGeodesic[areVisible]), toPix(YsGeodesic[areVisible]), color = "gray", ls = "-")#, alpha = .3)
-                pyplot.plot(toPix(XsGeodesic[~areVisible]), toPix(YsGeodesic[~areVisible]), color="gray", ls="--")#, alpha = .3)
-
-
-        pyplot.scatter(toPix(XsAll[indexJetSystem, : , 0]), toPix(YsAll[indexJetSystem, : , 0]), color = "cornflowerblue", lw = 0, s = 40, zorder = 5) # alpha = .5,midnightblue
-        pyplot.scatter(toPix(XsMean[indexJetSystem, 0]), toPix(YsMean[indexJetSystem, 0]), color = "cornflowerblue", marker = "*", s = 50, zorder = 6, lw = 1., edgecolor = ".3")
-        pyplot.scatter(toPix(XsAll[indexJetSystem, : , 1]), toPix(YsAll[indexJetSystem, : , 1]), color = "tomato", lw = 0, s = 40, zorder = 5) # alpha = .5,crimson
-        pyplot.scatter(toPix(XsMean[indexJetSystem, 1]), toPix(YsMean[indexJetSystem, 1]), color="tomato", marker="*", s = 50, zorder = 6, lw = 1., edgecolor = ".3")
-        pyplot.scatter([toPix(XsPA[indexJetSystem])], [toPix(YsPA[indexJetSystem])], color = "lavender", marker = "*", zorder = 7, s = 50)
-        pyplot.scatter([toPix(-XsPA[indexJetSystem])], [toPix(-YsPA[indexJetSystem])], color = "lavender", marker = "*", zorder = 7, s = 20)#,alpha = .5)#facecolors = "none", edgecolors = "lavender",ls = "--",
-
-        pyplot.scatter([toPix(0)], [toPix(0)], c = "lavender", s = 10)
-        #pyplot.scatter([XsPA[indexJetSystem]],[YsPA[indexJetSystem]],c = "green")
-        #pyplot.scatter(XsDiff.flatten(), YsDiff.flatten(),c = "green", alpha = .2)
-        #pyplot.scatter(XsAll.flatten(), YsAll.flatten(),c = "green", alpha = .2)
-        pyplot.xticks(np.linspace(0, numberOfPixels - 1, num = 5, endpoint = True), ["$-1$", "$-0.5$", "$0$", "$0.5$", "$1$"])
-        pyplot.yticks(np.linspace(0, numberOfPixels - 1, num = 5, endpoint = True), ["$-1$", "$-0.5$", "$0$", "$0.5$", "$1$"])
-        pyplot.xlabel(r"$x\ (1)$")
-        pyplot.ylabel(r"$y\ (1)$")
-        #pyplot.scatter(XsAll - XsPA[ : , None, None], YsPA,c = "green")
-        #for r in np.sin(np.radians(np.linspace(0, 90, num = 3 + 1, endpoint = True))):
-        #    circle = pyplot.Circle((toPix(0), toPix(0)), toPix(r), color="gray", fill=False)
-
-        #from matplotlib import cm
-        #colourMapObject = cm.get_cmap(colourMap)
-        circle = pyplot.Circle((toPix(0), toPix(0)), toPix(0), color=colourMapObject(0.0), fill=False, lw = 1)
-        # Add the patch to the axes
-        pyplot.gca().add_patch(circle)
-        pyplot.gca().set_aspect("equal")
-
-        divider = make_axes_locatable(pyplot.gca())
-        cax     = divider.append_axes("right", size = "2%", pad = 0.05)
-        cb      = pyplot.gcf().colorbar(im, cax = cax)
-        cb.set_label(r"$z\ (1)$", fontsize = 12)
-        #pyplot.title(r"direct method: blue $\vert$ adjusted method: red")
-        pyplot.subplots_adjust(top = .98)
-        pyplot.savefig(directoryExcelSheets + f"filamentOrientationsSphereExact_{indexJetSystem}.pdf")
-        pyplot.close()
 
 
 
@@ -441,19 +262,6 @@ for i, kappaJ in enumerate(kappaJs):
 #kappaJs        = np.linspace(-10., 0., num = 50 + 1, endpoint = True) # in 1
 #kappaF         = 2.7 # in 1
 #inferrer.samplePAsDeltaAbs(kappaJ = kappaJ, kappaF = kappaF)
-
-
-if plotPDsPolarAngleRel:
-    # Probability density relative to probability density of uniform distribution on the sphere.
-    angles = np.linspace(0, 90, num = 900 + 1, endpoint = True)
-    pyplot.figure(figsize = (6, 3))
-    for kappaJ in [-4.5, -4.3, -4.1]:#[-4.8, -4.6, -4.4, -4.2, -4.0]:
-        pyplot.plot(angles, np.sqrt(-1 * kappaJ / np.pi) * 2 / erf(np.sqrt(-1 * kappaJ)) * np.exp(kappaJ * np.square(np.cos(np.radians(angles)))), c = "mediumseagreen")
-    pyplot.xlabel(r"polar angle $a\ (\degree)$")
-    pyplot.gca().set_yscale("log")
-    pyplot.tight_layout()
-    pyplot.show()
-
 
 x = kappaJs
 y = logLikelihoods
@@ -701,8 +509,6 @@ print("getalleke:", np.mean(np.square(dotProducts[~areSameVoxel])))  # 0.6342351
     #ZsMean[indexJetSystem] = 1
 
 
-#import sys
-#sys.exit()
 '''
 # Calculate, for each jet system, the mean vector.
 XsMean             = np.mean(XsAll, axis = (1, 2))

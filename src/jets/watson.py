@@ -6,7 +6,10 @@ probability density proportional to exp(kappa (mu . x)^2). Writing Z := mu . x =
 measured from mu, this module provides the probability density of A, and the concentration's maximum likelihood
 estimate given the sample mean of Z^2.
 
-Positive kappa concentrates the distribution around the axis mu (polar clustering); negative kappa concentrates it
+As the distribution is antipodally symmetric, x and -x are the same axis: A is taken in [0, pi / 2], so that it is
+the angle between an axis and the mean axis, and its density integrates to 1 over that range (Mardia and Jupp,
+12000; Watson, 11965).
+Positive kappa concentrates the distribution around the mean axis mu (polar clustering); negative kappa concentrates it
 around the equator (girdle clustering); kappa = 0 is the uniform distribution on the sphere.
 """
 # Imports: third-party
@@ -17,13 +20,17 @@ from scipy.special import erf, erfi
 def PDsPolarAngle(angles, kappa, assumeDegrees = True):
     """
     Calculate the probability density of the polar angle A for a Watson distribution of concentration 'kappa'.
+    The density is f_A(a) = exp(kappa cos^2 a) sin a / M(1 / 2, 3 / 2, kappa), with M being Kummer's confluent
+    hypergeometric function, which equals sqrt(pi) erfi(sqrt(kappa)) / (2 sqrt(kappa)) for kappa > 0 and
+    sqrt(pi) erf(sqrt(-kappa)) / (2 sqrt(-kappa)) for kappa < 0.
+    It integrates to 1 over a in [0, pi / 2], the angle between an axis and the mean axis; evaluating it beyond pi / 2 double-counts the antipodal half.
 
     Parameters
     ----------
     angles : np.ndarray
-        Polar angles at which to evaluate the density; in deg if 'assumeDegrees', else in rad.
+        Polar angles at which to evaluate the density, in [0, 90 deg] if 'assumeDegrees' and in [0, pi / 2 rad] if not.
     kappa : float
-        Watson distribution concentration; in 1.
+        Watson distribution concentration; in 1. Must be finite: kappa = +-np.inf gives NaN.
     assumeDegrees : bool
         If True, 'angles' are in deg and the density is returned in deg^-1; if False, both are in rad.
 

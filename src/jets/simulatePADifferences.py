@@ -17,7 +17,7 @@ class PADifferencesInferrer:
 
     def sampleZsWatson(self,
                        kappa,
-                       xStepGrid = 1e-2): # Achieve a resolution of at least 'xStepGrid'.
+                       xStepGrid = 1e-3): # Achieve a resolution of at least 'xStepGrid'.
         """
         """
         FZs = numpy.random.uniform(0, 1, self.numberOfSamples)
