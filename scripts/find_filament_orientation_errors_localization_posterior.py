@@ -13,6 +13,7 @@ import numpy as np
 # Imports: first-party
 from jets.config import BORG_INDEX_REALIZATION_START, BORG_INDEX_REALIZATION_STEP, BORG_NUMBER_OF_REALIZATIONS
 from jets.filament_orientation import loadFilamentAxes, loadVoxelIndicesList
+from jets.jet_utils import loadJetSystemNames
 from jets.paths import DIR_OUTPUT
 
 # Initialize settings.
@@ -24,15 +25,22 @@ pathErrors        = DIR_OUTPUT / f"filament_orientation_errors_localization_post
 # Load the axes found in the posterior mean density cube; shape (numberOfJetSystems, numberOfMethods, 3).
 axesMean           = np.stack([loadFilamentAxes(pathCatalogueMean, labelMethod) for labelMethod in labelsMethod], axis = 1)
 numberOfJetSystems = axesMean.shape[0] # in 1
+namesMean          = loadJetSystemNames(pathCatalogueMean)
 
 # Load the axes found in the posterior realizations; shape (numberOfJetSystems, numberOfRealizations, numberOfMethods, 3).
 axesRealizations = np.full((numberOfJetSystems, BORG_NUMBER_OF_REALIZATIONS, len(labelsMethod), 3), np.nan)
 for i in range(BORG_NUMBER_OF_REALIZATIONS):
     indexRealization         = BORG_INDEX_REALIZATION_START + i * BORG_INDEX_REALIZATION_STEP
     pathCatalogueRealization = DIR_OUTPUT / "catalogues" / f"catalogue_filament_{labelSample}_{indexRealization}.xlsx"
+
+    namesRealization = loadJetSystemNames(pathCatalogueRealization)
+    if not np.array_equal(namesMean, namesRealization):
+        raise ValueError(f"'{pathCatalogueRealization.name}' does not list the same jet systems in the same order as '{pathCatalogueMean.name}'.")
+
     print(f"Loading '{pathCatalogueRealization.name}' ({i + 1} of {BORG_NUMBER_OF_REALIZATIONS})...")
     for j, labelMethod in enumerate(labelsMethod):
         axesRealizations[ : , i, j] = loadFilamentAxes(pathCatalogueRealization, labelMethod)
+
 
 # Calculate the angles between the realization axes and the mean cube axes, for both choices of reference method.
 # Shape (numberOfJetSystems, numberOfRealizations, numberOfMethods, numberOfMethods), indexed

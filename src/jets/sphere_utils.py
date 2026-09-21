@@ -124,4 +124,5 @@ def composeAngularErrors(alpha, beta, RNG):
     phi      = RNG.uniform(0, 2 * np.pi, size = len(alpha))
     # Apply spherical law of cosines.
     cosGamma = np.cos(alpha) * np.cos(beta) + np.sin(alpha) * np.sin(beta) * np.cos(phi)
+    # The result is the angle between directed vectors, in [0, pi]; for axes, fold it with min(gamma, pi - gamma) after the last composition.
     return np.arccos(np.clip(cosGamma, -1, 1))

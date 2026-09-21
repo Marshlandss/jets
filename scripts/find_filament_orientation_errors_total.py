@@ -22,11 +22,11 @@ from jets.paths import DIR_OUTPUT
 from jets.sphere_utils import composeAngularErrors
 
 # Initialize settings.
-labelSample       = "Mpc"
-labelsMethod      = ("d", "a")                                            # "d": direct method, "a": adjusted method; of the reference axis
-componentsAssumed = ("galaxy bias", "gravity model", "other systematics") # composed in this order after B1
-labelsBudget      = {0 : "B1", 2 : "B2", 3 : "B3"}                        # number of assumed components composed -> budget label
-numberOfSamples   = int(1e6)                                              # in 1; per budget
+labelSample           = "Mpc"
+labelsMethod          = ("d", "a")                                            # "d": direct method, "a": adjusted method; of the reference axis
+systematicsAdditional = ("galaxy bias", "gravity model", "other systematics") # composed in this order after B1
+labelsBudget          = {0 : "B1", 2 : "B2", 3 : "B3"}                        # number of assumed components composed -> budget label
+numberOfSamples       = int(1e6)                                              # in 1; per budget
 
 # Load the error components.
 errorsLocalizationPosterior = np.radians(np.load(DIR_OUTPUT / f"filament_orientation_errors_localization_posterior_{labelSample}.npy"))          # in rad
@@ -40,12 +40,12 @@ for n, labelMethodReference in enumerate(labelsMethod):
     # Compose the measured components, then add the assumed components one by one.
     errorsTotal = composeAngularErrors(RNG.choice(errorsPooled,       size = numberOfSamples),
                                        RNG.choice(errorsVoxelization, size = numberOfSamples), RNG) # in rad
-    for numberOfAssumed in range(len(componentsAssumed) + 1):
-        if (numberOfAssumed > 0):
+    for numberOfSystematicsAdditional in range(len(systematicsAdditional) + 1):
+        if (numberOfSystematicsAdditional > 0):
             errorsTotal = composeAngularErrors(errorsTotal, RNG.choice(errorsVoxelization, size = numberOfSamples), RNG)
-        if (numberOfAssumed in labelsBudget):
-            labelBudget        = labelsBudget[numberOfAssumed]
-            errorsTotalDegrees = np.degrees(errorsTotal) # in deg
+        if (numberOfSystematicsAdditional in labelsBudget):
+            labelBudget        = labelsBudget[numberOfSystematicsAdditional]
+            errorsTotalDegrees = np.degrees(np.minimum(errorsTotal, np.pi - errorsTotal)) # in deg; folded into [0, 90], as axes are undirected
             pathErrors         = DIR_OUTPUT / f"filament_orientation_errors_total_{labelBudget}_{labelSample}_{labelMethodReference}.npy"
             np.save(pathErrors, errorsTotalDegrees)
             print(f"Saved filament orientation errors to '{pathErrors}'.")

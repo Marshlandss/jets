@@ -1,6 +1,8 @@
 # Imports: standard library
 import os
 # Imports: third-party
+from astropy.coordinates import SkyCoord
+import numpy as np
 import pandas as pd
 
 
@@ -56,11 +58,7 @@ def check_if_file_exists_in_correct_location(adjustment_status, a_loc, sa_loc, m
     Checks if its adjustment_status aligns with the folder it has been saved to.
     """
 
-    mapping = {
-        "a"                 : a_loc,
-        "sa"                : sa_loc,
-        "m"                 : m_loc,
-    }
+    mapping = {"a" : a_loc, "sa" : sa_loc, "m" : m_loc}
 
     for status, save_location in mapping.items():
         if os.path.exists(save_location) :
@@ -78,3 +76,49 @@ def check_if_file_exists_in_correct_location(adjustment_status, a_loc, sa_loc, m
     # File does not exist in any folders
     print("> File does not exist yet.")
     return False
+
+
+def defineJetSystemNames(rightAscensions, declinations):
+    """
+    Designate jet systems by their host galaxy coordinates, in the format 'JHHMMSS+DDMMSS', rounded to whole seconds.
+
+    Host galaxy coordinates affect the inferred jet orientation, so a change in them should show in the designation:
+    A change of an arcsecond or more in declination always does. A second of time in right ascension, however, spans
+    15" on the sky at declination 0 deg (and 15" * cos(declination) in general), so smaller right ascension changes may not.
+
+    Parameters
+    ----------
+    rightAscensions : array_like
+        Right ascensions of the host galaxies; in deg.
+    declinations : array_like
+        Declinations of the host galaxies; in deg.
+
+    Returns
+    -------
+    np.ndarray of str
+        Designations, one per jet system. Raises a ValueError if two jet systems receive the same designation.
+    """
+    coordinates = SkyCoord(rightAscensions, declinations, unit = "deg")
+    names       = np.char.add(np.char.add("J", coordinates.ra.to_string(unit = "hourangle", sep = "", precision = 0, pad = True)),
+                              coordinates.dec.to_string(sep = "", precision = 0, pad = True, alwayssign = True))
+    if len(set(names)) < len(names):
+        raise ValueError("Two jet systems share a designation.")
+    return names
+
+
+def saveJetSystemNames(pathExcel):
+    """
+    Give the catalogue at 'pathExcel' a first column 'name' with jet system designations, replacing any existing one.
+    """
+    dataFrame = pd.read_excel(pathExcel)
+    names     = defineJetSystemNames(dataFrame["right_ascension (deg)"], dataFrame["declination (deg)"])
+    dataFrame = dataFrame.drop(columns = "name", errors = "ignore")
+    dataFrame.insert(0, "name", names)
+    dataFrame.to_excel(pathExcel, index = False)
+
+
+def loadJetSystemNames(pathExcel):
+    """
+    Load the jet system designations from the catalogue at 'pathExcel'.
+    """
+    return pd.read_excel(pathExcel)["name"].to_numpy(dtype = str)
