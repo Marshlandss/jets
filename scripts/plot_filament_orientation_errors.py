@@ -7,15 +7,14 @@ Figure 1 (components), two panels:
             localization methods of the realization axes).
     Both panels show the uniform distribution on the sphere, for which the measured axis carries no information about the true one.
 Figure 2 (budgets), three panels, composed from the components via the spherical law of cosines:
-    B1 (minimal), B2 (fiducial), and B3 (illustrative). The B2 panel also shows its Watson + uniform description,
-    and that description's uniform part.
+    B1 (minimal), B2 (fiducial), and B3 (extended). The B2 and B3 panels also show their Watson--uniform descriptions.
 Both figures share the horizontal axis [0, 90] deg; legends quote E[P_2(cos A)], the factor by which each distribution of
 filament orientation errors A attenuates the alignment quadrupole.
 
 This script only reads. The components come from 'find_filament_orientation_errors_voxelization.py' and
 'find_filament_orientation_errors_localization_posterior.py', the budgets from 'find_filament_orientation_errors_total.py',
-and the Watson + uniform parameters from 'fit_filament_orientation_errors_total.py'. As E[P_2] factors multiply under
-composition, the script checks the budget files against the component files.
+and the Watson--uniform parameters from 'fit_filament_orientation_errors_total.py'.
+As E[P_2] factors multiply under composition, the script checks the budget files against the component files.
 """
 # Imports: standard library
 import json
@@ -45,7 +44,7 @@ def plotHistogram(ax, errors, symbol, bins, scale, colour, label):
     """
     PDs, _ = np.histogram(errors, bins = bins, density = True) # in deg^-1
     ax.hist(bins[ : -1], bins = bins, weights = scale * PDs, color = colour, edgecolor = "white", linewidth = .3,
-            label = r"%s ($\mathbb{E}[P_2(\cos %s)] = %.2f$)" % (label, symbol, polynomialLegendreMeanSample(np.radians(errors), 2)))
+            label = r"%s: $\mathbb{E}[P_2(\cos %s)] = %.2f$" % (label, symbol, polynomialLegendreMeanSample(np.radians(errors), 2)))
 
 
 plt.rcParams.update({
@@ -58,7 +57,7 @@ plt.rcParams.update({
 # Initialize settings.
 labelSample                     = "Mpc"
 labelsMethod                    = ("d", "a")                                                 # of the reference axis; "d": direct method, "a": adjusted method
-labelsBudget                    = {"B1" : "minimal", "B2" : "fiducial", "B3" : "illustrative"}
+labelsBudget                    = {"B1" : "minimal", "B2" : "fiducial", "B3" : "extended"}
 labelsBudgetDescribed           = ("B2", "B3")                                               # the budget shown with its Watson + uniform description
 numbersOfComponentsVoxelization = {"B1" : 1, "B2" : 3, "B3" : 4}                             # in 1; voxelization, plus the assumed components drawn from its distribution in 'find_filament_orientation_errors_total.py'
 symbolVoxelization              = r"A_\mathrm{v}"
@@ -66,8 +65,8 @@ symbolLocalizationPosterior     = r"A_\mathrm{l,p}"
 symbolTotal                     = r"A_\mathrm{f}"
 numberOfBins                    = 36                                                         # in 1; over [0, 90] deg
 scalePD                         = 100                                                        # in 1; probability densities are shown in units of 10^-2 deg^-1
-headroom                        = 1.3                                                        # in 1; upper vertical limit relative to the automatic one, leaving room for legends
-colourHistograms                = "tomato"
+PDMaxBudgets                    = 2.1                                                        # in 1e-2 1/deg; upper vertical limit of the budget panels
+colourHistograms                = "indianred"
 colourModel                     = "grey"
 colourUniform                   = "grey"
 labelAxisX                      = r"filament orientation error $a$ ($^\circ$)"
@@ -89,11 +88,11 @@ for n, labelMethodReference in enumerate(labelsMethod):
                      for labelBudget in labelsBudget}                                   # in deg
     P2Pooled      = polynomialLegendreMeanSample(np.radians(errorsPooled), 2)           # in 1
     with open(DIR_OUTPUT / f"filament_orientation_errors_total_parametric_{labelSample}_{labelMethodReference}.json") as file:
-        parameters = json.load(file)[labelBudgetDescribed]
+        parametersBudgets = json.load(file)  # per budget: Watson concentration 'kappa' and uniform weight 'weightUniform'; in 1
 
     # Report summary statistics, and check each budget's E[P_2] against the product of its components' E[P_2].
     print(f"Reference method '{labelMethodReference}':")
-    for label, errors in [("voxelization", errorsVoxelization), ("localization + posterior", errorsPooled), *errorsBudgets.items()]:
+    for label, errors in [("voxelization", errorsVoxelization), ("localization--posterior", errorsPooled), *errorsBudgets.items()]:
         print(f"    {label:24s}: {np.median(errors):5.2f} deg (median), {np.percentile(errors, 10):5.2f} deg (10th percentile), "
               f"{np.percentile(errors, 90):5.2f} deg (90th percentile); E[P_2] = {polynomialLegendreMeanSample(np.radians(errors), 2):.3f}; "
               f"N = {errors.size}")
@@ -106,7 +105,7 @@ for n, labelMethodReference in enumerate(labelsMethod):
     # Figure 1: the components.
     fig, axes = plt.subplots(2, 1, figsize = (6, 4), sharex = True, constrained_layout = True)
     plotHistogram(axes[0], errorsVoxelization, symbolVoxelization,          bins, scalePD, colourHistograms, "voxelization")
-    plotHistogram(axes[1], errorsPooled,       symbolLocalizationPosterior, bins, scalePD, colourHistograms, "localization + posterior")
+    plotHistogram(axes[1], errorsPooled,       symbolLocalizationPosterior, bins, scalePD, colourHistograms, "localization--posterior")
     for ax, symbol in zip(axes, (symbolVoxelization, symbolLocalizationPosterior)):
         ax.plot(angles, PDsUniform, color = colourUniform, linestyle = "--", linewidth = 1, label = r"uniform on the sphere ($\mathbb{E}[P_2(Z)] = 0$)")
         ax.set_ylim(bottom = 0)
@@ -125,15 +124,14 @@ for n, labelMethodReference in enumerate(labelsMethod):
     # Figure 2: the budgets.
     fig, axes = plt.subplots(3, 1, figsize = (6, 6), sharex = True, sharey = True, constrained_layout = True)
     for ax, (labelBudget, errors) in zip(axes, errorsBudgets.items()):
-        plotHistogram(ax, errors, symbolTotal, bins, scalePD, colourHistograms, f"{labelBudget}, {labelsBudget[labelBudget]}")
-        if labelBudget == labelBudgetDescribed:
-            kappa, weightUniform = parameters["kappa"], parameters["weightUniform"] # in 1, in 1
-            PDsModel             = scalePD * ((1 - weightUniform) * watson.PDsPolarAngle(angles, kappa) + weightUniform * watson.PDsPolarAngle(angles, 0)) # in 10^-2 deg^-1
+        plotHistogram(ax, errors, symbolTotal, bins, scalePD, colourHistograms, r"\textbf{" + f"{labelsBudget[labelBudget]}" + "} error budget")#f"{labelBudget}, {labelsBudget[labelBudget]}")
+        if labelBudget in labelsBudgetDescribed:
+            kappa, weightUniform = parametersBudgets[labelBudget]["kappa"], parametersBudgets[labelBudget]["weightUniform"] # in 1, in 1
+            PDsModel             = scalePD * ((1 - weightUniform) * watson.PDsPolarAngle(angles, kappa) + weightUniform * watson.PDsPolarAngle(angles, 0)) # in 10^-2 1/deg
             ax.plot(angles, PDsModel, color = colourModel, linewidth = 1.2,
-                    label = r"Watson + uniform ($\kappa = %.2f$, $w = %.2f$)" % (kappa, weightUniform))
-            #ax.plot(angles, weightUniform * PDsUniform, color = colourModel, linestyle = "--", linewidth = 1, label = r"uniform part")
+                    label = r"Watson--uniform ($\kappa = %.2f$, $w = %.2f$)" % (kappa, weightUniform))
         ax.set_ylabel(r"$f_{%s}$ ($10^{-2}\ \mathrm{deg}^{-1}$)" % symbolTotal)
-    axes[0].set_ylim(0, 2.1)#1 / 90. * 100 * 2)#headroom * axes[0].get_ylim()[1])
+    axes[0].set_ylim(0, PDMaxBudgets)
     for ax in axes:
         ax.legend(loc = "upper right", frameon = False)
     axes[2].set_xlim(0, 90)

@@ -5,7 +5,7 @@ The (antipodally symmetric) Watson distribution on the sphere with mean axis mu 
 probability density proportional to exp(kappa (mu . x)^2). Writing Z := mu . x = cos A, with A the polar angle measured from mu,
 this module provides the probability density of A, the concentration's maximum likelihood estimate given the sample mean of Z^2,
 and the means of Legendre polynomials in Z.
-The latter also fix the parameters of a Watson + uniform mixture, used to describe filament orientation errors.
+The latter also fix the parameters of a Watson--uniform mixture, used to describe filament orientation errors.
 
 As the distribution is antipodally symmetric, x and -x are the same axis: A is taken in [0, pi / 2], so that it is
 the angle between an axis and the mean axis, and its density integrates to 1 over that range (Mardia and Jupp,
