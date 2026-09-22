@@ -1,11 +1,11 @@
 """
-Watson distribution quantities that depend on the concentration 'kappa' alone.
+Watson distribution quantities, and the fit of a mixture of a Watson distribution and the uniform distribution on the sphere.
 
 The (antipodally symmetric) Watson distribution on the sphere with mean axis mu and concentration kappa has a
 probability density proportional to exp(kappa (mu . x)^2). Writing Z := mu . x = cos A, with A the polar angle measured from mu,
 this module provides the probability density of A, the concentration's maximum likelihood estimate given the sample mean of Z^2,
 and the means of Legendre polynomials in Z.
-The latter also fix the parameters of a Watson + isotropic mixture, used to describe filament orientation errors.
+The latter also fix the parameters of a Watson + uniform mixture, used to describe filament orientation errors.
 
 As the distribution is antipodally symmetric, x and -x are the same axis: A is taken in [0, pi / 2], so that it is
 the angle between an axis and the mean axis, and its density integrates to 1 over that range (Mardia and Jupp,
@@ -155,7 +155,8 @@ def polynomialLegendreMean(kappa, degree = 2):
     -------
     mean : float; E[P_degree(Z)], in 1
     """
-    # The basis polynomial's domain and window are both [-1, 1], so it is evaluated at z itself, without rescaling.
+    # Legendre.basis(degree) is the standard Legendre polynomial P_degree(x); e.g. P_2(x) = (3 x^2 - 1) / 2.
+    # NumPy can linearly rescale x before evaluating, but only when asked to through optional arguments; here, x is used unchanged.
     polynomialLegendre  = Legendre.basis(degree)
     # The Watson probability density of Z is proportional to exp(kappa z^2). Multiplying by exp(-kappa) changes nothing in the
     # ratio below, but prevents overflow for large positive concentrations.
@@ -165,32 +166,32 @@ def polynomialLegendreMean(kappa, degree = 2):
     return numerator / denominator
 
 
-def fitWatsonIsotropic(meanLegendre2, meanLegendre4, kappaMin = 1e-3, kappaMax = 1e2):
+def fitWatsonUniform(polynomialLegendreMean2, polynomialLegendreMean4, kappaMin = 1e-3, kappaMax = 1e2):
     """
-    Fit a mixture of a Watson distribution (concentration 'kappa' > 0, weight 1 - 'weightIsotropic') and the isotropic
-    distribution (weight 'weightIsotropic') to a distribution of angles between axes, by matching its means of the Legendre
-    polynomials of degrees 2 and 4. The isotropic part contributes nothing to either mean, so
-    <P_l> = (1 - 'weightIsotropic') <P_l>_Watson(kappa): the ratio <P_4> / <P_2> fixes 'kappa', after which <P_2> fixes 'weightIsotropic'.
+    Fit a mixture of a Watson distribution (concentration 'kappa' > 0, weight 1 - 'weightUniform') and the uniform distribution on the sphere
+    (weight 'weightUniform') to a distribution of angles between axes, by matching its means of the Legendre polynomials of degrees 2 and 4.
+    The uniform part contributes nothing to either mean, so E[P_l] = (1 - 'weightUniform') E_kappa[P_l], with E_kappa the mean under the Watson part:
+    the ratio E[P_4] / E[P_2] fixes 'kappa', after which E[P_2] fixes 'weightUniform'.
 
     Parameters
     ----------
-    meanLegendre2 : float; mean of P_2(cos A) of the distribution to describe, in 1
-    meanLegendre4 : float; mean of P_4(cos A) of the distribution to describe, in 1
-    kappaMin      : float; lower end of the concentration search interval, in 1
-    kappaMax      : float; upper end of the concentration search interval, in 1
+    polynomialLegendreMean2 : float; mean of P_2(cos A) of the distribution to describe, in 1
+    polynomialLegendreMean4 : float; mean of P_4(cos A) of the distribution to describe, in 1
+    kappaMin                : float; lower end of the concentration search interval, in 1
+    kappaMax                : float; upper end of the concentration search interval, in 1
 
     Returns
     -------
-    kappa           : float; concentration of the Watson part, in 1
-    weightIsotropic : float; weight of the isotropic part, in 1
+    kappa         : float; concentration of the Watson part, in 1
+    weightUniform : float; weight of the uniform part, in 1
 
     Raises
     ------
     ValueError if no concentration in ['kappaMin', 'kappaMax'] matches the ratio, or if the implied weight lies outside [0, 1).
     """
-    ratio           = meanLegendre4 / meanLegendre2
-    kappa           = brentq(lambda k: polynomialLegendreMean(k, 4) / polynomialLegendreMean(k, 2) - ratio, kappaMin, kappaMax)
-    weightIsotropic = 1 - meanLegendre2 / polynomialLegendreMean(kappa, 2)
-    if not 0 <= weightIsotropic < 1:
-        raise ValueError(f"The isotropic weight implied by <P_2> = {meanLegendre2} and <P_4> = {meanLegendre4} is {weightIsotropic}, outside [0, 1).")
-    return kappa, weightIsotropic
+    ratio         = polynomialLegendreMean4 / polynomialLegendreMean2
+    kappa         = brentq(lambda k: polynomialLegendreMean(k, 4) / polynomialLegendreMean(k, 2) - ratio, kappaMin, kappaMax)
+    weightUniform = 1 - polynomialLegendreMean2 / polynomialLegendreMean(kappa, 2)
+    if not 0 <= weightUniform < 1:
+        raise ValueError(f"The uniform weight implied by E[P_2] = {polynomialLegendreMean2} and E[P_4] = {polynomialLegendreMean4} is {weightUniform}, outside [0, 1).")
+    return kappa, weightUniform

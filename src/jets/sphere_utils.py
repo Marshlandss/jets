@@ -148,5 +148,7 @@ def polynomialLegendreMeanSample(angles, degree = 2):
     -------
     mean : float; sample mean of P_degree(cos(angles)), in 1
     """
+    # 'Legendre.basis(degree)' is the standard Legendre polynomial P_degree(x); e.g. P_2(x) = (3 x^2 - 1) / 2.
+    # NumPy can linearly rescale x before evaluating, but only when asked to through optional arguments; here, x is used unchanged.
     polynomialLegendre = Legendre.basis(degree)
     return np.mean(polynomialLegendre(np.cos(angles)))
