@@ -13,6 +13,9 @@ Positive kappa concentrates the distribution around the mean axis mu (polar clus
 around the equator (girdle clustering); kappa = 0 is the uniform distribution on the sphere.
 """
 # Imports: third-party
+from numpy.polynomial import Legendre
+from scipy.integrate import quad
+from scipy.optimize import brentq
 from scipy.special import erf, erfinv, erfi
 import numpy as np
 
@@ -134,3 +137,59 @@ def sampleZsWatson(kappa,
             # Calculate Zs.
             Zs        = IIEFs / np.sqrt(kappa)
     return Zs
+
+
+def polynomialLegendreMean(kappa, degree):
+    """
+    Calculate the mean of the Legendre polynomial of degree 'degree' in Z = cos A, for a Watson distribution of concentration
+    'kappa', with A in [0, pi / 2] (so Z in [0, 1]), as for 'sphere_utils.polynomialLegendreSampleMean' on folded angles. For
+    degree 2, this is the factor by which an axial error following this distribution attenuates a quadrupolar alignment signal.
+
+    Parameters
+    ----------
+    kappa  : float; Watson distribution concentration, in 1. Must be finite.
+    degree : int; degree of the Legendre polynomial, in 1
+
+    Returns
+    -------
+    mean : float; E[P_degree(Z)], in 1
+    """
+    # The basis polynomial's domain and window are both [-1, 1], so it is evaluated at z itself, without rescaling.
+    polynomialLegendre  = Legendre.basis(degree)
+    # The Watson probability density of Z is proportional to exp(kappa z^2). Multiplying by exp(-kappa) changes nothing in the
+    # ratio below, but prevents overflow for large positive concentrations.
+    densityUnnormalized = lambda z: np.exp(kappa * (z ** 2 - 1))
+    numerator           = quad(lambda z: polynomialLegendre(z) * densityUnnormalized(z), 0, 1)[0]
+    denominator         = quad(densityUnnormalized, 0, 1)[0]
+    return numerator / denominator
+
+
+def fitWatsonIsotropic(meanLegendre2, meanLegendre4, kappaMin = 1e-3, kappaMax = 1e2):
+    """
+    Fit a mixture of a Watson distribution (concentration 'kappa' > 0, weight 1 - 'weightIsotropic') and the isotropic
+    distribution (weight 'weightIsotropic') to a distribution of angles between axes, by matching its means of the Legendre
+    polynomials of degrees 2 and 4. The isotropic part contributes nothing to either mean, so
+    <P_l> = (1 - 'weightIsotropic') <P_l>_Watson(kappa): the ratio <P_4> / <P_2> fixes 'kappa', after which <P_2> fixes 'weightIsotropic'.
+
+    Parameters
+    ----------
+    meanLegendre2 : float; mean of P_2(cos A) of the distribution to describe, in 1
+    meanLegendre4 : float; mean of P_4(cos A) of the distribution to describe, in 1
+    kappaMin      : float; lower end of the concentration search interval, in 1
+    kappaMax      : float; upper end of the concentration search interval, in 1
+
+    Returns
+    -------
+    kappa           : float; concentration of the Watson part, in 1
+    weightIsotropic : float; weight of the isotropic part, in 1
+
+    Raises
+    ------
+    ValueError if no concentration in ['kappaMin', 'kappaMax'] matches the ratio, or if the implied weight lies outside [0, 1).
+    """
+    ratio           = meanLegendre4 / meanLegendre2
+    kappa           = brentq(lambda k: polynomialLegendreMean(k, 4) / polynomialLegendreMean(k, 2) - ratio, kappaMin, kappaMax)
+    weightIsotropic = 1 - meanLegendre2 / polynomialLegendreMean(kappa, 2)
+    if not 0 <= weightIsotropic < 1:
+        raise ValueError(f"The isotropic weight implied by <P_2> = {meanLegendre2} and <P_4> = {meanLegendre4} is {weightIsotropic}, outside [0, 1).")
+    return kappa, weightIsotropic

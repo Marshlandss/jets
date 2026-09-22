@@ -1,5 +1,7 @@
 # Imports: third-party
+from numpy.polynomial import Legendre
 import numpy as np
+
 
 def distanceOnSphere(longitudes1, latitudes1, longitudes2, latitudes2, unitsDegree = True):
     """
@@ -127,3 +129,24 @@ def composeAngularErrors(alpha, beta, RNG):
     cosGamma = np.cos(alpha) * np.cos(beta) + np.sin(alpha) * np.sin(beta) * np.cos(phi) # in 1
     # Return composite angular error.
     return np.arccos(np.clip(cosGamma, -1, 1)) # in rad
+
+
+def polynomialLegendreMeanSample(angles, degree = 2):
+    """
+    Calculate the sample mean of the Legendre polynomial of degree 'degree', evaluated at the cosines of 'angles'.
+    For angular errors about an axis, the mean for degree 2 is the factor by which the errors attenuate a quadrupolar alignment signal.
+    If a second error has an azimuth, about the axis that the first error produced, that is uniformly distributed,
+    the factors of the two errors multiply (addition theorem for spherical harmonics), so they compose as 'composeAngularErrors' does.
+    Even degrees are unaffected by folding angles into [0, pi / 2].
+
+    Parameters
+    ----------
+    angles : array of shape (n,); angular errors, in rad
+    degree : int; degree of the Legendre polynomial, in 1
+
+    Returns
+    -------
+    mean : float; sample mean of P_degree(cos(angles)), in 1
+    """
+    polynomialLegendre = Legendre.basis(degree)
+    return np.mean(polynomialLegendre(np.cos(angles)))
