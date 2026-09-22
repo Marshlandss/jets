@@ -59,16 +59,16 @@ plt.rcParams.update({
 labelSample                     = "Mpc"
 labelsMethod                    = ("d", "a")                                                 # of the reference axis; "d": direct method, "a": adjusted method
 labelsBudget                    = {"B1" : "minimal", "B2" : "fiducial", "B3" : "illustrative"}
-labelBudgetDescribed            = "B2"                                                       # the budget shown with its Watson + uniform description
+labelsBudgetDescribed           = ("B2", "B3")                                               # the budget shown with its Watson + uniform description
 numbersOfComponentsVoxelization = {"B1" : 1, "B2" : 3, "B3" : 4}                             # in 1; voxelization, plus the assumed components drawn from its distribution in 'find_filament_orientation_errors_total.py'
 symbolVoxelization              = r"A_\mathrm{v}"
 symbolLocalizationPosterior     = r"A_\mathrm{l,p}"
 symbolTotal                     = r"A_\mathrm{f}"
-numberOfBins                    = 30                                                         # in 1; over [0, 90] deg
+numberOfBins                    = 36                                                         # in 1; over [0, 90] deg
 scalePD                         = 100                                                        # in 1; probability densities are shown in units of 10^-2 deg^-1
 headroom                        = 1.3                                                        # in 1; upper vertical limit relative to the automatic one, leaving room for legends
-colourHistograms                = "mediumseagreen"
-colourModel                     = "black"
+colourHistograms                = "tomato"
+colourModel                     = "grey"
 colourUniform                   = "grey"
 labelAxisX                      = r"filament orientation error $a$ ($^\circ$)"
 
@@ -131,9 +131,9 @@ for n, labelMethodReference in enumerate(labelsMethod):
             PDsModel             = scalePD * ((1 - weightUniform) * watson.PDsPolarAngle(angles, kappa) + weightUniform * watson.PDsPolarAngle(angles, 0)) # in 10^-2 deg^-1
             ax.plot(angles, PDsModel, color = colourModel, linewidth = 1.2,
                     label = r"Watson + uniform ($\kappa = %.2f$, $w = %.2f$)" % (kappa, weightUniform))
-            ax.plot(angles, weightUniform * PDsUniform, color = colourModel, linestyle = "--", linewidth = 1, label = r"uniform part")
+            #ax.plot(angles, weightUniform * PDsUniform, color = colourModel, linestyle = "--", linewidth = 1, label = r"uniform part")
         ax.set_ylabel(r"$f_{%s}$ ($10^{-2}\ \mathrm{deg}^{-1}$)" % symbolTotal)
-    axes[0].set_ylim(0, headroom * axes[0].get_ylim()[1])
+    axes[0].set_ylim(0, 2.1)#1 / 90. * 100 * 2)#headroom * axes[0].get_ylim()[1])
     for ax in axes:
         ax.legend(loc = "upper right", frameon = False)
     axes[2].set_xlim(0, 90)

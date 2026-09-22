@@ -19,6 +19,7 @@ data/output/*
 data/output/catalogues/*
 !data/output/catalogues/catalogue_filament_*.xlsx
 !data/output/filament_orientation_errors_voxelization_10000.npy
+!data/output/filament_orientation_errors_total_parametric_*.json
 
 # Ignore anything starting with 'scratch', to allow for quick local experimentation.
 # Such files (e.g. scripts or configuration files) may include private information, such as machine-specific paths, and thus should not be tracked.
