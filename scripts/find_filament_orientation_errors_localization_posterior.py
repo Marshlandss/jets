@@ -12,7 +12,7 @@ because the quantity of interest is how far the true axis may be from the axis u
 import numpy as np
 # Imports: first-party
 from jets.config import BORG_INDEX_REALIZATION_START, BORG_INDEX_REALIZATION_STEP, BORG_NUMBER_OF_REALIZATIONS
-from jets.filament_orientation import loadFilamentAxes, loadVoxelIndicesList
+from jets.filament_orientation import loadFilamentAxes, loadFilamentAxesRealizations, loadVoxelIndicesList
 from jets.jet_utils import loadJetSystemNames
 from jets.paths import DIR_OUTPUT
 
@@ -28,18 +28,9 @@ numberOfJetSystems = axesMean.shape[0] # in 1
 namesMean          = loadJetSystemNames(pathCatalogueMean)
 
 # Load the axes found in the posterior realizations; shape (numberOfJetSystems, numberOfRealizations, numberOfMethods, 3).
-axesRealizations = np.full((numberOfJetSystems, BORG_NUMBER_OF_REALIZATIONS, len(labelsMethod), 3), np.nan)
-for i in range(BORG_NUMBER_OF_REALIZATIONS):
-    indexRealization         = BORG_INDEX_REALIZATION_START + i * BORG_INDEX_REALIZATION_STEP
-    pathCatalogueRealization = DIR_OUTPUT / "catalogues" / f"catalogue_filament_{labelSample}_{indexRealization}.xlsx"
-
-    namesRealization = loadJetSystemNames(pathCatalogueRealization)
-    if not np.array_equal(namesMean, namesRealization):
-        raise ValueError(f"'{pathCatalogueRealization.name}' does not list the same jet systems in the same order as '{pathCatalogueMean.name}'.")
-
-    print(f"Loading '{pathCatalogueRealization.name}' ({i + 1} of {BORG_NUMBER_OF_REALIZATIONS})...")
-    for j, labelMethod in enumerate(labelsMethod):
-        axesRealizations[ : , i, j] = loadFilamentAxes(pathCatalogueRealization, labelMethod)
+pathsCatalogueRealization = [DIR_OUTPUT / "catalogues" / f"catalogue_filament_{labelSample}_{BORG_INDEX_REALIZATION_START + i * BORG_INDEX_REALIZATION_STEP}.xlsx"
+                             for i in range(BORG_NUMBER_OF_REALIZATIONS)]
+axesRealizations          = loadFilamentAxesRealizations(pathsCatalogueRealization, labelsMethod, namesMean)
 
 
 # Calculate the angles between the realization axes and the mean cube axes, for both choices of reference method.

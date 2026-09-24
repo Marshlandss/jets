@@ -76,6 +76,24 @@ def axialSeparation(azimuths1, altitudes1, azimuths2, altitudes2):
     return np.minimum(distances1, distances2)
 
 
+def axialSeparationCartesian(axes1, axes2):
+    """
+    Compute the angle between undirected axes given as Cartesian unit vectors, element by element
+    (unlike 'axialSeparation', which takes azimuths and altitudes and returns the separations of all pairs).
+
+    Parameters
+    ----------
+    axes1 : array of shape (..., 3); Cartesian unit vectors
+    axes2 : array of shape (..., 3); Cartesian unit vectors, broadcastable against 'axes1'
+
+    Returns
+    -------
+    array of shape (...); angles between the axes, in deg, in [0, 90]
+    """
+    cosines = np.abs(np.sum(axes1 * axes2, axis = -1)) # in 1; absolute value, as axes are undirected
+    return np.degrees(np.arccos(np.clip(cosines, 0, 1)))
+
+
 def axisPrincipal(vectors, weights = None):
     """
     Calculate the principal axis of a set of undirected axes: the eigenvector of the (weighted) scatter matrix with the
@@ -107,6 +125,37 @@ def axisPrincipal(vectors, weights = None):
         axis = -axis
 
     return axis, eigenvalues
+
+
+def geodesicArc(vectorStart, vectorEnd, numberOfPoints = 101):
+    """
+    Sample the shorter great-circle arc from 'vectorStart' to 'vectorEnd', uniformly in angle (spherical linear interpolation).
+    For undirected axes, first flip 'vectorEnd' such that its dot product with 'vectorStart' is non-negative; the arc then
+    represents the angle between the axes, and spans at most 90 deg.
+
+    Parameters
+    ----------
+    vectorStart    : array of shape (3,); Cartesian unit vector
+    vectorEnd      : array of shape (3,); Cartesian unit vector, not antipodal to 'vectorStart' (the arc would then be undefined)
+    numberOfPoints : int; number of points along the arc, including both ends, in 1
+
+    Returns
+    -------
+    array of shape (numberOfPoints, 3); Cartesian unit vectors, from 'vectorStart' to 'vectorEnd'
+    """
+    cosine = np.clip(vectorStart @ vectorEnd, -1, 1) # in 1
+    angle  = np.arccos(cosine)                        # in rad
+
+    # Construct the unit vector perpendicular to 'vectorStart', in the plane of both vectors and on the side of 'vectorEnd'.
+    # For (nearly) coincident vectors, this plane is undefined, but the arc is a point.
+    vectorPerpendicular = vectorEnd - cosine * vectorStart
+    norm                = np.linalg.norm(vectorPerpendicular) # in 1
+    if norm < 1e-12:
+        return np.tile(vectorStart, (numberOfPoints, 1))
+    vectorPerpendicular = vectorPerpendicular / norm
+
+    angles = np.linspace(0, angle, num = numberOfPoints) # in rad
+    return np.cos(angles)[ : , None] * vectorStart + np.sin(angles)[ : , None] * vectorPerpendicular
 
 
 def composeAngularErrors(alpha, beta, RNG):

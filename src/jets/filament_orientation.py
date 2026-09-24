@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 # Imports: first-party
 from jets.config import BORG_VOXEL_SIZE_MPC, DENSITY_MEAN_TODAY, FILAMENT_TOLERANCE_REL
+from jets.jet_utils import loadJetSystemNames
 from jets.sphere_utils import convertCartesianToSpherical, convertSphericalToCartesian, axisPrincipal
 
 
@@ -256,3 +257,31 @@ def loadFilamentAxes(pathExcel, method):
     dataFrame = pd.read_excel(pathExcel)
     angles    = np.array([ast.literal_eval(string) for string in dataFrame[f"best_angle_{method} (az,alt)(deg)"]])
     return np.stack(convertSphericalToCartesian(angles[ : , 0], angles[ : , 1]), axis = 1)
+
+
+def loadFilamentAxesRealizations(pathsCatalogue, methods, namesReference):
+    """
+    Load the best-fitting filament axes from the BORG SDSS realization catalogues at 'pathsCatalogue', for each method in 'methods'.
+    Every catalogue must list the jet systems of 'namesReference' (typically those of the mean cube catalogue) in the same order;
+    if one does not, raise a ValueError rather than silently pairing axes of different jet systems.
+
+    Parameters
+    ----------
+    pathsCatalogue : sequence of length 'numberOfRealizations'; paths to the realization catalogues
+    methods        : sequence of length 'numberOfMethods'; host galaxy localization methods, each "d" (direct) or "a" (adjusted)
+    namesReference : array of shape (numberOfJetSystems,); jet system designations, as returned by 'loadJetSystemNames'
+
+    Returns
+    -------
+    array of shape (numberOfJetSystems, numberOfRealizations, numberOfMethods, 3); Cartesian unit vectors, indexed
+    [jet system, realization, localization method]. Axes are undirected, so the sign is arbitrary.
+    """
+    axes = np.full((len(namesReference), len(pathsCatalogue), len(methods), 3), np.nan)
+    for i, pathCatalogue in enumerate(pathsCatalogue):
+        if not np.array_equal(loadJetSystemNames(pathCatalogue), namesReference):
+            raise ValueError(f"'{pathCatalogue.name}' does not list the reference jet systems in the reference order.")
+
+        print(f"Loading '{pathCatalogue.name}' ({i + 1} of {len(pathsCatalogue)})...")
+        for j, method in enumerate(methods):
+            axes[ : , i, j] = loadFilamentAxes(pathCatalogue, method)
+    return axes

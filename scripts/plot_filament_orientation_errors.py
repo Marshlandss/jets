@@ -51,8 +51,8 @@ plt.rcParams.update({
     "text.usetex":         True,
     "text.latex.preamble": r"\usepackage{amssymb}", # for \mathbb{E}
     "font.size":           11,
-    "axes.labelsize":      11,
-    "legend.fontsize":     9})
+    "axes.labelsize":      12,
+    "legend.fontsize":     10})
 
 # Initialize settings.
 labelSample                     = "Mpc"
