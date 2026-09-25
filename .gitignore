@@ -18,6 +18,7 @@ data/output/*
 !data/output/catalogues/
 data/output/catalogues/*
 !data/output/catalogues/catalogue_filament_*.xlsx
+!data/output/catalogues/summary_catalogue15.fits
 !data/output/filament_orientation_errors_voxelization_10000.npy
 !data/output/filament_orientation_errors_total_parametric_*.json
 
